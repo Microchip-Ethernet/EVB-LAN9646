@@ -1,0 +1,12 @@
+diff -Napur linux-at91-linux4sam_6.0-orig/drivers/usb/host/ohci-at91.c linux-at91-linux4sam_6.0/drivers/usb/host/ohci-at91.c
+--- linux-at91-linux4sam_6.0-orig/drivers/usb/host/ohci-at91.c	2018-10-05 06:43:30.000000000 -0700
++++ linux-at91-linux4sam_6.0/drivers/usb/host/ohci-at91.c	2024-02-12 17:53:00.982396946 -0800
+@@ -550,6 +550,8 @@ static int ohci_hcd_at91_drv_probe(struc
+ 		pdata->overcurrent_pin[i] =
+ 			devm_gpiod_get_index_optional(&pdev->dev, "atmel,oc",
+ 						      i, GPIOD_IN);
++		if (!pdata->overcurrent_pin[i])
++			continue;
+ 		if (IS_ERR(pdata->overcurrent_pin[i])) {
+ 			err = PTR_ERR(pdata->overcurrent_pin[i]);
+ 			dev_err(&pdev->dev, "unable to claim gpio \"overcurrent\": %d\n", err);

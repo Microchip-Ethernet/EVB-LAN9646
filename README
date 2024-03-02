@@ -1,0 +1,47 @@
+
+
+2024-03-01
+
+
+The Buildroot environment can be retrieved from
+<https://github.com/linux4sam/buildroot-at>.
+Or it can be downloaded from the main site <https://buildroot.org>.
+
+# Can use any Buildroot version
+cd buildroot-at91-linux4sam-2022.10
+
+# Point BR2_EXTERNAL to provided source code location
+make BR2_EXTERNAL=../ung_apps_external
+    atmel_sama5d3_xplained_lan9646_6_1_defconfig
+
+make
+
+Program the NAND using provided script.  Note the procedure is power down the
+board.  Remove the jumper next to the NAND chip.  Power up the board and put
+back the jumper.
+
+../ung_apps_external/flash.sh
+
+# Test the MMC version
+make clean
+make atmel_sama5d3_xplained_lan9646_6_1_mmc_defconfig
+make
+
+Program the SD card using provided script.  Note the device may need to be
+changed to different one depending on computer configuration.
+It is recommended to use Etcher to program the card.
+
+../ung_apps_external/sdprog.sh
+
+# Verify the build is successful.  After kernel boots use these commands to
+# check the status.
+cat /proc/version
+cat /proc/interrupts
+ethtool -S eth0
+ethtool lan1
+ethtool lan5
+
+# The regs_bin utility can be used to access switch registers.
+regs_bin spi1.0
+
+

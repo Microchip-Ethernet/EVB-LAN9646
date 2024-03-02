@@ -1,0 +1,2022 @@
+diff -Napur linux-at91-linux4sam_6.2-orig/arch/arm/boot/dts/at91-sama5d3_xplained_ung8071.dts linux-at91-linux4sam_6.2/arch/arm/boot/dts/at91-sama5d3_xplained_ung8071.dts
+--- linux-at91-linux4sam_6.2-orig/arch/arm/boot/dts/at91-sama5d3_xplained_ung8071.dts	1969-12-31 16:00:00.000000000 -0800
++++ linux-at91-linux4sam_6.2/arch/arm/boot/dts/at91-sama5d3_xplained_ung8071.dts	2024-01-05 17:41:59.772887234 -0800
+@@ -0,0 +1,482 @@
++/*
++ * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
++ *
++ *  Copyright (C) 2014 Atmel,
++ *		  2014 Nicolas Ferre <nicolas.ferre@atmel.com>
++ *
++ * Licensed under GPLv2 or later.
++ */
++/dts-v1/;
++#include "sama5d36.dtsi"
++
++/ {
++	model = "SAMA5D3 Xplained";
++	compatible = "atmel,sama5d3-xplained", "atmel,sama5d3", "atmel,sama5";
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	memory {
++		reg = <0x20000000 0x10000000>;
++	};
++
++	clocks {
++		slow_xtal {
++			clock-frequency = <32768>;
++		};
++
++		main_xtal {
++			clock-frequency = <12000000>;
++		};
++	};
++
++	ahb {
++		apb {
++			mmc0: mmc@f0000000 {
++				pinctrl-0 = <&pinctrl_mmc0_clk_cmd_dat0 &pinctrl_mmc0_dat1_3 &pinctrl_mmc0_dat4_7 &pinctrl_mmc0_cd>;
++				vmmc-supply = <&vcc_mmc0_reg>;
++				vqmmc-supply = <&vcc_3v3_reg>;
++				status = "okay";
++				slot@0 {
++					reg = <0>;
++					bus-width = <8>;
++					cd-gpios = <&pioE 0 GPIO_ACTIVE_LOW>;
++				};
++			};
++
++			mmc1: mmc@f8000000 {
++				vmmc-supply = <&vcc_3v3_reg>;
++				vqmmc-supply = <&vcc_3v3_reg>;
++				status = "disabled";
++				slot@0 {
++					reg = <0>;
++					bus-width = <4>;
++					cd-gpios = <&pioE 1 GPIO_ACTIVE_LOW>;
++				};
++			};
++
++			spi0: spi@f0004000 {
++				cs-gpios = <&pioD 13 0>, <0>, <0>, <&pioD 16 0>;
++				status = "okay";
++			};
++
++			can0: can@f000c000 {
++				status = "okay";
++			};
++
++			tcb0: timer@f0010000 {
++				timer0: timer@0 {
++					compatible = "atmel,tcb-timer";
++					reg = <0>;
++				};
++
++				timer1: timer@1 {
++					compatible = "atmel,tcb-timer";
++					reg = <1>;
++				};
++			};
++
++			i2c0: i2c@f0014000 {
++				pinctrl-0 = <&pinctrl_i2c0_pu>;
++				status = "okay";
++
++				i2c_ksz9477: ksz9477@5f {
++					compatible = "microchip,ksz9477";
++					reg = <0x5f>;
++					phy-mode = "rgmii-txid";
++
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "okay";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <3>;
++							label = "lan4";
++						};
++						port@4 {
++							reg = <4>;
++							label = "lan5";
++						};
++						port@5 {
++							reg = <5>;
++							label = "cpu";
++							ethernet = <&macb0>;
++							fixed-link {
++								speed = <1000>;
++								full-duplex;
++							};
++						};
++						port@6 {
++							reg = <6>;
++							label = "lan6";
++							fixed-link {
++								speed = <1000>;
++								full-duplex;
++							};
++						};
++					};
++				};
++			};
++
++			i2c1: i2c@f0018000 {
++				status = "okay";
++
++				pmic: act8865@5b {
++					compatible = "active-semi,act8865";
++					reg = <0x5b>;
++					status = "disabled";
++
++					regulators {
++						vcc_1v8_reg: DCDC_REG1 {
++							regulator-name = "VCC_1V8";
++							regulator-min-microvolt = <1800000>;
++							regulator-max-microvolt = <1800000>;
++							regulator-always-on;
++						};
++
++						vcc_1v2_reg: DCDC_REG2 {
++							regulator-name = "VCC_1V2";
++							regulator-min-microvolt = <1200000>;
++							regulator-max-microvolt = <1200000>;
++							regulator-always-on;
++						};
++
++						vcc_3v3_reg: DCDC_REG3 {
++							regulator-name = "VCC_3V3";
++							regulator-min-microvolt = <3300000>;
++							regulator-max-microvolt = <3300000>;
++							regulator-always-on;
++						};
++
++						vddfuse_reg: LDO_REG1 {
++							regulator-name = "FUSE_2V5";
++							regulator-min-microvolt = <2500000>;
++							regulator-max-microvolt = <2500000>;
++						};
++
++						vddana_reg: LDO_REG2 {
++							regulator-name = "VDDANA";
++							regulator-min-microvolt = <3300000>;
++							regulator-max-microvolt = <3300000>;
++							regulator-always-on;
++						};
++					};
++				};
++			};
++
++			macb0: ethernet@f0028000 {
++				phy-mode = "rgmii-txid";
++				#address-cells = <1>;
++				#size-cells = <0>;
++				status = "okay";
++
++				fixed-link {
++					speed = <1000>;
++					full-duplex;
++				};
++			};
++
++			pwm0: pwm@f002c000 {
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_pwm0_pwmh0_0 &pinctrl_pwm0_pwmh1_0>;
++				status = "okay";
++			};
++
++			usart0: serial@f001c000 {
++				status = "okay";
++			};
++
++			usart1: serial@f0020000 {
++				pinctrl-0 = <&pinctrl_usart1 &pinctrl_usart1_rts_cts>;
++				status = "okay";
++			};
++
++			uart0: serial@f0024000 {
++				status = "okay";
++			};
++
++			mmc1: mmc@f8000000 {
++				pinctrl-0 = <&pinctrl_mmc1_clk_cmd_dat0 &pinctrl_mmc1_dat1_3 &pinctrl_mmc1_cd>;
++				status = "okay";
++				slot@0 {
++					reg = <0>;
++					bus-width = <4>;
++					cd-gpios = <&pioE 1 GPIO_ACTIVE_HIGH>;
++				};
++			};
++
++			spi1: spi@f8008000 {
++				cs-gpios = <&pioC 25 0>;
++				status = "okay";
++
++				ksz9477: ksz9477@0 {
++					compatible = "microchip,ksz9477";
++					reg = <0>;
++					phy-mode = "rgmii-txid";
++
++					spi-max-frequency = <44000000>;
++					spi-cpha;
++					spi-cpol;
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "okay";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <3>;
++							label = "lan4";
++						};
++						port@4 {
++							reg = <4>;
++							label = "lan5";
++						};
++						port@5 {
++							reg = <5>;
++							label = "cpu";
++							ethernet = <&macb0>;
++							fixed-link {
++								speed = <1000>;
++								full-duplex;
++							};
++						};
++						port@6 {
++							reg = <6>;
++							label = "lan6";
++							fixed-link {
++								speed = <1000>;
++								full-duplex;
++							};
++						};
++					};
++				};
++			};
++
++			adc0: adc@f8018000 {
++				atmel,adc-vref = <3300>;
++				atmel,adc-channels-used = <0xfe>;
++				pinctrl-0 = <
++					&pinctrl_adc0_adtrg
++					&pinctrl_adc0_ad1
++					&pinctrl_adc0_ad2
++					&pinctrl_adc0_ad3
++					&pinctrl_adc0_ad4
++					&pinctrl_adc0_ad5
++					&pinctrl_adc0_ad6
++					&pinctrl_adc0_ad7
++					>;
++				status = "okay";
++			};
++
++			i2c2: i2c@f801c000 {
++				dmas = <0>, <0>;	/* Do not use DMA for i2c2 */
++				pinctrl-0 = <&pinctrl_i2c2_pu>;
++				status = "okay";
++			};
++
++			macb1: ethernet@f802c000 {
++				phy-mode = "rmii";
++				#address-cells = <1>;
++				#size-cells = <0>;
++				status = "disabled";
++
++				fixed-link {
++					speed = <100>;
++					full-duplex;
++				};
++			};
++
++			dbgu: serial@ffffee00 {
++				status = "okay";
++			};
++
++			pinctrl@fffff200 {
++				board {
++					pinctrl_i2c0_pu: i2c0_pu {
++						atmel,pins =
++							<AT91_PIOA 30 AT91_PERIPH_A AT91_PINCTRL_PULL_UP>,
++							<AT91_PIOA 31 AT91_PERIPH_A AT91_PINCTRL_PULL_UP>;
++					};
++
++					pinctrl_i2c2_pu: i2c2_pu {
++						atmel,pins =
++							<AT91_PIOA 18 AT91_PERIPH_B AT91_PINCTRL_PULL_UP>,
++							<AT91_PIOA 19 AT91_PERIPH_B AT91_PINCTRL_PULL_UP>;
++					};
++
++					pinctrl_key_gpio: key_gpio_0 {
++						atmel,pins =
++							<AT91_PIOE 29 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_mmc0_cd: mmc0_cd {
++						atmel,pins =
++							<AT91_PIOE 0 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_mmc1_cd: mmc1_cd {
++						atmel,pins =
++							<AT91_PIOE 1 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_usba_vbus: usba_vbus {
++						atmel,pins =
++							<AT91_PIOE 9 AT91_PERIPH_GPIO AT91_PINCTRL_DEGLITCH>;	/* PE9, conflicts with A9 */
++					};
++
++					pinctrl_spi_ksz: spi_ksz {
++						atmel,pins =
++							<AT91_PIOB 28 AT91_PERIPH_GPIO AT91_PINCTRL_DEGLITCH>;
++					};
++				};
++			};
++		};
++
++		usb0: gadget@500000 {
++			atmel,vbus-gpio = <&pioE 9 GPIO_ACTIVE_HIGH>;	/* PE9, conflicts with A9 */
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usba_vbus>;
++			status = "okay";
++		};
++
++		usb1: ohci@600000 {
++			num-ports = <3>;
++			atmel,vbus-gpio = <0
++					   &pioE 3 GPIO_ACTIVE_LOW
++					   &pioE 4 GPIO_ACTIVE_LOW
++					  >;
++			status = "okay";
++		};
++
++		usb2: ehci@700000 {
++			status = "okay";
++		};
++
++		ebi: ebi@10000000 {
++			pinctrl-0 = <&pinctrl_ebi_nand_addr>;
++			pinctrl-names = "default";
++			status = "okay";
++
++			nand_controller: nand-controller {
++				status = "okay";
++
++				nand@3 {
++					reg = <0x3 0x0 0x2>;
++					atmel,rb = <0>;
++					nand-bus-width = <8>;
++					nand-ecc-mode = "hw";
++					nand-ecc-strength = <4>;
++					nand-ecc-step-size = <512>;
++					nand-on-flash-bbt;
++					label = "atmel_nand";
++
++					partitions {
++						compatible = "fixed-partitions";
++						#address-cells = <1>;
++						#size-cells = <1>;
++
++						at91bootstrap@0 {
++							label = "at91bootstrap";
++							reg = <0x0 0x40000>;
++						};
++
++						bootloader@40000 {
++							label = "bootloader";
++							reg = <0x40000 0xc0000>;
++						};
++
++						bootloaderenvred@100000 {
++							label = "bootloader env redundant";
++							reg = <0x100000 0x40000>;
++						};
++
++						bootloaderenv@140000 {
++							label = "bootloader env";
++							reg = <0x140000 0x40000>;
++						};
++
++						dtb@180000 {
++							label = "device tree";
++							reg = <0x180000 0x80000>;
++						};
++
++						kernel@200000 {
++							label = "kernel";
++							reg = <0x200000 0x600000>;
++						};
++
++						rootfs@800000 {
++							label = "rootfs";
++							reg = <0x800000 0x0f800000>;
++						};
++					};
++				};
++			};
++		};
++	};
++
++	vcc_mmc0_reg: fixedregulator_mmc0 {
++		compatible = "regulator-fixed";
++		gpio = <&pioE 2 GPIO_ACTIVE_LOW>;
++		regulator-name = "mmc0-card-supply";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++	};
++
++	gpio_keys {
++		compatible = "gpio-keys";
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_key_gpio>;
++
++		bp3 {
++			label = "PB_USER";
++			gpios = <&pioE 29 GPIO_ACTIVE_LOW>;
++			linux,code = <0x104>;
++			wakeup-source;
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		d2 {
++			label = "d2";
++			gpios = <&pioE 23 GPIO_ACTIVE_LOW>;	/* PE23, conflicts with A23, CTS2 */
++			linux,default-trigger = "heartbeat";
++		};
++
++		d3 {
++			label = "d3";
++			gpios = <&pioE 24 GPIO_ACTIVE_HIGH>;
++		};
++	};
++};
+diff -Napur linux-at91-linux4sam_6.2-orig/arch/arm/boot/dts/at91-sama5d3_xplained_ung8087.dts linux-at91-linux4sam_6.2/arch/arm/boot/dts/at91-sama5d3_xplained_ung8087.dts
+--- linux-at91-linux4sam_6.2-orig/arch/arm/boot/dts/at91-sama5d3_xplained_ung8087.dts	1969-12-31 16:00:00.000000000 -0800
++++ linux-at91-linux4sam_6.2/arch/arm/boot/dts/at91-sama5d3_xplained_ung8087.dts	2024-01-05 17:42:14.076301356 -0800
+@@ -0,0 +1,642 @@
++/*
++ * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
++ *
++ *  Copyright (C) 2014 Atmel,
++ *		  2014 Nicolas Ferre <nicolas.ferre@atmel.com>
++ *
++ * Licensed under GPLv2 or later.
++ */
++/dts-v1/;
++#include "sama5d36.dtsi"
++
++/ {
++	model = "SAMA5D3 Xplained";
++	compatible = "atmel,sama5d3-xplained", "atmel,sama5d3", "atmel,sama5";
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	memory {
++		reg = <0x20000000 0x10000000>;
++	};
++
++	clocks {
++		slow_xtal {
++			clock-frequency = <32768>;
++		};
++
++		main_xtal {
++			clock-frequency = <12000000>;
++		};
++	};
++
++	ahb {
++		apb {
++			mmc0: mmc@f0000000 {
++				pinctrl-0 = <&pinctrl_mmc0_clk_cmd_dat0 &pinctrl_mmc0_dat1_3 &pinctrl_mmc0_dat4_7 &pinctrl_mmc0_cd>;
++				vmmc-supply = <&vcc_mmc0_reg>;
++				vqmmc-supply = <&vcc_3v3_reg>;
++				status = "okay";
++				slot@0 {
++					reg = <0>;
++					bus-width = <8>;
++					cd-gpios = <&pioE 0 GPIO_ACTIVE_LOW>;
++				};
++			};
++
++			mmc1: mmc@f8000000 {
++				vmmc-supply = <&vcc_3v3_reg>;
++				vqmmc-supply = <&vcc_3v3_reg>;
++				status = "disabled";
++				slot@0 {
++					reg = <0>;
++					bus-width = <4>;
++					cd-gpios = <&pioE 1 GPIO_ACTIVE_LOW>;
++				};
++			};
++
++			spi0: spi@f0004000 {
++				cs-gpios = <&pioD 13 0>, <0>, <0>, <&pioD 16 0>;
++				status = "okay";
++
++				ksz9563: ksz9563@0 {
++					compatible = "microchip,ksz9563";
++					reg = <0>;
++					phy-mode = "rgmii-id";
++
++					spi-max-frequency = <44000000>;
++					spi-cpha;
++					spi-cpol;
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "okay";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "cpu";
++							ethernet = <&macb0>;
++							fixed-link {
++								speed = <1000>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz9896: ksz9896@0 {
++					compatible = "microchip,ksz9896";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <44000000>;
++					spi-cpha;
++					spi-cpol;
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <3>;
++							label = "lan4";
++						};
++						port@4 {
++							reg = <4>;
++							label = "lan5";
++						};
++						port@5 {
++							reg = <5>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz8565: ksz8565@0 {
++					compatible = "microchip,ksz8565";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <44000000>;
++					spi-cpha;
++					spi-cpol;
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <3>;
++							label = "lan4";
++						};
++						port@4 {
++							reg = <6>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz8794: ksz8794@0 {
++					compatible = "microchip,ksz8794";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <30000000>;
++					spi-cpha;
++					spi-cpol;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <4>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz8864: ksz8864@0 {
++					compatible = "microchip,ksz8864";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <12000000>;
++					spi-cpha;
++					spi-cpol;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <1>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <2>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <3>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <4>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz8863: ksz8863@0 {
++					compatible = "microchip,ksz8863";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <12000000>;
++					spi-cpha;
++					spi-cpol;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++			};
++
++			can0: can@f000c000 {
++				status = "okay";
++			};
++
++			tcb0: timer@f0010000 {
++				timer0: timer@0 {
++					compatible = "atmel,tcb-timer";
++					reg = <0>;
++				};
++
++				timer1: timer@1 {
++					compatible = "atmel,tcb-timer";
++					reg = <1>;
++				};
++			};
++
++			i2c0: i2c@f0014000 {
++				pinctrl-0 = <&pinctrl_i2c0_pu>;
++				status = "okay";
++
++				i2c_ksz9563: ksz9563@5f {
++					compatible = "microchip,ksz9563";
++					reg = <0x5f>;
++					phy-mode = "rgmii-id";
++
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "okay";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "cpu";
++							ethernet = <&macb0>;
++							fixed-link {
++								speed = <1000>;
++								full-duplex;
++							};
++						};
++					};
++				};
++			};
++
++			i2c1: i2c@f0018000 {
++				status = "okay";
++
++				pmic: act8865@5b {
++					compatible = "active-semi,act8865";
++					reg = <0x5b>;
++					status = "disabled";
++
++					regulators {
++						vcc_1v8_reg: DCDC_REG1 {
++							regulator-name = "VCC_1V8";
++							regulator-min-microvolt = <1800000>;
++							regulator-max-microvolt = <1800000>;
++							regulator-always-on;
++						};
++
++						vcc_1v2_reg: DCDC_REG2 {
++							regulator-name = "VCC_1V2";
++							regulator-min-microvolt = <1200000>;
++							regulator-max-microvolt = <1200000>;
++							regulator-always-on;
++						};
++
++						vcc_3v3_reg: DCDC_REG3 {
++							regulator-name = "VCC_3V3";
++							regulator-min-microvolt = <3300000>;
++							regulator-max-microvolt = <3300000>;
++							regulator-always-on;
++						};
++
++						vddfuse_reg: LDO_REG1 {
++							regulator-name = "FUSE_2V5";
++							regulator-min-microvolt = <2500000>;
++							regulator-max-microvolt = <2500000>;
++						};
++
++						vddana_reg: LDO_REG2 {
++							regulator-name = "VDDANA";
++							regulator-min-microvolt = <3300000>;
++							regulator-max-microvolt = <3300000>;
++							regulator-always-on;
++						};
++					};
++				};
++			};
++
++			macb0: ethernet@f0028000 {
++				phy-mode = "rgmii-id";
++				pinctrl-0 = <&pinctrl_macb0_data_rgmii &pinctrl_macb0_signal_rgmii2>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				status = "okay";
++
++				fixed-link {
++					speed = <1000>;
++					full-duplex;
++				};
++			};
++
++			pwm0: pwm@f002c000 {
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_pwm0_pwmh0_0 &pinctrl_pwm0_pwmh1_0>;
++				status = "okay";
++			};
++
++			usart0: serial@f001c000 {
++				status = "okay";
++			};
++
++			usart1: serial@f0020000 {
++				pinctrl-0 = <&pinctrl_usart1 &pinctrl_usart1_rts_cts>;
++				status = "okay";
++			};
++
++			uart0: serial@f0024000 {
++				status = "okay";
++			};
++
++			mmc1: mmc@f8000000 {
++				pinctrl-0 = <&pinctrl_mmc1_clk_cmd_dat0 &pinctrl_mmc1_dat1_3 &pinctrl_mmc1_cd>;
++				status = "okay";
++				slot@0 {
++					reg = <0>;
++					bus-width = <4>;
++					cd-gpios = <&pioE 1 GPIO_ACTIVE_HIGH>;
++				};
++			};
++
++			spi1: spi@f8008000 {
++				cs-gpios = <&pioC 25 0>;
++				status = "okay";
++			};
++
++			adc0: adc@f8018000 {
++				atmel,adc-vref = <3300>;
++				atmel,adc-channels-used = <0xfe>;
++				pinctrl-0 = <
++					&pinctrl_adc0_adtrg
++					&pinctrl_adc0_ad1
++					&pinctrl_adc0_ad2
++					&pinctrl_adc0_ad3
++					&pinctrl_adc0_ad4
++					&pinctrl_adc0_ad5
++					&pinctrl_adc0_ad6
++					&pinctrl_adc0_ad7
++					>;
++				status = "okay";
++			};
++
++			i2c2: i2c@f801c000 {
++				dmas = <0>, <0>;	/* Do not use DMA for i2c2 */
++				pinctrl-0 = <&pinctrl_i2c2_pu>;
++				status = "okay";
++			};
++
++			macb1: ethernet@f802c000 {
++				phy-mode = "rmii";
++				#address-cells = <1>;
++				#size-cells = <0>;
++				status = "disabled";
++
++				fixed-link {
++					speed = <100>;
++					full-duplex;
++				};
++			};
++
++			dbgu: serial@ffffee00 {
++				status = "okay";
++			};
++
++			pinctrl@fffff200 {
++				board {
++					pinctrl_i2c0_pu: i2c0_pu {
++						atmel,pins =
++							<AT91_PIOA 30 AT91_PERIPH_A AT91_PINCTRL_PULL_UP>,
++							<AT91_PIOA 31 AT91_PERIPH_A AT91_PINCTRL_PULL_UP>;
++					};
++
++					pinctrl_i2c2_pu: i2c2_pu {
++						atmel,pins =
++							<AT91_PIOA 18 AT91_PERIPH_B AT91_PINCTRL_PULL_UP>,
++							<AT91_PIOA 19 AT91_PERIPH_B AT91_PINCTRL_PULL_UP>;
++					};
++
++					pinctrl_key_gpio: key_gpio_0 {
++						atmel,pins =
++							<AT91_PIOE 29 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_mmc0_cd: mmc0_cd {
++						atmel,pins =
++							<AT91_PIOE 0 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_mmc1_cd: mmc1_cd {
++						atmel,pins =
++							<AT91_PIOE 1 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_usba_vbus: usba_vbus {
++						atmel,pins =
++							<AT91_PIOE 9 AT91_PERIPH_GPIO AT91_PINCTRL_DEGLITCH>;	/* PE9, conflicts with A9 */
++					};
++
++					pinctrl_spi_ksz: spi_ksz {
++						atmel,pins =
++							<AT91_PIOB 28 AT91_PERIPH_GPIO AT91_PINCTRL_DEGLITCH>;
++					};
++				};
++				macb0 {
++					pinctrl_macb0_signal_rgmii2: macb0_signal_rgmii {
++						atmel,pins =
++							<AT91_PIOB 8 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB8 periph A GTXCK, conflicts with PWMH2 */
++							 AT91_PIOB 9 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB9 periph A GTXEN, conflicts with PWML2 */
++							 AT91_PIOB 11 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB11 periph A GRXCK, conflicts with RD1 */
++							 AT91_PIOB 13 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB13 periph A GRXER, conflicts with PWML3 */
++							 AT91_PIOB 16 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB16 periph A GMDC */
++							 AT91_PIOB 17 AT91_PERIPH_A AT91_PINCTRL_PULL_UP	/* PB17 periph A GMDIO */
++							 AT91_PIOB 18 AT91_PERIPH_A AT91_PINCTRL_NONE>;	/* PB18 periph A G125CK */
++					};
++				};
++			};
++		};
++
++		usb0: gadget@500000 {
++			atmel,vbus-gpio = <&pioE 9 GPIO_ACTIVE_HIGH>;	/* PE9, conflicts with A9 */
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usba_vbus>;
++			status = "okay";
++		};
++
++		usb1: ohci@600000 {
++			num-ports = <3>;
++			atmel,vbus-gpio = <0
++					   &pioE 3 GPIO_ACTIVE_HIGH
++					   &pioE 4 GPIO_ACTIVE_HIGH
++					  >;
++			status = "okay";
++		};
++
++		usb2: ehci@700000 {
++			status = "okay";
++		};
++
++		ebi: ebi@10000000 {
++			pinctrl-0 = <&pinctrl_ebi_nand_addr>;
++			pinctrl-names = "default";
++			status = "okay";
++
++			nand_controller: nand-controller {
++				status = "okay";
++
++				nand@3 {
++					reg = <0x3 0x0 0x2>;
++					atmel,rb = <0>;
++					nand-bus-width = <8>;
++					nand-ecc-mode = "hw";
++					nand-ecc-strength = <4>;
++					nand-ecc-step-size = <512>;
++					nand-on-flash-bbt;
++					label = "atmel_nand";
++
++					partitions {
++						compatible = "fixed-partitions";
++						#address-cells = <1>;
++						#size-cells = <1>;
++
++						at91bootstrap@0 {
++							label = "at91bootstrap";
++							reg = <0x0 0x40000>;
++						};
++
++						bootloader@40000 {
++							label = "bootloader";
++							reg = <0x40000 0xc0000>;
++						};
++
++						bootloaderenvred@100000 {
++							label = "bootloader env redundant";
++							reg = <0x100000 0x40000>;
++						};
++
++						bootloaderenv@140000 {
++							label = "bootloader env";
++							reg = <0x140000 0x40000>;
++						};
++
++						dtb@180000 {
++							label = "device tree";
++							reg = <0x180000 0x80000>;
++						};
++
++						kernel@200000 {
++							label = "kernel";
++							reg = <0x200000 0x600000>;
++						};
++
++						rootfs@800000 {
++							label = "rootfs";
++							reg = <0x800000 0x0f800000>;
++						};
++					};
++				};
++			};
++		};
++	};
++
++	vcc_mmc0_reg: fixedregulator_mmc0 {
++		compatible = "regulator-fixed";
++		gpio = <&pioE 2 GPIO_ACTIVE_LOW>;
++		regulator-name = "mmc0-card-supply";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++	};
++
++	gpio_keys {
++		compatible = "gpio-keys";
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_key_gpio>;
++
++		bp3 {
++			label = "PB_USER";
++			gpios = <&pioE 29 GPIO_ACTIVE_LOW>;
++			linux,code = <0x104>;
++			wakeup-source;
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		d2 {
++			label = "d2";
++			gpios = <&pioE 23 GPIO_ACTIVE_LOW>;	/* PE23, conflicts with A23, CTS2 */
++			linux,default-trigger = "heartbeat";
++		};
++
++		d3 {
++			label = "d3";
++			gpios = <&pioE 24 GPIO_ACTIVE_HIGH>;
++		};
++	};
++};
+diff -Napur linux-at91-linux4sam_6.2-orig/arch/arm/boot/dts/at91-sama5d3_xplained_ung8087_rmii.dts linux-at91-linux4sam_6.2/arch/arm/boot/dts/at91-sama5d3_xplained_ung8087_rmii.dts
+--- linux-at91-linux4sam_6.2-orig/arch/arm/boot/dts/at91-sama5d3_xplained_ung8087_rmii.dts	1969-12-31 16:00:00.000000000 -0800
++++ linux-at91-linux4sam_6.2/arch/arm/boot/dts/at91-sama5d3_xplained_ung8087_rmii.dts	2024-01-05 18:40:37.884783651 -0800
+@@ -0,0 +1,642 @@
++/*
++ * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
++ *
++ *  Copyright (C) 2014 Atmel,
++ *		  2014 Nicolas Ferre <nicolas.ferre@atmel.com>
++ *
++ * Licensed under GPLv2 or later.
++ */
++/dts-v1/;
++#include "sama5d36.dtsi"
++
++/ {
++	model = "SAMA5D3 Xplained";
++	compatible = "atmel,sama5d3-xplained", "atmel,sama5d3", "atmel,sama5";
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	memory {
++		reg = <0x20000000 0x10000000>;
++	};
++
++	clocks {
++		slow_xtal {
++			clock-frequency = <32768>;
++		};
++
++		main_xtal {
++			clock-frequency = <12000000>;
++		};
++	};
++
++	ahb {
++		apb {
++			mmc0: mmc@f0000000 {
++				pinctrl-0 = <&pinctrl_mmc0_clk_cmd_dat0 &pinctrl_mmc0_dat1_3 &pinctrl_mmc0_dat4_7 &pinctrl_mmc0_cd>;
++				vmmc-supply = <&vcc_mmc0_reg>;
++				vqmmc-supply = <&vcc_3v3_reg>;
++				status = "okay";
++				slot@0 {
++					reg = <0>;
++					bus-width = <8>;
++					cd-gpios = <&pioE 0 GPIO_ACTIVE_LOW>;
++				};
++			};
++
++			mmc1: mmc@f8000000 {
++				vmmc-supply = <&vcc_3v3_reg>;
++				vqmmc-supply = <&vcc_3v3_reg>;
++				status = "disabled";
++				slot@0 {
++					reg = <0>;
++					bus-width = <4>;
++					cd-gpios = <&pioE 1 GPIO_ACTIVE_LOW>;
++				};
++			};
++
++			spi0: spi@f0004000 {
++				cs-gpios = <&pioD 13 0>, <0>, <0>, <&pioD 16 0>;
++				status = "okay";
++
++				ksz9563: ksz9563@0 {
++					compatible = "microchip,ksz9563";
++					reg = <0>;
++					phy-mode = "rgmii-id";
++
++					spi-max-frequency = <44000000>;
++					spi-cpha;
++					spi-cpol;
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "cpu";
++							ethernet = <&macb0>;
++							fixed-link {
++								speed = <1000>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz9896: ksz9896@0 {
++					compatible = "microchip,ksz9896";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <44000000>;
++					spi-cpha;
++					spi-cpol;
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <3>;
++							label = "lan4";
++						};
++						port@4 {
++							reg = <4>;
++							label = "lan5";
++						};
++						port@5 {
++							reg = <5>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz8565: ksz8565@0 {
++					compatible = "microchip,ksz8565";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <44000000>;
++					spi-cpha;
++					spi-cpol;
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <3>;
++							label = "lan4";
++						};
++						port@4 {
++							reg = <6>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz8794: ksz8794@0 {
++					compatible = "microchip,ksz8794";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <30000000>;
++					spi-cpha;
++					spi-cpol;
++					status = "okay";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <4>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz8864: ksz8864@0 {
++					compatible = "microchip,ksz8864";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <12000000>;
++					spi-cpha;
++					spi-cpol;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <1>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <2>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <3>;
++							label = "lan3";
++						};
++						port@3 {
++							reg = <4>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++				ksz8863: ksz8863@0 {
++					compatible = "microchip,ksz8863";
++					reg = <0>;
++					phy-mode = "rmii";
++
++					spi-max-frequency = <12000000>;
++					spi-cpha;
++					spi-cpol;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "cpu";
++							ethernet = <&macb1>;
++							fixed-link {
++								speed = <100>;
++								full-duplex;
++							};
++						};
++					};
++				};
++			};
++
++			can0: can@f000c000 {
++				status = "okay";
++			};
++
++			tcb0: timer@f0010000 {
++				timer0: timer@0 {
++					compatible = "atmel,tcb-timer";
++					reg = <0>;
++				};
++
++				timer1: timer@1 {
++					compatible = "atmel,tcb-timer";
++					reg = <1>;
++				};
++			};
++
++			i2c0: i2c@f0014000 {
++				pinctrl-0 = <&pinctrl_i2c0_pu>;
++				status = "okay";
++
++				i2c_ksz9563: ksz9563@5f {
++					compatible = "microchip,ksz9563";
++					reg = <0x5f>;
++					phy-mode = "rgmii-id";
++
++					interrupt-parent = <&pioB>;
++					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++					status = "disabled";
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						port@0 {
++							reg = <0>;
++							label = "lan1";
++						};
++						port@1 {
++							reg = <1>;
++							label = "lan2";
++						};
++						port@2 {
++							reg = <2>;
++							label = "cpu";
++							ethernet = <&macb0>;
++							fixed-link {
++								speed = <1000>;
++								full-duplex;
++							};
++						};
++					};
++				};
++			};
++
++			i2c1: i2c@f0018000 {
++				status = "okay";
++
++				pmic: act8865@5b {
++					compatible = "active-semi,act8865";
++					reg = <0x5b>;
++					status = "disabled";
++
++					regulators {
++						vcc_1v8_reg: DCDC_REG1 {
++							regulator-name = "VCC_1V8";
++							regulator-min-microvolt = <1800000>;
++							regulator-max-microvolt = <1800000>;
++							regulator-always-on;
++						};
++
++						vcc_1v2_reg: DCDC_REG2 {
++							regulator-name = "VCC_1V2";
++							regulator-min-microvolt = <1200000>;
++							regulator-max-microvolt = <1200000>;
++							regulator-always-on;
++						};
++
++						vcc_3v3_reg: DCDC_REG3 {
++							regulator-name = "VCC_3V3";
++							regulator-min-microvolt = <3300000>;
++							regulator-max-microvolt = <3300000>;
++							regulator-always-on;
++						};
++
++						vddfuse_reg: LDO_REG1 {
++							regulator-name = "FUSE_2V5";
++							regulator-min-microvolt = <2500000>;
++							regulator-max-microvolt = <2500000>;
++						};
++
++						vddana_reg: LDO_REG2 {
++							regulator-name = "VDDANA";
++							regulator-min-microvolt = <3300000>;
++							regulator-max-microvolt = <3300000>;
++							regulator-always-on;
++						};
++					};
++				};
++			};
++
++			macb0: ethernet@f0028000 {
++				phy-mode = "rgmii-id";
++				pinctrl-0 = <&pinctrl_macb0_data_rgmii &pinctrl_macb0_signal_rgmii2>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				status = "disabled";
++
++				fixed-link {
++					speed = <1000>;
++					full-duplex;
++				};
++			};
++
++			pwm0: pwm@f002c000 {
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_pwm0_pwmh0_0 &pinctrl_pwm0_pwmh1_0>;
++				status = "okay";
++			};
++
++			usart0: serial@f001c000 {
++				status = "okay";
++			};
++
++			usart1: serial@f0020000 {
++				pinctrl-0 = <&pinctrl_usart1 &pinctrl_usart1_rts_cts>;
++				status = "okay";
++			};
++
++			uart0: serial@f0024000 {
++				status = "okay";
++			};
++
++			mmc1: mmc@f8000000 {
++				pinctrl-0 = <&pinctrl_mmc1_clk_cmd_dat0 &pinctrl_mmc1_dat1_3 &pinctrl_mmc1_cd>;
++				status = "okay";
++				slot@0 {
++					reg = <0>;
++					bus-width = <4>;
++					cd-gpios = <&pioE 1 GPIO_ACTIVE_HIGH>;
++				};
++			};
++
++			spi1: spi@f8008000 {
++				cs-gpios = <&pioC 25 0>;
++				status = "okay";
++			};
++
++			adc0: adc@f8018000 {
++				atmel,adc-vref = <3300>;
++				atmel,adc-channels-used = <0xfe>;
++				pinctrl-0 = <
++					&pinctrl_adc0_adtrg
++					&pinctrl_adc0_ad1
++					&pinctrl_adc0_ad2
++					&pinctrl_adc0_ad3
++					&pinctrl_adc0_ad4
++					&pinctrl_adc0_ad5
++					&pinctrl_adc0_ad6
++					&pinctrl_adc0_ad7
++					>;
++				status = "okay";
++			};
++
++			i2c2: i2c@f801c000 {
++				dmas = <0>, <0>;	/* Do not use DMA for i2c2 */
++				pinctrl-0 = <&pinctrl_i2c2_pu>;
++				status = "okay";
++			};
++
++			macb1: ethernet@f802c000 {
++				phy-mode = "rmii";
++				#address-cells = <1>;
++				#size-cells = <0>;
++				status = "okay";
++
++				fixed-link {
++					speed = <100>;
++					full-duplex;
++				};
++			};
++
++			dbgu: serial@ffffee00 {
++				status = "okay";
++			};
++
++			pinctrl@fffff200 {
++				board {
++					pinctrl_i2c0_pu: i2c0_pu {
++						atmel,pins =
++							<AT91_PIOA 30 AT91_PERIPH_A AT91_PINCTRL_PULL_UP>,
++							<AT91_PIOA 31 AT91_PERIPH_A AT91_PINCTRL_PULL_UP>;
++					};
++
++					pinctrl_i2c2_pu: i2c2_pu {
++						atmel,pins =
++							<AT91_PIOA 18 AT91_PERIPH_B AT91_PINCTRL_PULL_UP>,
++							<AT91_PIOA 19 AT91_PERIPH_B AT91_PINCTRL_PULL_UP>;
++					};
++
++					pinctrl_key_gpio: key_gpio_0 {
++						atmel,pins =
++							<AT91_PIOE 29 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_mmc0_cd: mmc0_cd {
++						atmel,pins =
++							<AT91_PIOE 0 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_mmc1_cd: mmc1_cd {
++						atmel,pins =
++							<AT91_PIOE 1 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
++					};
++
++					pinctrl_usba_vbus: usba_vbus {
++						atmel,pins =
++							<AT91_PIOE 9 AT91_PERIPH_GPIO AT91_PINCTRL_DEGLITCH>;	/* PE9, conflicts with A9 */
++					};
++
++					pinctrl_spi_ksz: spi_ksz {
++						atmel,pins =
++							<AT91_PIOB 28 AT91_PERIPH_GPIO AT91_PINCTRL_DEGLITCH>;
++					};
++				};
++				macb0 {
++					pinctrl_macb0_signal_rgmii2: macb0_signal_rgmii {
++						atmel,pins =
++							<AT91_PIOB 8 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB8 periph A GTXCK, conflicts with PWMH2 */
++							 AT91_PIOB 9 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB9 periph A GTXEN, conflicts with PWML2 */
++							 AT91_PIOB 11 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB11 periph A GRXCK, conflicts with RD1 */
++							 AT91_PIOB 13 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB13 periph A GRXER, conflicts with PWML3 */
++							 AT91_PIOB 16 AT91_PERIPH_A AT91_PINCTRL_NONE	/* PB16 periph A GMDC */
++							 AT91_PIOB 17 AT91_PERIPH_A AT91_PINCTRL_PULL_UP	/* PB17 periph A GMDIO */
++							 AT91_PIOB 18 AT91_PERIPH_A AT91_PINCTRL_NONE>;	/* PB18 periph A G125CK */
++					};
++				};
++			};
++		};
++
++		usb0: gadget@500000 {
++			atmel,vbus-gpio = <&pioE 9 GPIO_ACTIVE_HIGH>;	/* PE9, conflicts with A9 */
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usba_vbus>;
++			status = "okay";
++		};
++
++		usb1: ohci@600000 {
++			num-ports = <3>;
++			atmel,vbus-gpio = <0
++					   &pioE 3 GPIO_ACTIVE_HIGH
++					   &pioE 4 GPIO_ACTIVE_HIGH
++					  >;
++			status = "okay";
++		};
++
++		usb2: ehci@700000 {
++			status = "okay";
++		};
++
++		ebi: ebi@10000000 {
++			pinctrl-0 = <&pinctrl_ebi_nand_addr>;
++			pinctrl-names = "default";
++			status = "okay";
++
++			nand_controller: nand-controller {
++				status = "okay";
++
++				nand@3 {
++					reg = <0x3 0x0 0x2>;
++					atmel,rb = <0>;
++					nand-bus-width = <8>;
++					nand-ecc-mode = "hw";
++					nand-ecc-strength = <4>;
++					nand-ecc-step-size = <512>;
++					nand-on-flash-bbt;
++					label = "atmel_nand";
++
++					partitions {
++						compatible = "fixed-partitions";
++						#address-cells = <1>;
++						#size-cells = <1>;
++
++						at91bootstrap@0 {
++							label = "at91bootstrap";
++							reg = <0x0 0x40000>;
++						};
++
++						bootloader@40000 {
++							label = "bootloader";
++							reg = <0x40000 0xc0000>;
++						};
++
++						bootloaderenvred@100000 {
++							label = "bootloader env redundant";
++							reg = <0x100000 0x40000>;
++						};
++
++						bootloaderenv@140000 {
++							label = "bootloader env";
++							reg = <0x140000 0x40000>;
++						};
++
++						dtb@180000 {
++							label = "device tree";
++							reg = <0x180000 0x80000>;
++						};
++
++						kernel@200000 {
++							label = "kernel";
++							reg = <0x200000 0x600000>;
++						};
++
++						rootfs@800000 {
++							label = "rootfs";
++							reg = <0x800000 0x0f800000>;
++						};
++					};
++				};
++			};
++		};
++	};
++
++	vcc_mmc0_reg: fixedregulator_mmc0 {
++		compatible = "regulator-fixed";
++		gpio = <&pioE 2 GPIO_ACTIVE_LOW>;
++		regulator-name = "mmc0-card-supply";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++	};
++
++	gpio_keys {
++		compatible = "gpio-keys";
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_key_gpio>;
++
++		bp3 {
++			label = "PB_USER";
++			gpios = <&pioE 29 GPIO_ACTIVE_LOW>;
++			linux,code = <0x104>;
++			wakeup-source;
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		d2 {
++			label = "d2";
++			gpios = <&pioE 23 GPIO_ACTIVE_LOW>;	/* PE23, conflicts with A23, CTS2 */
++			linux,default-trigger = "heartbeat";
++		};
++
++		d3 {
++			label = "d3";
++			gpios = <&pioE 24 GPIO_ACTIVE_HIGH>;
++		};
++	};
++};
+diff -Napur linux-at91-linux4sam_6.2-orig/arch/arm/configs/sama5_ksz_defconfig linux-at91-linux4sam_6.2/arch/arm/configs/sama5_ksz_defconfig
+--- linux-at91-linux4sam_6.2-orig/arch/arm/configs/sama5_ksz_defconfig	1969-12-31 16:00:00.000000000 -0800
++++ linux-at91-linux4sam_6.2/arch/arm/configs/sama5_ksz_defconfig	2024-02-09 17:34:37.377138342 -0800
+@@ -0,0 +1,240 @@
++# CONFIG_SWAP is not set
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++CONFIG_NO_HZ_IDLE=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_LOG_BUF_SHIFT=16
++CONFIG_CGROUPS=y
++CONFIG_MEMCG=y
++CONFIG_CGROUP_SCHED=y
++CONFIG_CFS_BANDWIDTH=y
++CONFIG_RT_GROUP_SCHED=y
++CONFIG_CGROUP_FREEZER=y
++CONFIG_CGROUP_DEVICE=y
++CONFIG_CGROUP_CPUACCT=y
++CONFIG_NAMESPACES=y
++CONFIG_USER_NS=y
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_EMBEDDED=y
++CONFIG_SLAB=y
++CONFIG_ARCH_AT91=y
++CONFIG_SOC_SAMA5D2=y
++CONFIG_SOC_SAMA5D3=y
++CONFIG_SOC_SAMA5D4=y
++CONFIG_PCCARD=y
++CONFIG_HZ_1000=y
++CONFIG_UACCESS_WITH_MEMCPY=y
++# CONFIG_ATAGS is not set
++CONFIG_CMDLINE="console=ttyS0,115200 initrd=0x21100000,25165824 root=/dev/ram0 rw"
++CONFIG_KEXEC=y
++CONFIG_VFP=y
++CONFIG_NEON=y
++CONFIG_KERNEL_MODE_NEON=y
++CONFIG_PM_DEBUG=y
++CONFIG_PM_ADVANCED_DEBUG=y
++CONFIG_JUMP_LABEL=y
++CONFIG_MODULES=y
++CONFIG_MODULE_FORCE_LOAD=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++# CONFIG_BLK_DEV_BSG is not set
++# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
++CONFIG_CMA=y
++CONFIG_CMA_DEBUGFS=y
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++# CONFIG_INET_DIAG is not set
++CONFIG_IPV6_SIT_6RD=y
++CONFIG_NETWORK_PHY_TIMESTAMPING=y
++CONFIG_BRIDGE=y
++CONFIG_BRIDGE_VLAN_FILTERING=y
++CONFIG_VLAN_8021Q=y
++CONFIG_NET_SWITCHDEV=y
++CONFIG_CAN=y
++CONFIG_CAN_AT91=y
++CONFIG_CAN_M_CAN=y
++# CONFIG_WIRELESS is not set
++CONFIG_DEVTMPFS=y
++CONFIG_DEVTMPFS_MOUNT=y
++# CONFIG_STANDALONE is not set
++# CONFIG_PREVENT_FIRMWARE_BUILD is not set
++CONFIG_DMA_CMA=y
++CONFIG_MTD=y
++CONFIG_MTD_CMDLINE_PARTS=y
++CONFIG_MTD_BLOCK=y
++CONFIG_MTD_CFI=y
++CONFIG_MTD_NAND=y
++CONFIG_MTD_NAND_ATMEL=y
++CONFIG_MTD_SPI_NOR=y
++CONFIG_MTD_UBI=y
++CONFIG_MTD_UBI_FASTMAP=y
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=4
++CONFIG_BLK_DEV_RAM_SIZE=8192
++CONFIG_ATMEL_SSC=y
++CONFIG_EEPROM_AT24=y
++CONFIG_SCSI=y
++CONFIG_BLK_DEV_SD=y
++# CONFIG_SCSI_LOWLEVEL is not set
++CONFIG_NETDEVICES=y
++# CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_NET_VENDOR_ALACRITECH is not set
++# CONFIG_NET_VENDOR_AMAZON is not set
++# CONFIG_NET_VENDOR_AMD is not set
++# CONFIG_NET_VENDOR_AQUANTIA is not set
++# CONFIG_NET_VENDOR_ARC is not set
++# CONFIG_NET_VENDOR_AURORA is not set
++# CONFIG_NET_VENDOR_BROADCOM is not set
++CONFIG_MACB=y
++# CONFIG_NET_VENDOR_CAVIUM is not set
++# CONFIG_NET_VENDOR_CIRRUS is not set
++# CONFIG_NET_VENDOR_CORTINA is not set
++# CONFIG_NET_VENDOR_EZCHIP is not set
++# CONFIG_NET_VENDOR_FARADAY is not set
++# CONFIG_NET_VENDOR_FUJITSU is not set
++# CONFIG_NET_VENDOR_HISILICON is not set
++# CONFIG_NET_VENDOR_HUAWEI is not set
++# CONFIG_NET_VENDOR_INTEL is not set
++# CONFIG_NET_VENDOR_MARVELL is not set
++# CONFIG_NET_VENDOR_MELLANOX is not set
++CONFIG_KSZ8462_HLI=y
++CONFIG_KSZ_SWITCHES=y
++CONFIG_SPI_KSZ8463=y
++CONFIG_I2C_KSZ8863=y
++CONFIG_SPI_KSZ8863=y
++CONFIG_SPI_KSZ8795=y
++CONFIG_SPI_KSZ8895=y
++CONFIG_I2C_KSZ9897=y
++CONFIG_SPI_KSZ9897=y
++# CONFIG_NET_VENDOR_MICROCHIP is not set
++# CONFIG_NET_VENDOR_MICROSEMI is not set
++# CONFIG_NET_VENDOR_NATSEMI is not set
++# CONFIG_NET_VENDOR_NETRONOME is not set
++# CONFIG_NET_VENDOR_NI is not set
++# CONFIG_NET_VENDOR_QUALCOMM is not set
++# CONFIG_NET_VENDOR_RENESAS is not set
++# CONFIG_NET_VENDOR_ROCKER is not set
++# CONFIG_NET_VENDOR_SAMSUNG is not set
++# CONFIG_NET_VENDOR_SEEQ is not set
++# CONFIG_NET_VENDOR_SOLARFLARE is not set
++# CONFIG_NET_VENDOR_SMSC is not set
++# CONFIG_NET_VENDOR_SOCIONEXT is not set
++# CONFIG_NET_VENDOR_STMICRO is not set
++# CONFIG_NET_VENDOR_SYNOPSYS is not set
++# CONFIG_NET_VENDOR_VIA is not set
++# CONFIG_NET_VENDOR_WIZNET is not set
++# CONFIG_NET_VENDOR_XIRCOM is not set
++CONFIG_MICREL_PHY=y
++CONFIG_MICROCHIP_T1_PHY=y
++CONFIG_USB_LAN78XX=m
++# CONFIG_WLAN is not set
++# CONFIG_INPUT_LEDS is not set
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_SERIO is not set
++CONFIG_LEGACY_PTY_COUNT=4
++CONFIG_SERIAL_ATMEL=y
++CONFIG_SERIAL_ATMEL_CONSOLE=y
++CONFIG_SERIAL_DEV_BUS=y
++CONFIG_HW_RANDOM=y
++CONFIG_I2C_CHARDEV=y
++CONFIG_I2C_AT91=y
++CONFIG_I2C_GPIO=y
++CONFIG_SPI=y
++CONFIG_SPI_ATMEL=y
++CONFIG_SPI_ATMEL_QUADSPI=y
++CONFIG_SPI_GPIO=y
++CONFIG_GPIO_SYSFS=y
++CONFIG_POWER_RESET=y
++CONFIG_POWER_SUPPLY=y
++CONFIG_BATTERY_ACT8945A=y
++# CONFIG_HWMON is not set
++CONFIG_WATCHDOG=y
++CONFIG_AT91SAM9X_WATCHDOG=y
++CONFIG_SAMA5D4_WATCHDOG=y
++CONFIG_MFD_ACT8945A=y
++CONFIG_MFD_ATMEL_FLEXCOM=y
++CONFIG_MFD_ATMEL_HLCDC=y
++CONFIG_REGULATOR=y
++CONFIG_REGULATOR_FIXED_VOLTAGE=y
++CONFIG_REGULATOR_VIRTUAL_CONSUMER=y
++CONFIG_REGULATOR_ACT8865=y
++CONFIG_REGULATOR_ACT8945A=y
++CONFIG_DRM=y
++CONFIG_DRM_ATMEL_HLCDC=y
++CONFIG_DRM_SII902X=y
++CONFIG_USB=y
++CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_SERIAL=y
++CONFIG_USB_SERIAL_GENERIC=y
++CONFIG_USB_SERIAL_FTDI_SIO=y
++CONFIG_USB_SERIAL_PL2303=y
++CONFIG_MMC=y
++CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_PLTFM=y
++CONFIG_MMC_SDHCI_OF_AT91=y
++CONFIG_MMC_ATMELMCI=y
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=y
++CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_TRIGGERS=y
++CONFIG_LEDS_TRIGGER_TIMER=y
++CONFIG_LEDS_TRIGGER_HEARTBEAT=y
++CONFIG_LEDS_TRIGGER_CPU=y
++CONFIG_LEDS_TRIGGER_GPIO=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_AT91RM9200=y
++CONFIG_DMADEVICES=y
++CONFIG_AT_HDMAC=y
++CONFIG_AT_XDMAC=y
++# CONFIG_VIRTIO_MENU is not set
++# CONFIG_IOMMU_SUPPORT is not set
++CONFIG_EXT4_FS=y
++CONFIG_FANOTIFY=y
++CONFIG_OVERLAY_FS=y
++CONFIG_VFAT_FS=y
++CONFIG_TMPFS=y
++CONFIG_CONFIGFS_FS=y
++CONFIG_UBIFS_FS=y
++CONFIG_UBIFS_FS_ADVANCED_COMPR=y
++CONFIG_NFS_FS=y
++CONFIG_ROOT_NFS=y
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_850=y
++CONFIG_NLS_ISO8859_1=y
++CONFIG_NLS_UTF8=y
++CONFIG_KEYS=y
++CONFIG_CRYPTO_RSA=y
++CONFIG_CRYPTO_ECDH=y
++CONFIG_CRYPTO_CCM=y
++CONFIG_CRYPTO_GCM=y
++# CONFIG_CRYPTO_ECHAINIV is not set
++CONFIG_CRYPTO_ECB=y
++CONFIG_CRYPTO_CMAC=y
++CONFIG_CRYPTO_ARC4=y
++CONFIG_CRYPTO_DEV_ATMEL_AES=y
++CONFIG_CRYPTO_DEV_ATMEL_TDES=y
++CONFIG_CRYPTO_DEV_ATMEL_SHA=y
++CONFIG_ASYMMETRIC_KEY_TYPE=y
++CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE=y
++CONFIG_X509_CERTIFICATE_PARSER=y
++CONFIG_PKCS7_MESSAGE_PARSER=y
++CONFIG_SYSTEM_TRUSTED_KEYRING=y
++CONFIG_CRC7=y
++CONFIG_STRIP_ASM_SYMS=y
++CONFIG_DEBUG_FS=y
++CONFIG_DEBUG_MEMORY_INIT=y
++# CONFIG_SCHED_DEBUG is not set
++# CONFIG_FTRACE is not set
++CONFIG_DEBUG_USER=y

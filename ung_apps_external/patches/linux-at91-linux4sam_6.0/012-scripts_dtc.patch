@@ -1,0 +1,11 @@
+diff -Napur linux-at91-linux4sam_6.0-orig/scripts/dtc/dtc-lexer.lex.c_shipped linux-at91-linux4sam_6.0/scripts/dtc/dtc-lexer.lex.c_shipped
+--- linux-at91-linux4sam_6.0-orig/scripts/dtc/dtc-lexer.lex.c_shipped	2018-10-05 06:43:30.000000000 -0700
++++ linux-at91-linux4sam_6.0/scripts/dtc/dtc-lexer.lex.c_shipped	2024-01-05 10:44:02.971332258 -0800
+@@ -657,7 +657,6 @@ char *yytext;
+ #include "srcpos.h"
+ #include "dtc-parser.tab.h"
+ 
+-YYLTYPE yylloc;
+ extern bool treesource_error;
+ 
+ /* CAUTION: this will stop working if we ever use yyless() or yyunput() */

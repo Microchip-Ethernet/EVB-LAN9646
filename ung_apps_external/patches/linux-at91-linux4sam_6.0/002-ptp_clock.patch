@@ -1,0 +1,21 @@
+diff -Napur linux-at91-linux4sam_6.0-orig/drivers/ptp/ptp_clock.c linux-at91-linux4sam_6.0/drivers/ptp/ptp_clock.c
+--- linux-at91-linux4sam_6.0-orig/drivers/ptp/ptp_clock.c	2018-10-05 06:43:30.000000000 -0700
++++ linux-at91-linux4sam_6.0/drivers/ptp/ptp_clock.c	2024-01-03 12:21:06.340471936 -0800
+@@ -157,6 +157,17 @@ static int ptp_clock_adjtime(struct posi
+ 		ptp->dialed_frequency = tx->freq;
+ 	} else if (tx->modes == 0) {
+ 		tx->freq = ptp->dialed_frequency;
++#if defined(CONFIG_KSZ_PTP) || defined(CONFIG_LAN937X_PTP)
++		do {
++			s64 freq;
++
++			err = ops->gettime64(ops, NULL);
++			freq = err;
++			freq <<= 13;
++			freq = div64_s64(freq, 125);
++			tx->freq = freq;
++		} while (0);
++#endif
+ 		err = 0;
+ 	}
+ 

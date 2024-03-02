@@ -1,0 +1,247 @@
+diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/dts/Makefile u-boot-at91-linux4sam-2020.10.1/arch/arm/dts/Makefile
+--- u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/dts/Makefile	2021-01-14 23:11:03.000000000 -0800
++++ u-boot-at91-linux4sam-2020.10.1/arch/arm/dts/Makefile	2024-02-29 16:57:26.386504882 -0800
+@@ -789,6 +789,9 @@ dtb-$(CONFIG_TARGET_SAMA5D3XEK) += \
+ dtb-$(CONFIG_TARGET_SAMA5D3_XPLAINED) += \
+ 	at91-sama5d3_xplained.dtb
+ 
++dtb-$(CONFIG_TARGET_SAMA5D3_XPLAINED_DEV) += \
++	at91-sama5d3_xplained_dev.dtb
++
+ dtb-$(CONFIG_TARGET_SAMA5D4EK) += \
+ 	at91-sama5d4ek.dtb
+ 
+diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/mach-at91/Kconfig u-boot-at91-linux4sam-2020.10.1/arch/arm/mach-at91/Kconfig
+--- u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/mach-at91/Kconfig	2021-01-14 23:11:03.000000000 -0800
++++ u-boot-at91-linux4sam-2020.10.1/arch/arm/mach-at91/Kconfig	2024-02-29 16:57:26.386504882 -0800
+@@ -56,6 +56,14 @@ config SAMA5D3
+ 	bool
+ 	select CPU_V7A
+ 
++config HAVE_KSZ9897
++	bool "KSZ9897 SPI support"
++	depends on SAMA5D3
++
++config HAVE_KSZ8851
++	bool "KSZ8851 SPI support"
++	depends on SAMA5D3 && !HAVE_KSZ9897
++
+ config SAMA5D4
+ 	bool
+ 	select CPU_V7A
+@@ -224,6 +232,13 @@ config TARGET_SAMA5D3_XPLAINED
+ 	select BOARD_EARLY_INIT_F
+ 	select SAMA5D3
+ 	select SUPPORT_SPL
++	select BOARD_LATE_INIT
++
++config TARGET_SAMA5D3_XPLAINED_DEV
++	bool "SAMA5D3 Xplained dev board"
++	select BOARD_EARLY_INIT_F
++	select SAMA5D3
++	select SUPPORT_SPL
+ 	select BOARD_LATE_INIT
+ 
+ config TARGET_SAMA5D3XEK
+diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/board/atmel/sama5d3_xplained/Kconfig u-boot-at91-linux4sam-2020.10.1/board/atmel/sama5d3_xplained/Kconfig
+--- u-boot-at91-linux4sam-2020.10.1-orig/board/atmel/sama5d3_xplained/Kconfig	2021-01-14 23:11:03.000000000 -0800
++++ u-boot-at91-linux4sam-2020.10.1/board/atmel/sama5d3_xplained/Kconfig	2024-02-29 16:57:26.386504882 -0800
+@@ -10,3 +10,16 @@ config SYS_CONFIG_NAME
+ 	default "sama5d3_xplained"
+ 
+ endif
++
++if TARGET_SAMA5D3_XPLAINED_DEV
++
++config SYS_BOARD
++	default "sama5d3_xplained"
++
++config SYS_VENDOR
++	default "atmel"
++
++config SYS_CONFIG_NAME
++	default "sama5d3_xplained_dev"
++
++endif
+diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/Kconfig u-boot-at91-linux4sam-2020.10.1/cmd/Kconfig
+--- u-boot-at91-linux4sam-2020.10.1-orig/cmd/Kconfig	2021-01-14 23:11:03.000000000 -0800
++++ u-boot-at91-linux4sam-2020.10.1/cmd/Kconfig	2024-02-29 16:57:26.386504882 -0800
+@@ -1189,6 +1189,12 @@ config CMD_SF_TEST
+ 	  equal the SPI bus speed for a single-bit-wide SPI bus, assuming
+ 	  everything is working properly.
+ 
++config CMD_SPI_KSZ
++	bool "kspi - Command to access spi device"
++	depends on SPI && SAMA5D3
++	help
++	  SPI utility command.
++
+ config CMD_SPI
+ 	bool "sspi - Command to access spi device"
+ 	depends on SPI
+@@ -1197,12 +1203,12 @@ config CMD_SPI
+ 
+ config DEFAULT_SPI_BUS
+ 	int "default spi bus used by sspi command"
+-	depends on CMD_SPI
++	depends on CMD_SPI || CMD_SPI_KSZ
+ 	default 0
+ 
+ config DEFAULT_SPI_MODE
+ 	hex "default spi mode used by sspi command (see include/spi.h)"
+-	depends on CMD_SPI
++	depends on CMD_SPI || CMD_SPI_KSZ
+ 	default 0
+ 
+ config CMD_TSI148
+diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/Makefile u-boot-at91-linux4sam-2020.10.1/cmd/Makefile
+--- u-boot-at91-linux4sam-2020.10.1-orig/cmd/Makefile	2021-01-14 23:11:03.000000000 -0800
++++ u-boot-at91-linux4sam-2020.10.1/cmd/Makefile	2024-02-29 16:57:26.386504882 -0800
+@@ -126,6 +126,7 @@ obj-$(CONFIG_CMD_SCSI) += scsi.o disk.o
+ obj-$(CONFIG_CMD_SHA1SUM) += sha1sum.o
+ obj-$(CONFIG_CMD_SETEXPR) += setexpr.o
+ obj-$(CONFIG_CMD_SPI) += spi.o
++obj-$(CONFIG_CMD_SPI_KSZ) += spi_ksz.o
+ obj-$(CONFIG_CMD_STRINGS) += strings.o
+ obj-$(CONFIG_CMD_SMC) += smccc.o
+ obj-$(CONFIG_CMD_SYSBOOT) += sysboot.o pxe_utils.o
+diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/drivers/net/macb.c u-boot-at91-linux4sam-2020.10.1/drivers/net/macb.c
+--- u-boot-at91-linux4sam-2020.10.1-orig/drivers/net/macb.c	2021-01-14 23:11:03.000000000 -0800
++++ u-boot-at91-linux4sam-2020.10.1/drivers/net/macb.c	2024-02-29 14:47:35.195472619 -0800
+@@ -440,6 +440,7 @@ static int _macb_recv(struct macb_device
+ 	}
+ }
+ 
++#ifndef CONFIG_PHY_FIXED
+ static void macb_phy_reset(struct macb_device *macb, const char *name)
+ {
+ 	int i;
+@@ -464,7 +465,9 @@ static void macb_phy_reset(struct macb_d
+ 		printf("%s: Autonegotiation timed out (status=0x%04x)\n",
+ 		       name, status);
+ }
++#endif
+ 
++#ifndef CONFIG_PHY_FIXED
+ static int macb_phy_find(struct macb_device *macb, const char *name)
+ {
+ 	int i;
+@@ -485,6 +488,7 @@ static int macb_phy_find(struct macb_dev
+ 
+ 	return -ENODEV;
+ }
++#endif
+ 
+ /**
+  * macb_linkspd_cb - Linkspeed change callback function
+@@ -579,12 +583,17 @@ static int macb_phy_init(struct macb_dev
+ 	struct macb_device *macb = dev_get_priv(dev);
+ #endif
+ 	u32 ncfgr;
++#ifndef CONFIG_PHY_FIXED
+ 	u16 phy_id, status, adv, lpa;
+ 	int media, speed, duplex;
++#else
++	u16 phy_id, lpa;
++	int speed, duplex;
++#endif
+ 	int ret;
+-	int i;
+ 
+ 	arch_get_mdio_control(name);
++#ifndef CONFIG_PHY_FIXED
+ 	/* Auto-detect phy_addr */
+ 	ret = macb_phy_find(macb, name);
+ 	if (ret)
+@@ -596,6 +605,9 @@ static int macb_phy_init(struct macb_dev
+ 		printf("%s: No PHY present\n", name);
+ 		return -ENODEV;
+ 	}
++#else
++	(void) phy_id;
++#endif
+ 
+ #ifdef CONFIG_PHYLIB
+ #ifdef CONFIG_DM_ETH
+@@ -612,10 +624,16 @@ static int macb_phy_init(struct macb_dev
+ 	}
+ 
+ 	phy_config(macb->phydev);
++#ifdef CONFIG_PHY_FIXED
++	phy_startup(macb->phydev);
++#endif
+ #endif
+ 
++#ifndef CONFIG_PHY_FIXED
+ 	status = macb_mdio_read(macb, macb->phy_addr, MII_BMSR);
+ 	if (!(status & BMSR_LSTATUS)) {
++		int i;
++
+ 		/* Try to re-negotiate if we don't have link already. */
+ 		macb_phy_reset(macb, name);
+ 
+@@ -638,23 +656,44 @@ static int macb_phy_init(struct macb_dev
+ 		       name, status);
+ 		return -ENETDOWN;
+ 	}
++#endif
+ 
+ 	/* First check for GMAC and that it is GiB capable */
+ 	if (gem_is_gigabit_capable(macb)) {
++#ifndef CONFIG_PHY_FIXED
+ 		lpa = macb_mdio_read(macb, macb->phy_addr, MII_STAT1000);
++#else
++		if (macb->phydev->speed == SPEED_1000)
++			lpa = 0x7800;
++		else
++			lpa = 0x0000;
++		speed = env_get_ulong("speed", 10, macb->phydev->speed);
++#endif
+ 
+ 		if (lpa & (LPA_1000FULL | LPA_1000HALF | LPA_1000XFULL |
+ 					LPA_1000XHALF)) {
+ 			duplex = ((lpa & (LPA_1000FULL | LPA_1000XFULL)) ?
+ 					1 : 0);
+ 
++#ifdef CONFIG_PHY_FIXED
++			printf("%s: link up, %sMbps %s-duplex (lpa: 0x%04x)\n",
++			       name,
++			       speed == SPEED_1000 ? "1000" : "100",
++#else
+ 			printf("%s: link up, 1000Mbps %s-duplex (lpa: 0x%04x)\n",
+ 			       name,
++#endif
+ 			       duplex ? "full" : "half",
+ 			       lpa);
+ 
+ 			ncfgr = macb_readl(macb, NCFGR);
+ 			ncfgr &= ~(MACB_BIT(SPD) | MACB_BIT(FD));
++#ifdef CONFIG_PHY_FIXED
++			ncfgr &= ~GEM_BIT(GBE);
++			if (speed == SPEED_100)
++				ncfgr |= MACB_BIT(SPD);
++			else
++#endif
+ 			ncfgr |= GEM_BIT(GBE);
+ 
+ 			if (duplex)
+@@ -674,6 +713,7 @@ static int macb_phy_init(struct macb_dev
+ 		}
+ 	}
+ 
++#ifndef CONFIG_PHY_FIXED
+ 	/* fall back for EMAC checking */
+ 	adv = macb_mdio_read(macb, macb->phy_addr, MII_ADVERTISE);
+ 	lpa = macb_mdio_read(macb, macb->phy_addr, MII_LPA);
+@@ -681,6 +721,11 @@ static int macb_phy_init(struct macb_dev
+ 	speed = (media & (ADVERTISE_100FULL | ADVERTISE_100HALF)
+ 		 ? 1 : 0);
+ 	duplex = (media & ADVERTISE_FULL) ? 1 : 0;
++#else
++	speed = macb->phydev->speed == SPEED_100;
++	duplex = macb->phydev->duplex;
++	lpa = 0x05e1;
++#endif
+ 	printf("%s: link up, %sMbps %s-duplex (lpa: 0x%04x)\n",
+ 	       name,
+ 	       speed ? "100" : "10",

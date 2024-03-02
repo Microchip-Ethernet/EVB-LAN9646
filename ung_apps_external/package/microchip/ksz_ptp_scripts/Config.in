@@ -1,0 +1,5 @@
+config BR2_PACKAGE_KSZ_PTP_SCRIPTS
+	bool "PTP scripts"
+	help
+	  PTP scripts for use with trying different PTP profiles.
+

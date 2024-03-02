@@ -1,0 +1,22 @@
+diff -Napur linux-linux4microchip-2023.10-orig/net/bridge/br_device.c linux-linux4microchip-2023.10/net/bridge/br_device.c
+--- linux-linux4microchip-2023.10-orig/net/bridge/br_device.c	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/net/bridge/br_device.c	2023-05-23 15:30:42.485265121 -0700
+@@ -497,6 +497,18 @@ void br_dev_setup(struct net_device *dev
+ 	dev->hw_features = COMMON_FEATURES | NETIF_F_HW_VLAN_CTAG_TX |
+ 			   NETIF_F_HW_VLAN_STAG_TX;
+ 	dev->vlan_features = COMMON_FEATURES;
++#ifdef CONFIG_KSZ_SWITCH
++	/* Default headroom is 2.  Adding 1 to hard_header_len makes it 1.
++	 * Adding 2 makes it 16.  Then adding more will subtract from that
++	 * number.  So header len of 4 results in 14, and header len of 6
++	 * results in 12.  But somehow when sending raw PTP Sync, Follow_Up,
++	 * and Delay_Req messages (which have size of 58 bytes from 68 bytes
++	 * or more used by other messages) will result in network_header to
++	 * become 12 rather than 32.
++	 * The best number to use is therefore 2 to have the largest headroom.
++	 */
++	dev->hard_header_len += 2;
++#endif
+ 
+ 	br->dev = dev;
+ 	spin_lock_init(&br->lock);
