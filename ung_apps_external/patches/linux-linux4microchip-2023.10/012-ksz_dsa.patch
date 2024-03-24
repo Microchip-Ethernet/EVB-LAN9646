@@ -1,6 +1,6 @@
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477.c	2023-12-18 02:18:42.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477.c	2024-03-01 14:45:12.689195578 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477.c	2024-03-12 12:38:26.208346156 -0700
 @@ -170,6 +170,8 @@ static int ksz9477_wait_alu_sta_ready(st
  					10, 1000);
  }
@@ -733,7 +733,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477
  
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_common.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_common.c	2023-12-18 02:18:42.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_common.c	2024-03-01 14:31:31.845702297 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_common.c	2024-03-20 20:40:44.936760958 -0700
 @@ -2,7 +2,7 @@
  /*
   * Microchip switch driver main logic
@@ -794,9 +794,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_com
  	regmap_reg_range(0x2400, 0x2401),
  	regmap_reg_range(0x2403, 0x2403),
  	regmap_reg_range(0x2410, 0x2417),
-@@ -551,9 +544,8 @@ static const struct regmap_range ksz9477
+@@ -549,11 +542,10 @@ static const struct regmap_access_table
+ static const struct regmap_range ksz9477_valid_regs[] = {
+ 	regmap_reg_range(0x0000, 0x0003),
  	regmap_reg_range(0x0006, 0x0006),
- 	regmap_reg_range(0x0010, 0x001f),
+-	regmap_reg_range(0x0010, 0x001f),
++	regmap_reg_range(0x000f, 0x001f),
  	regmap_reg_range(0x0100, 0x0100),
 -	regmap_reg_range(0x0103, 0x0107),
 -	regmap_reg_range(0x010d, 0x010d),
@@ -886,9 +889,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_com
  	regmap_reg_range(0x7300, 0x7301),
  	regmap_reg_range(0x7400, 0x7401),
  	regmap_reg_range(0x7403, 0x7403),
-@@ -817,9 +793,8 @@ static const struct regmap_range ksz9896
+@@ -815,11 +791,10 @@ static const struct regmap_access_table
+ static const struct regmap_range ksz9896_valid_regs[] = {
+ 	regmap_reg_range(0x0000, 0x0003),
  	regmap_reg_range(0x0006, 0x0006),
- 	regmap_reg_range(0x0010, 0x001f),
+-	regmap_reg_range(0x0010, 0x001f),
++	regmap_reg_range(0x000f, 0x001f),
  	regmap_reg_range(0x0100, 0x0100),
 -	regmap_reg_range(0x0103, 0x0107),
 -	regmap_reg_range(0x010d, 0x010d),
