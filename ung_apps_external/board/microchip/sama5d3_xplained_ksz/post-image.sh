@@ -25,4 +25,7 @@ if [ ! -e ${BINARIES_DIR}/rootfs.ubi ]; then
     fi
     BOARD_DIR="$(dirname $0)"
     ./support/scripts/genimage.sh -c ${BOARD_DIR}/genimage.cfg
+else
+echo "./host/bin/sam-ba -w images -x ${BR2_EXTERNAL_KSZ_PATH}/board/microchip/sama5d3_xplained_ksz/nandflash-usb.qml" > ${BASE_DIR}/flash.sh
+chmod +x ${BASE_DIR}/flash.sh
 fi
