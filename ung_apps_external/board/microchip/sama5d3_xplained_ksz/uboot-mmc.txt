@@ -1,7 +1,7 @@
 load_dts=if test ! -n ${dtb_name}; then setenv dtb_name at91-${board_name}.dtb; fi; fatload mmc 0:1 21000000 ${dtb_name}; bootz 22000000 - 21000000
 bootcmd=fatload mmc 0:1 22000000 zImage; run prep_boot; run load_dts
-bootargs=console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rw rootwait
-_bootargs=console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rw rootwait ${extra_param}
+bootargs=console=ttyS0,115200 mtdparts=atmel_nand:256k(bootstrap)ro,768k(uboot)ro,128K(env_redundant),128k(env),256k(spare),512k(dtb),6M(kernel)ro,-(rootfs) root=/dev/mmcblk0p2 rw rootwait
+_bootargs=console=ttyS0,115200 mtdparts=atmel_nand:256k(bootstrap)ro,768k(uboot)ro,128K(env_redundant),128k(env),256k(spare),512k(dtb),6M(kernel)ro,-(rootfs) root=/dev/mmcblk0p2 rw rootwait ${extra_param}
 arch=arm
 board=sama5d3_xplained
 board_name=sama5d3_xplained
