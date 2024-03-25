@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Close partition 0 when using MMC to prevent dirty indication
+#
+
+start() {
+    MMC=$(grep /boot /proc/mounts)
+    if [ ! -z "$MMC" ]; then
+        umount /boot
+    fi
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start}"
+        exit 1
+esac
+
+exit $?
