@@ -14,11 +14,6 @@ SerialConnection {
 	}
 
 	onConnectionOpened: {
-		// change CPU_CLK/MCK frequencies to 600/200 MHz
-//		initializeApplet("lowlevel")
-
-		// initialize external DDR2
-//		initializeApplet("extram")
 
 		// initialize NAND flash applet
 		initializeApplet("nandflash")
