@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# make sure module support is enabled
+[ -e /proc/ksyms -o -e /proc/modules ] || exit 0
+
+case "${1}" in
+	start)
+		[ -d /etc/modules-load.d ] || exit 0
+		for entry in /etc/modules-load.d/*; do
+			module=$(cat ${entry})
+			[ "${module}" == "" ] && continue
+			modprobe ${module}
+		done
+		;;
+	*)
+		exit 1
+		;;
+esac

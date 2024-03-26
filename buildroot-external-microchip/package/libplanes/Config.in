@@ -1,0 +1,17 @@
+config BR2_PACKAGE_LIBPLANES
+	bool "libplanes"
+	select BR2_PACKAGE_CAIRO
+	select BR2_PACKAGE_CJSON
+	select BR2_PACKAGE_LIBDRM
+	select BR2_PACKAGE_LUA
+	help
+	  libplanes is a library that provides support for working with LCD
+	  controller hardware planes found on SAMA5 hardware.
+
+if BR2_PACKAGE_LIBPLANES
+config BR2_PACKAGE_LIBPLANES_INSTALL_EXAMPLES
+	bool "Install examples"
+	default y
+	help
+	  If unsure, say Y.
+endif

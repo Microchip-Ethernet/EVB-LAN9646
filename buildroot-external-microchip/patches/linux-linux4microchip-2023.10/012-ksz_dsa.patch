@@ -1,0 +1,1705 @@
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477.c
+--- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477.c	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477.c	2024-03-12 12:38:26.208346156 -0700
+@@ -170,6 +170,8 @@ static int ksz9477_wait_alu_sta_ready(st
+ 					10, 1000);
+ }
+ 
++static void port_sgmii_reset(struct ksz_device *dev, uint p);
++
+ int ksz9477_reset_switch(struct ksz_device *dev)
+ {
+ 	u8 data8;
+@@ -178,9 +180,15 @@ int ksz9477_reset_switch(struct ksz_devi
+ 	/* reset switch */
+ 	ksz_cfg(dev, REG_SW_OPERATION, SW_RESET, true);
+ 
+-	/* turn off SPI DO Edge select */
+-	regmap_update_bits(dev->regmap[0], REG_SW_GLOBAL_SERIAL_CTRL_0,
+-			   SPI_AUTO_EDGE_DETECTION, 0);
++	ksz9477_detect_init(dev);
++
++	/* Only reset SGMII module when the driver is stopped. */
++	if (dev->chip_id == KSZ9477_CHIP_ID) {
++		struct ksz_port *p = &dev->ports[6];
++
++		if (p->sgmii_setup)
++			port_sgmii_reset(dev, 6);
++	}
+ 
+ 	/* default configuration */
+ 	ksz_read8(dev, REG_SW_LUE_CTRL_1, &data8);
+@@ -195,6 +203,7 @@ int ksz9477_reset_switch(struct ksz_devi
+ 
+ 	/* KSZ9893 compatible chips do not support refclk configuration */
+ 	if (dev->chip_id == KSZ9893_CHIP_ID ||
++	    dev->chip_id == KSZ9563_CHIP_ID ||
+ 	    dev->chip_id == KSZ8563_CHIP_ID)
+ 		return 0;
+ 
+@@ -208,6 +217,223 @@ int ksz9477_reset_switch(struct ksz_devi
+ 	return 0;
+ }
+ 
++static void port_sgmii_s(struct ksz_device *dev, uint port, u16 devid, u16 reg,
++			 u16 len)
++{
++	u32 data;
++
++	data = devid & PORT_SGMII_DEVICE_ID_M;
++	data <<= PORT_SGMII_DEVICE_ID_S;
++	data |= reg;
++	if (len > 1)
++		data |= PORT_SGMII_AUTO_INCR;
++	ksz_pwrite32(dev, port, REG_PORT_SGMII_ADDR__4, data);
++}
++
++static void port_sgmii_r(struct ksz_device *dev, uint port, u16 devid, u16 reg,
++			 u16 *buf, u16 len)
++{
++	u32 data;
++
++	port_sgmii_s(dev, port, devid, reg, len);
++	while (len) {
++		ksz_pread32(dev, port, REG_PORT_SGMII_DATA__4, &data);
++		*buf++ = (u16) data;
++		len--;
++	}
++}
++
++static void port_sgmii_w(struct ksz_device *dev, uint port, u16 devid, u16 reg,
++			 u16 *buf, u16 len)
++{
++	u32 data;
++
++	port_sgmii_s(dev, port, devid, reg, len);
++	while (len) {
++		data = *buf++;
++		ksz_pwrite32(dev, port, REG_PORT_SGMII_DATA__4, data);
++		len--;
++	}
++}
++
++static int port_sgmii_detect(struct ksz_device *dev, uint p)
++{
++	struct ksz_port *port = &dev->ports[p];
++	int ret = 0;
++	u16 buf[6];
++
++	port_sgmii_r(dev, p, SR_MII, 0, buf, 6);
++
++	/* Cannot detect whether the SGMII PHY is plugged in reliably. */
++	ret = 1;
++	if (dev->sgmii_mode) {
++		if (buf[5] & SR_MII_REMOTE_ACK) {
++			if (buf[5] & (SR_MII_REMOTE_HALF_DUPLEX |
++				      SR_MII_REMOTE_FULL_DUPLEX))
++				port->fiber = 1;
++			else if (dev->sgmii_mode == 1)
++				dev->sgmii_mode = 2;
++		} else if (dev->sgmii_mode == 1) {
++			port->fiber = 1;
++		}
++	}
++	return ret;
++}
++
++static void port_sgmii_reset(struct ksz_device *dev, uint p)
++{
++	u16 ctrl;
++
++	port_sgmii_r(dev, p, SR_MII, MMD_SR_MII_CTRL, &ctrl, 1);
++	ctrl |= SR_MII_RESET;
++	port_sgmii_w(dev, p, SR_MII, MMD_SR_MII_CTRL, &ctrl, 1);
++}
++
++static void port_sgmii_setup(struct ksz_device *dev, uint p, bool pcs,
++			     bool master, bool autoneg, int speed, int duplex)
++{
++	u16 ctrl;
++	u16 cfg;
++	u16 adv;
++
++	/* SGMII registers are not changed by reset. */
++	port_sgmii_r(dev, p, SR_MII, MMD_SR_MII_AUTO_NEG_CTRL, &cfg, 1);
++	if (cfg & SR_MII_AUTO_NEG_COMPLETE_INTR)
++		return;
++	cfg = 0;
++	if (pcs)
++		cfg |= SR_MII_PCS_SGMII << SR_MII_PCS_MODE_S;
++	if (master) {
++		cfg |= SR_MII_TX_CFG_PHY_MASTER;
++		cfg |= SR_MII_SGMII_LINK_UP;
++	}
++	cfg |= SR_MII_AUTO_NEG_COMPLETE_INTR;
++	port_sgmii_w(dev, p, SR_MII, MMD_SR_MII_AUTO_NEG_CTRL, &cfg, 1);
++	port_sgmii_r(dev, p, SR_MII, MMD_SR_MII_CTRL, &ctrl, 1);
++	if (master || !autoneg) {
++		switch (speed) {
++		case 1:
++			ctrl |= SR_MII_SPEED_100MBIT;
++			break;
++		case 2:
++			ctrl |= SR_MII_SPEED_1000MBIT;
++			break;
++		}
++	}
++	if (!autoneg) {
++		ctrl &= ~SR_MII_AUTO_NEG_ENABLE;
++		port_sgmii_w(dev, p, SR_MII, MMD_SR_MII_CTRL, &ctrl, 1);
++		return;
++	} else if (!(ctrl & SR_MII_AUTO_NEG_ENABLE)) {
++		ctrl |= SR_MII_AUTO_NEG_ENABLE;
++		port_sgmii_w(dev, p, SR_MII, MMD_SR_MII_CTRL, &ctrl, 1);
++	}
++
++	/* Need to write to advertise register to send correct signal. */
++	/* Default value is 0x0020. */
++	port_sgmii_r(dev, p, SR_MII, MMD_SR_MII_AUTO_NEGOTIATION, &adv, 1);
++	adv = SR_MII_AUTO_NEG_ASYM_PAUSE_RX << SR_MII_AUTO_NEG_PAUSE_S;
++	if (duplex)
++		adv |= SR_MII_AUTO_NEG_FULL_DUPLEX;
++	else
++		adv |= SR_MII_AUTO_NEG_HALF_DUPLEX;
++	port_sgmii_w(dev, p, SR_MII, MMD_SR_MII_AUTO_NEGOTIATION, &adv, 1);
++	if (master && autoneg) {
++		ctrl |= SR_MII_AUTO_NEG_RESTART;
++		port_sgmii_w(dev, p, SR_MII, MMD_SR_MII_CTRL, &ctrl, 1);
++	}
++}
++
++static int sgmii_port_get_speed(struct ksz_device *dev, uint p)
++{
++	struct ksz_port *info = &dev->ports[p];
++	int ret = 0;
++	u16 status;
++	u16 speed;
++	u16 data;
++	u8 link;
++
++	port_sgmii_r(dev, p, SR_MII, MMD_SR_MII_STATUS, &status, 1);
++	port_sgmii_r(dev, p, SR_MII, MMD_SR_MII_STATUS, &status, 1);
++	port_sgmii_r(dev, p, SR_MII, MMD_SR_MII_AUTO_NEG_STATUS, &data, 1);
++
++	/* Typical register values in different modes.
++	 * 10/100/1000: 1f0001 = 01ad  1f0005 = 4000  1f8002 = 0008
++	 *              1f0001 = 01bd  1f0005 = d000  1f8002 = 001a
++	 * 1000:        1f0001 = 018d  1f0005 = 0000  1f8002 = 0000
++	 *              1f0001 = 01ad  1f0005 = 40a0  1f8002 = 0000
++	 *              1f0001 = 01ad  1f0005 = 41a0  1f8002 = 0000
++	 * fiber:       1f0001 = 0189  1f0005 = 0000  1f8002 = 0000
++	 *              1f0001 = 01ad  1f0005 = 41a0  1f8002 = 0000
++	 */
++
++	/* Running in fiber mode. */
++	if (info->fiber && !data &&
++	    (status & (PORT_AUTO_NEG_ACKNOWLEDGE | PORT_LINK_STATUS)) ==
++	    (PORT_AUTO_NEG_ACKNOWLEDGE | PORT_LINK_STATUS)) {
++		data = SR_MII_STAT_LINK_UP |
++		       (SR_MII_STAT_1000_MBPS << SR_MII_STAT_S) |
++		       SR_MII_STAT_FULL_DUPLEX;
++	}
++	if (data & SR_MII_STAT_LINK_UP)
++		ret = 1;
++
++	link = (data & ~SR_MII_AUTO_NEG_COMPLETE_INTR);
++	if (info->sgmii_link == link)
++		return ret;
++
++	/* Need to update control register with same link setting. */
++	if (data & SR_MII_STAT_LINK_UP) {
++		u16 ctrl;
++
++		ctrl = SR_MII_AUTO_NEG_ENABLE;
++		speed = (data >> SR_MII_STAT_S) & SR_MII_STAT_M;
++		if (SR_MII_STAT_1000_MBPS == speed)
++			ctrl |= SR_MII_SPEED_1000MBIT;
++		else if (SR_MII_STAT_100_MBPS == speed)
++			ctrl |= SR_MII_SPEED_100MBIT;
++		if (data & SR_MII_STAT_FULL_DUPLEX)
++			ctrl |= SR_MII_FULL_DUPLEX;
++		port_sgmii_w(dev, p, SR_MII, MMD_SR_MII_CTRL, &ctrl, 1);
++	}
++	if (data & SR_MII_STAT_LINK_UP) {
++		speed = (data >> SR_MII_STAT_S) & SR_MII_STAT_M;
++		info->phydev.speed = SPEED_10;
++		if (SR_MII_STAT_1000_MBPS == speed)
++			info->phydev.speed = SPEED_1000;
++		else if (SR_MII_STAT_100_MBPS == speed)
++			info->phydev.speed = SPEED_100;
++
++		info->phydev.duplex = 0;
++		if (data & SR_MII_STAT_FULL_DUPLEX)
++			info->phydev.duplex = 1;
++	}
++	ret |= 2;
++	info->sgmii_link = link;
++	info->phydev.link = (ret & 1);
++	return ret;
++}
++
++static void sgmii_check_work(struct work_struct *work)
++{
++	struct ksz_device *dev = container_of(work, struct ksz_device,
++					      sgmii_check.work);
++	struct ksz_port *p = &dev->ports[6];
++
++	if (p->sgmii && p->phydev.link) {
++		int ret = sgmii_port_get_speed(dev, 6);
++		struct dsa_switch *ds = dev->ds;
++		struct phy_device *phydev;
++
++		phydev = mdiobus_get_phy(ds->slave_mii_bus, 6);
++		if ((ret & 2) && phydev)
++			phy_trigger_machine(phydev);
++		if (p->phydev.link)
++			schedule_delayed_work(&dev->sgmii_check,
++					      msecs_to_jiffies(500));
++	}
++}
++
+ void ksz9477_r_mib_cnt(struct ksz_device *dev, int port, u16 addr, u64 *cnt)
+ {
+ 	struct ksz_port *p = &dev->ports[port];
+@@ -288,7 +514,7 @@ int ksz9477_r_phy(struct ksz_device *dev
+ 	 * A fixed PHY can be setup in the device tree, but this function is
+ 	 * still called for that port during initialization.
+ 	 * For RGMII PHY there is no way to access it so the fixed PHY should
+-	 * be used.  For SGMII PHY the supporting code will be added later.
++	 * be used.  SGMII PHY is simulated as a regular PHY.
+ 	 */
+ 	if (!dev->info->internal_phy[addr]) {
+ 		struct ksz_port *p = &dev->ports[addr];
+@@ -298,7 +524,10 @@ int ksz9477_r_phy(struct ksz_device *dev
+ 			val = 0x1140;
+ 			break;
+ 		case MII_BMSR:
+-			val = 0x796d;
++			if (p->phydev.link)
++				val = 0x796d;
++			else
++				val = 0x7949;
+ 			break;
+ 		case MII_PHYSID1:
+ 			val = 0x0022;
+@@ -311,9 +540,13 @@ int ksz9477_r_phy(struct ksz_device *dev
+ 			break;
+ 		case MII_LPA:
+ 			val = 0xc5e1;
++			if (p->phydev.speed == SPEED_10)
++				val &= ~0x0180;
++			if (p->phydev.duplex == 0)
++				val &= ~0x0140;
+ 			break;
+ 		case MII_CTRL1000:
+-			val = 0x0700;
++			val = 0x0600;
+ 			break;
+ 		case MII_STAT1000:
+ 			if (p->phydev.speed == SPEED_1000)
+@@ -321,6 +554,21 @@ int ksz9477_r_phy(struct ksz_device *dev
+ 			else
+ 				val = 0;
+ 			break;
++		case MII_ESTATUS:
++			val = 0x3000;
++			break;
++
++		/* This register holds the PHY interrupt status. */
++		case MII_TPISTATUS:
++			val = (LINK_DOWN_INT | LINK_UP_INT) << 8;
++			if (p->phydev.link)
++				val |= LINK_UP_INT;
++			else
++				val |= LINK_DOWN_INT;
++			break;
++		default:
++			val = 0;
++			break;
+ 		}
+ 	} else {
+ 		ret = ksz_pread16(dev, addr, 0x100 + (reg << 1), &val);
+@@ -956,11 +1204,23 @@ static void ksz9477_phy_errata_setup(str
+ void ksz9477_get_caps(struct ksz_device *dev, int port,
+ 		      struct phylink_config *config)
+ {
++	struct dsa_switch *ds = dev->ds;
++	struct phy_device *phydev;
++
++	phydev = mdiobus_get_phy(ds->slave_mii_bus, port);
+ 	config->mac_capabilities = MAC_10 | MAC_100 | MAC_ASYM_PAUSE |
+ 				   MAC_SYM_PAUSE;
+ 
+ 	if (dev->info->gbit_capable[port])
+ 		config->mac_capabilities |= MAC_1000FD;
++	if (dev->chip_id == KSZ9477_CHIP_ID && port == 6) {
++
++		/* Change this port interface to SGMII. */
++		if (phydev)
++			phydev->interface = PHY_INTERFACE_MODE_SGMII;
++		__set_bit(PHY_INTERFACE_MODE_SGMII,
++			  config->supported_interfaces);
++	}
+ }
+ 
+ int ksz9477_set_ageing_time(struct ksz_device *dev, unsigned int msecs)
+@@ -990,8 +1250,8 @@ int ksz9477_set_ageing_time(struct ksz_d
+ 
+ void ksz9477_port_setup(struct ksz_device *dev, int port, bool cpu_port)
+ {
++	struct ksz_port *p = &dev->ports[port];
+ 	struct dsa_switch *ds = dev->ds;
+-	u16 data16;
+ 	u8 member;
+ 
+ 	/* enable tag tail for host port */
+@@ -1033,17 +1293,46 @@ void ksz9477_port_setup(struct ksz_devic
+ 			     PORT_FORCE_TX_FLOW_CTRL | PORT_FORCE_RX_FLOW_CTRL,
+ 			     true);
+ 	}
++	if (p->sgmii && !p->sgmii_setup) {
++		bool pcs = true;
++		bool master = false;
++		bool autoneg = true;
++
++		INIT_DELAYED_WORK(&dev->sgmii_check, sgmii_check_work);
++		if (dev->sgmii_mode == 0) {
++			master = true;
++			autoneg = false;
++		} else if (dev->sgmii_mode == 1) {
++			pcs = false;
++			master = true;
++		}
++		port_sgmii_setup(dev, port, pcs, master, autoneg, 2, 1);
++
++		/* Make invalid so the correct value is set. */
++		p->sgmii_link = 0xff;
++		p->sgmii_setup = 1;
++		sgmii_port_get_speed(dev, port);
++
++		/* Need to check link down if using fiber SFP. */
++		if (dev->sgmii_mode == 1 && p->phydev.link)
++			schedule_delayed_work(&dev->sgmii_check,
++					      msecs_to_jiffies(1000));
++	}
+ 
+ 	if (cpu_port)
+ 		member = dsa_user_ports(ds);
+ 	else
+ 		member = BIT(dsa_upstream_port(ds, port));
++	if (cpu_port) {
++		int i;
+ 
+-	ksz9477_cfg_port_member(dev, port, member);
++		for (i = 0; i < dev->info->port_cnt; i++) {
++			if (dsa_is_dsa_port(ds, i))
++				member |= BIT(i);
++		}
++	}
+ 
+-	/* clear pending interrupts */
+-	if (dev->info->internal_phy[port])
+-		ksz_pread16(dev, port, REG_PORT_PHY_INT_ENABLE, &data16);
++	ksz9477_cfg_port_member(dev, port, member);
+ }
+ 
+ void ksz9477_config_cpu_port(struct dsa_switch *ds)
+@@ -1052,16 +1341,17 @@ void ksz9477_config_cpu_port(struct dsa_
+ 	struct ksz_port *p;
+ 	int i;
+ 
+-	for (i = 0; i < dev->info->port_cnt; i++) {
+-		if (dsa_is_cpu_port(ds, i) &&
+-		    (dev->info->cpu_ports & (1 << i))) {
+-			phy_interface_t interface;
+-			const char *prev_msg;
+-			const char *prev_mode;
++	/* Expect only one upstream/cpu port. */
++	i = dsa_upstream_port(ds, 0);
++	if (i >= 0 && (dev->info->cpu_ports & (1 << i))) {
++		phy_interface_t interface;
++		const char *prev_msg;
++		const char *prev_mode;
+ 
+-			dev->cpu_port = i;
+-			p = &dev->ports[i];
++		dev->cpu_port = i;
++		p = &dev->ports[i];
+ 
++		if (!dev->info->internal_phy[i]) {
+ 			/* Read from XMII register to determine host port
+ 			 * interface.  If set specifically in device tree
+ 			 * note the difference to help debugging.
+@@ -1091,16 +1381,23 @@ void ksz9477_config_cpu_port(struct dsa_
+ 				 phy_modes(p->interface),
+ 				 prev_msg,
+ 				 prev_mode);
+-
+-			/* enable cpu port */
+-			ksz9477_port_setup(dev, i, true);
+ 		}
++
++		/* enable cpu port */
++		ksz9477_port_setup(dev, i, true);
+ 	}
+ 
+ 	for (i = 0; i < dev->info->port_cnt; i++) {
+-		if (i == dev->cpu_port)
++		if (i == dsa_upstream_port(ds, i))
+ 			continue;
+-		ksz_port_stp_state_set(ds, i, BR_STATE_DISABLED);
++		if (dsa_is_dsa_port(ds, i))
++			ksz9477_port_setup(dev, i, false);
++		else
++			ksz_port_stp_state_set(ds, i, BR_STATE_DISABLED);
++	}
++	if (dev->chip_id == KSZ9477_CHIP_ID) {
++		/* Switch reset does not reset SGMII module. */
++		port_sgmii_reset(dev, 6);
+ 	}
+ }
+ 
+@@ -1137,6 +1434,18 @@ int ksz9477_enable_stp_addr(struct ksz_d
+ 	return 0;
+ }
+ 
++#define KSZ9477_REGS_SIZE		0x8000
++
++static struct bin_attribute ksz9477_registers_attr = {
++	.attr = {
++		.name	= "registers",
++		.mode	= 00600,
++	},
++	.size	= KSZ9477_REGS_SIZE,
++	.read	= ksz_registers_read,
++	.write	= ksz_registers_write,
++};
++
+ int ksz9477_setup(struct dsa_switch *ds)
+ {
+ 	struct ksz_device *dev = ds->priv;
+@@ -1164,6 +1473,17 @@ int ksz9477_setup(struct dsa_switch *ds)
+ 	/* enable global MIB counter freeze function */
+ 	ksz_cfg(dev, REG_SW_MAC_CTRL_6, SW_MIB_COUNTER_FREEZE, true);
+ 
++	if (dev->chip_id == KSZ9477_CHIP_ID) {
++		struct ksz_port *p = &dev->ports[6];
++
++		p->sgmii = port_sgmii_detect(dev, 6);
++	}
++
++	dev->regs_size = KSZ9477_REGS_SIZE;
++
++	ret = sysfs_create_bin_file(&dev->dev->kobj,
++				    &ksz9477_registers_attr);
++
+ 	return 0;
+ }
+ 
+@@ -1174,29 +1494,125 @@ u32 ksz9477_get_port_addr(int port, int
+ 
+ int ksz9477_switch_init(struct ksz_device *dev)
+ {
+-	u8 data8;
+-	int ret;
+-
+ 	dev->port_mask = (1 << dev->info->port_cnt) - 1;
+ 
+-	/* turn off SPI DO Edge select */
+-	ret = ksz_read8(dev, REG_SW_GLOBAL_SERIAL_CTRL_0, &data8);
+-	if (ret)
+-		return ret;
+-
+-	data8 &= ~SPI_AUTO_EDGE_DETECTION;
+-	ret = ksz_write8(dev, REG_SW_GLOBAL_SERIAL_CTRL_0, data8);
+-	if (ret)
+-		return ret;
+-
+ 	return 0;
+ }
+ 
+ void ksz9477_switch_exit(struct ksz_device *dev)
+ {
++	if (delayed_work_pending(&dev->sgmii_check))
++		cancel_delayed_work_sync(&dev->sgmii_check);
++	sysfs_remove_bin_file(&dev->dev->kobj, &ksz9477_registers_attr);
+ 	ksz9477_reset_switch(dev);
+ }
+ 
++void ksz9477_detect_init(struct ksz_device *dev)
++{
++	/* turn off SPI DO Edge select */
++	/* Cannot just read then write. */
++	if (ksz_is_ksz9897(dev))
++		ksz_write8(dev, REG_SW_GLOBAL_SERIAL_CTRL_0, 0x40);
++}
++
++static int ksz9477_handle_port_irq(struct ksz_device *dev, u8 port, u8 data)
++{
++	struct dsa_switch *ds = dev->ds;
++	struct phy_device *phydev;
++	int cnt = 0;
++
++	phydev = mdiobus_get_phy(ds->slave_mii_bus, port);
++	if (data & PORT_PHY_INT) {
++		if (!phydev || phydev->irq < 1) {
++			u8 phy_status;
++
++			ksz_pread8(dev, port, REG_PORT_PHY_INT_STATUS,
++				   &phy_status);
++			if (phydev)
++				phy_trigger_machine(phydev);
++			++cnt;
++		}
++	}
++	if (data & PORT_ACL_INT) {
++		if (ksz_is_ksz9893(dev)) {
++			ksz_pwrite8(dev, port, REG_PORT_INT_MASK,
++				    (~PORT_INT_MASK & PORT_INT_MASK) |
++				    PORT_ACL_INT);
++			ksz_pwrite8(dev, port, REG_PORT_INT_MASK,
++				    ~PORT_INT_MASK & PORT_INT_MASK);
++		} else {
++			ksz_pwrite8(dev, port, REG_PORT_INT_STATUS,
++				    PORT_ACL_INT);
++		}
++		++cnt;
++	}
++	if (data & PORT_SGMII_INT) {
++		u16 data16 = 0;
++		int ret;
++
++		port_sgmii_w(dev, port, SR_MII, MMD_SR_MII_AUTO_NEG_STATUS,
++			     &data16, 1);
++		ret = sgmii_port_get_speed(dev, port);
++		if ((ret & 2)) {
++			struct ksz_port *p = &dev->ports[port];
++
++			if (!phydev || phydev->irq < 1) {
++				if (phydev)
++					phy_trigger_machine(phydev);
++				++cnt;
++			}
++
++			/* No interrupt for link down. */
++			if (dev->sgmii_mode == 1 && p->phydev.link)
++				schedule_delayed_work(&dev->sgmii_check,
++						      msecs_to_jiffies(500));
++		}
++	}
++
++	/* TODO */
++	if (data & PORT_PTP_INT) {
++	}
++	return (cnt > 0) ? 0 : -1;
++}
++
++void ksz9477_enable_irq(struct ksz_device *dev)
++{
++	u32 data32;
++
++	ksz_read32(dev, REG_SW_INT_MASK__4, &data32);
++	ksz_write32(dev, REG_SW_INT_MASK__4, data32 & ~SWITCH_INT_MASK);
++}
++
++int ksz9477_handle_irq(struct ksz_device *dev, u8 port, u8 data)
++{
++	int cnt = 0;
++	u32 data32;
++
++	if (port > 0)
++		return ksz9477_handle_port_irq(dev, port - 1, data);
++	ksz_read32(dev, REG_SW_INT_STATUS__4, &data32);
++	if (data32 & APB_TIMEOUT_INT) {
++		u32 apb;
++
++		ksz_read32(dev, REG_SW_APB_TIMEOUT_ADDR__4, &apb);
++		ksz_write32(dev, REG_SW_APB_TIMEOUT_ADDR__4,
++			    apb | APB_TIMEOUT_ACKNOWLEDGE);
++		dev_info(dev->dev, "apb: %04x\n", apb & 0xffff);
++		++cnt;
++	}
++
++	/* TODO */
++	if (data32 & TRIG_TS_INT) {
++		++cnt;
++	}
++
++	if (data32 & LUE_INT) {
++		++cnt;
++	}
++
++	return (cnt > 0) ? 0 : -1;
++}
++
+ MODULE_AUTHOR("Woojung Huh <Woojung.Huh@microchip.com>");
+ MODULE_DESCRIPTION("Microchip KSZ9477 Series Switch DSA Driver");
+ MODULE_LICENSE("GPL");
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477.h linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477.h
+--- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477.h	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477.h	2024-03-01 14:34:49.317882071 -0800
+@@ -2,7 +2,7 @@
+ /*
+  * Microchip KSZ9477 series Header file
+  *
+- * Copyright (C) 2017-2022 Microchip Technology Inc.
++ * Copyright (C) 2017-2024 Microchip Technology Inc.
+  */
+ 
+ #ifndef __KSZ9477_H
+@@ -57,5 +57,8 @@ int ksz9477_reset_switch(struct ksz_devi
+ int ksz9477_dsa_init(struct ksz_device *dev);
+ int ksz9477_switch_init(struct ksz_device *dev);
+ void ksz9477_switch_exit(struct ksz_device *dev);
++void ksz9477_detect_init(struct ksz_device *dev);
++void ksz9477_enable_irq(struct ksz_device *dev);
++int ksz9477_handle_irq(struct ksz_device *dev, u8 port, u8 data);
+ 
+ #endif
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477_i2c.c linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477_i2c.c
+--- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477_i2c.c	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477_i2c.c	2024-02-29 17:31:32.289549382 -0800
+@@ -2,7 +2,7 @@
+ /*
+  * Microchip KSZ9477 series register access through I2C
+  *
+- * Copyright (C) 2018-2019 Microchip Technology Inc.
++ * Copyright (C) 2018-2024 Microchip Technology Inc.
+  */
+ 
+ #include <linux/i2c.h>
+@@ -41,6 +41,8 @@ static int ksz9477_i2c_probe(struct i2c_
+ 	if (i2c->dev.platform_data)
+ 		dev->pdata = i2c->dev.platform_data;
+ 
++	dev->irq = i2c->irq;
++
+ 	ret = ksz_switch_register(dev);
+ 
+ 	/* Main DSA driver may not be started yet. */
+@@ -101,7 +103,7 @@ static const struct of_device_id ksz9477
+ 	},
+ 	{
+ 		.compatible = "microchip,ksz9563",
+-		.data = &ksz_switch_chips[KSZ9893]
++		.data = &ksz_switch_chips[KSZ9563]
+ 	},
+ 	{
+ 		.compatible = "microchip,ksz8563",
+@@ -111,6 +113,10 @@ static const struct of_device_id ksz9477
+ 		.compatible = "microchip,ksz9567",
+ 		.data = &ksz_switch_chips[KSZ9567]
+ 	},
++	{
++		.compatible = "microchip,lan9646",
++		.data = &ksz_switch_chips[KSZ9477]
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, ksz9477_dt_ids);
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477_reg.h linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477_reg.h
+--- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz9477_reg.h	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz9477_reg.h	2024-03-01 14:39:41.358316860 -0800
+@@ -2,7 +2,7 @@
+ /*
+  * Microchip KSZ9477 register definitions
+  *
+- * Copyright (C) 2017-2018 Microchip Technology Inc.
++ * Copyright (C) 2017-2024 Microchip Technology Inc.
+  */
+ 
+ #ifndef __KSZ9477_REGS_H
+@@ -75,7 +75,8 @@
+ #define TRIG_TS_INT			BIT(30)
+ #define APB_TIMEOUT_INT			BIT(29)
+ 
+-#define SWITCH_INT_MASK			(TRIG_TS_INT | APB_TIMEOUT_INT)
++#define SWITCH_INT_MASK			\
++	(LUE_INT | TRIG_TS_INT | APB_TIMEOUT_INT)
+ 
+ #define REG_SW_PORT_INT_STATUS__4	0x0018
+ #define REG_SW_PORT_INT_MASK__4		0x001C
+@@ -1052,6 +1053,11 @@
+ #define SR_MII_AUTO_NEG_FULL_DUPLEX	BIT(5)
+ 
+ #define MMD_SR_MII_REMOTE_CAPABILITY	0x0005
++
++#define SR_MII_REMOTE_ACK		BIT(14)
++#define SR_MII_REMOTE_HALF_DUPLEX	BIT(6)
++#define SR_MII_REMOTE_FULL_DUPLEX	BIT(5)
++
+ #define MMD_SR_MII_AUTO_NEG_EXP		0x0006
+ #define MMD_SR_MII_AUTO_NEG_EXT		0x000F
+ 
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_common.c	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_common.c	2024-03-20 20:40:44.936760958 -0700
+@@ -2,7 +2,7 @@
+ /*
+  * Microchip switch driver main logic
+  *
+- * Copyright (C) 2017-2019 Microchip Technology Inc.
++ * Copyright (C) 2017-2024 Microchip Technology Inc.
+  */
+ 
+ #include <linux/delay.h>
+@@ -213,6 +213,8 @@ static const struct ksz_dev_ops ksz9477_
+ 	.reset = ksz9477_reset_switch,
+ 	.init = ksz9477_switch_init,
+ 	.exit = ksz9477_switch_exit,
++	.enable_irq = ksz9477_enable_irq,
++	.handle_irq = ksz9477_handle_irq,
+ };
+ 
+ static const struct ksz_dev_ops lan937x_dev_ops = {
+@@ -432,9 +434,8 @@ static const struct regmap_range ksz8563
+ 	regmap_reg_range(0x0006, 0x0006),
+ 	regmap_reg_range(0x000f, 0x001f),
+ 	regmap_reg_range(0x0100, 0x0100),
+-	regmap_reg_range(0x0104, 0x0107),
+-	regmap_reg_range(0x010d, 0x010d),
+-	regmap_reg_range(0x0110, 0x0113),
++	regmap_reg_range(0x0104, 0x010d),
++	regmap_reg_range(0x0110, 0x011b),
+ 	regmap_reg_range(0x0120, 0x012b),
+ 	regmap_reg_range(0x0201, 0x0201),
+ 	regmap_reg_range(0x0210, 0x0213),
+@@ -462,12 +463,8 @@ static const struct regmap_range ksz8563
+ 	regmap_reg_range(0x101b, 0x101b),
+ 	regmap_reg_range(0x101f, 0x1021),
+ 	regmap_reg_range(0x1030, 0x1030),
+-	regmap_reg_range(0x1100, 0x1111),
+-	regmap_reg_range(0x111a, 0x111d),
+-	regmap_reg_range(0x1122, 0x1127),
+-	regmap_reg_range(0x112a, 0x112b),
+-	regmap_reg_range(0x1136, 0x1139),
+-	regmap_reg_range(0x113e, 0x113f),
++	regmap_reg_range(0x1100, 0x111f),
++	regmap_reg_range(0x1120, 0x113f),
+ 	regmap_reg_range(0x1400, 0x1401),
+ 	regmap_reg_range(0x1403, 0x1403),
+ 	regmap_reg_range(0x1410, 0x1417),
+@@ -492,12 +489,8 @@ static const struct regmap_range ksz8563
+ 	regmap_reg_range(0x201b, 0x201b),
+ 	regmap_reg_range(0x201f, 0x2021),
+ 	regmap_reg_range(0x2030, 0x2030),
+-	regmap_reg_range(0x2100, 0x2111),
+-	regmap_reg_range(0x211a, 0x211d),
+-	regmap_reg_range(0x2122, 0x2127),
+-	regmap_reg_range(0x212a, 0x212b),
+-	regmap_reg_range(0x2136, 0x2139),
+-	regmap_reg_range(0x213e, 0x213f),
++	regmap_reg_range(0x2100, 0x211f),
++	regmap_reg_range(0x2120, 0x213f),
+ 	regmap_reg_range(0x2400, 0x2401),
+ 	regmap_reg_range(0x2403, 0x2403),
+ 	regmap_reg_range(0x2410, 0x2417),
+@@ -549,11 +542,10 @@ static const struct regmap_access_table
+ static const struct regmap_range ksz9477_valid_regs[] = {
+ 	regmap_reg_range(0x0000, 0x0003),
+ 	regmap_reg_range(0x0006, 0x0006),
+-	regmap_reg_range(0x0010, 0x001f),
++	regmap_reg_range(0x000f, 0x001f),
+ 	regmap_reg_range(0x0100, 0x0100),
+-	regmap_reg_range(0x0103, 0x0107),
+-	regmap_reg_range(0x010d, 0x010d),
+-	regmap_reg_range(0x0110, 0x0113),
++	regmap_reg_range(0x0103, 0x010d),
++	regmap_reg_range(0x0110, 0x011b),
+ 	regmap_reg_range(0x0120, 0x012b),
+ 	regmap_reg_range(0x0201, 0x0201),
+ 	regmap_reg_range(0x0210, 0x0213),
+@@ -588,11 +580,8 @@ static const struct regmap_range ksz9477
+ 	regmap_reg_range(0x101b, 0x101b),
+ 	regmap_reg_range(0x101f, 0x1020),
+ 	regmap_reg_range(0x1030, 0x1030),
+-	regmap_reg_range(0x1100, 0x1115),
+-	regmap_reg_range(0x111a, 0x111f),
+-	regmap_reg_range(0x1120, 0x112b),
+-	regmap_reg_range(0x1134, 0x113b),
+-	regmap_reg_range(0x113c, 0x113f),
++	regmap_reg_range(0x1100, 0x111f),
++	regmap_reg_range(0x1120, 0x113f),
+ 	regmap_reg_range(0x1400, 0x1401),
+ 	regmap_reg_range(0x1403, 0x1403),
+ 	regmap_reg_range(0x1410, 0x1417),
+@@ -621,11 +610,8 @@ static const struct regmap_range ksz9477
+ 	regmap_reg_range(0x201b, 0x201b),
+ 	regmap_reg_range(0x201f, 0x2020),
+ 	regmap_reg_range(0x2030, 0x2030),
+-	regmap_reg_range(0x2100, 0x2115),
+-	regmap_reg_range(0x211a, 0x211f),
+-	regmap_reg_range(0x2120, 0x212b),
+-	regmap_reg_range(0x2134, 0x213b),
+-	regmap_reg_range(0x213c, 0x213f),
++	regmap_reg_range(0x2100, 0x211f),
++	regmap_reg_range(0x2120, 0x213f),
+ 	regmap_reg_range(0x2400, 0x2401),
+ 	regmap_reg_range(0x2403, 0x2403),
+ 	regmap_reg_range(0x2410, 0x2417),
+@@ -654,11 +640,8 @@ static const struct regmap_range ksz9477
+ 	regmap_reg_range(0x301b, 0x301b),
+ 	regmap_reg_range(0x301f, 0x3020),
+ 	regmap_reg_range(0x3030, 0x3030),
+-	regmap_reg_range(0x3100, 0x3115),
+-	regmap_reg_range(0x311a, 0x311f),
+-	regmap_reg_range(0x3120, 0x312b),
+-	regmap_reg_range(0x3134, 0x313b),
+-	regmap_reg_range(0x313c, 0x313f),
++	regmap_reg_range(0x3100, 0x311f),
++	regmap_reg_range(0x3120, 0x313f),
+ 	regmap_reg_range(0x3400, 0x3401),
+ 	regmap_reg_range(0x3403, 0x3403),
+ 	regmap_reg_range(0x3410, 0x3417),
+@@ -687,11 +670,8 @@ static const struct regmap_range ksz9477
+ 	regmap_reg_range(0x401b, 0x401b),
+ 	regmap_reg_range(0x401f, 0x4020),
+ 	regmap_reg_range(0x4030, 0x4030),
+-	regmap_reg_range(0x4100, 0x4115),
+-	regmap_reg_range(0x411a, 0x411f),
+-	regmap_reg_range(0x4120, 0x412b),
+-	regmap_reg_range(0x4134, 0x413b),
+-	regmap_reg_range(0x413c, 0x413f),
++	regmap_reg_range(0x4100, 0x411f),
++	regmap_reg_range(0x4120, 0x413f),
+ 	regmap_reg_range(0x4400, 0x4401),
+ 	regmap_reg_range(0x4403, 0x4403),
+ 	regmap_reg_range(0x4410, 0x4417),
+@@ -720,11 +700,8 @@ static const struct regmap_range ksz9477
+ 	regmap_reg_range(0x501b, 0x501b),
+ 	regmap_reg_range(0x501f, 0x5020),
+ 	regmap_reg_range(0x5030, 0x5030),
+-	regmap_reg_range(0x5100, 0x5115),
+-	regmap_reg_range(0x511a, 0x511f),
+-	regmap_reg_range(0x5120, 0x512b),
+-	regmap_reg_range(0x5134, 0x513b),
+-	regmap_reg_range(0x513c, 0x513f),
++	regmap_reg_range(0x5100, 0x511f),
++	regmap_reg_range(0x5120, 0x513f),
+ 	regmap_reg_range(0x5400, 0x5401),
+ 	regmap_reg_range(0x5403, 0x5403),
+ 	regmap_reg_range(0x5410, 0x5417),
+@@ -782,8 +759,7 @@ static const struct regmap_range ksz9477
+ 	regmap_reg_range(0x701b, 0x701b),
+ 	regmap_reg_range(0x701f, 0x7020),
+ 	regmap_reg_range(0x7030, 0x7030),
+-	regmap_reg_range(0x7200, 0x7203),
+-	regmap_reg_range(0x7206, 0x7207),
++	regmap_reg_range(0x7200, 0x7207),
+ 	regmap_reg_range(0x7300, 0x7301),
+ 	regmap_reg_range(0x7400, 0x7401),
+ 	regmap_reg_range(0x7403, 0x7403),
+@@ -815,11 +791,10 @@ static const struct regmap_access_table
+ static const struct regmap_range ksz9896_valid_regs[] = {
+ 	regmap_reg_range(0x0000, 0x0003),
+ 	regmap_reg_range(0x0006, 0x0006),
+-	regmap_reg_range(0x0010, 0x001f),
++	regmap_reg_range(0x000f, 0x001f),
+ 	regmap_reg_range(0x0100, 0x0100),
+-	regmap_reg_range(0x0103, 0x0107),
+-	regmap_reg_range(0x010d, 0x010d),
+-	regmap_reg_range(0x0110, 0x0113),
++	regmap_reg_range(0x0103, 0x010d),
++	regmap_reg_range(0x0110, 0x011b),
+ 	regmap_reg_range(0x0120, 0x0127),
+ 	regmap_reg_range(0x0201, 0x0201),
+ 	regmap_reg_range(0x0210, 0x0213),
+@@ -845,12 +820,8 @@ static const struct regmap_range ksz9896
+ 	regmap_reg_range(0x101b, 0x101b),
+ 	regmap_reg_range(0x101f, 0x1020),
+ 	regmap_reg_range(0x1030, 0x1030),
+-	regmap_reg_range(0x1100, 0x1115),
+-	regmap_reg_range(0x111a, 0x111f),
+-	regmap_reg_range(0x1122, 0x1127),
+-	regmap_reg_range(0x112a, 0x112b),
+-	regmap_reg_range(0x1136, 0x1139),
+-	regmap_reg_range(0x113e, 0x113f),
++	regmap_reg_range(0x1100, 0x111f),
++	regmap_reg_range(0x1120, 0x113f),
+ 	regmap_reg_range(0x1400, 0x1401),
+ 	regmap_reg_range(0x1403, 0x1403),
+ 	regmap_reg_range(0x1410, 0x1417),
+@@ -875,12 +846,8 @@ static const struct regmap_range ksz9896
+ 	regmap_reg_range(0x201b, 0x201b),
+ 	regmap_reg_range(0x201f, 0x2020),
+ 	regmap_reg_range(0x2030, 0x2030),
+-	regmap_reg_range(0x2100, 0x2115),
+-	regmap_reg_range(0x211a, 0x211f),
+-	regmap_reg_range(0x2122, 0x2127),
+-	regmap_reg_range(0x212a, 0x212b),
+-	regmap_reg_range(0x2136, 0x2139),
+-	regmap_reg_range(0x213e, 0x213f),
++	regmap_reg_range(0x2100, 0x211f),
++	regmap_reg_range(0x2120, 0x213f),
+ 	regmap_reg_range(0x2400, 0x2401),
+ 	regmap_reg_range(0x2403, 0x2403),
+ 	regmap_reg_range(0x2410, 0x2417),
+@@ -905,12 +872,8 @@ static const struct regmap_range ksz9896
+ 	regmap_reg_range(0x301b, 0x301b),
+ 	regmap_reg_range(0x301f, 0x3020),
+ 	regmap_reg_range(0x3030, 0x3030),
+-	regmap_reg_range(0x3100, 0x3115),
+-	regmap_reg_range(0x311a, 0x311f),
+-	regmap_reg_range(0x3122, 0x3127),
+-	regmap_reg_range(0x312a, 0x312b),
+-	regmap_reg_range(0x3136, 0x3139),
+-	regmap_reg_range(0x313e, 0x313f),
++	regmap_reg_range(0x3100, 0x311f),
++	regmap_reg_range(0x3120, 0x313f),
+ 	regmap_reg_range(0x3400, 0x3401),
+ 	regmap_reg_range(0x3403, 0x3403),
+ 	regmap_reg_range(0x3410, 0x3417),
+@@ -935,12 +898,8 @@ static const struct regmap_range ksz9896
+ 	regmap_reg_range(0x401b, 0x401b),
+ 	regmap_reg_range(0x401f, 0x4020),
+ 	regmap_reg_range(0x4030, 0x4030),
+-	regmap_reg_range(0x4100, 0x4115),
+-	regmap_reg_range(0x411a, 0x411f),
+-	regmap_reg_range(0x4122, 0x4127),
+-	regmap_reg_range(0x412a, 0x412b),
+-	regmap_reg_range(0x4136, 0x4139),
+-	regmap_reg_range(0x413e, 0x413f),
++	regmap_reg_range(0x4100, 0x411f),
++	regmap_reg_range(0x4120, 0x413f),
+ 	regmap_reg_range(0x4400, 0x4401),
+ 	regmap_reg_range(0x4403, 0x4403),
+ 	regmap_reg_range(0x4410, 0x4417),
+@@ -965,12 +924,8 @@ static const struct regmap_range ksz9896
+ 	regmap_reg_range(0x501b, 0x501b),
+ 	regmap_reg_range(0x501f, 0x5020),
+ 	regmap_reg_range(0x5030, 0x5030),
+-	regmap_reg_range(0x5100, 0x5115),
+-	regmap_reg_range(0x511a, 0x511f),
+-	regmap_reg_range(0x5122, 0x5127),
+-	regmap_reg_range(0x512a, 0x512b),
+-	regmap_reg_range(0x5136, 0x5139),
+-	regmap_reg_range(0x513e, 0x513f),
++	regmap_reg_range(0x5100, 0x511f),
++	regmap_reg_range(0x5120, 0x513f),
+ 	regmap_reg_range(0x5400, 0x5401),
+ 	regmap_reg_range(0x5403, 0x5403),
+ 	regmap_reg_range(0x5410, 0x5417),
+@@ -995,12 +950,6 @@ static const struct regmap_range ksz9896
+ 	regmap_reg_range(0x601b, 0x601b),
+ 	regmap_reg_range(0x601f, 0x6020),
+ 	regmap_reg_range(0x6030, 0x6030),
+-	regmap_reg_range(0x6100, 0x6115),
+-	regmap_reg_range(0x611a, 0x611f),
+-	regmap_reg_range(0x6122, 0x6127),
+-	regmap_reg_range(0x612a, 0x612b),
+-	regmap_reg_range(0x6136, 0x6139),
+-	regmap_reg_range(0x613e, 0x613f),
+ 	regmap_reg_range(0x6300, 0x6301),
+ 	regmap_reg_range(0x6400, 0x6401),
+ 	regmap_reg_range(0x6403, 0x6403),
+@@ -1026,32 +975,6 @@ static const struct regmap_access_table
+ };
+ 
+ const struct ksz_chip_data ksz_switch_chips[] = {
+-	[KSZ8563] = {
+-		.chip_id = KSZ8563_CHIP_ID,
+-		.dev_name = "KSZ8563",
+-		.num_vlans = 4096,
+-		.num_alus = 4096,
+-		.num_statics = 16,
+-		.cpu_ports = 0x07,	/* can be configured as cpu port */
+-		.port_cnt = 3,		/* total port count */
+-		.ops = &ksz9477_dev_ops,
+-		.mib_names = ksz9477_mib_names,
+-		.mib_cnt = ARRAY_SIZE(ksz9477_mib_names),
+-		.reg_mib_cnt = MIB_COUNTER_NUM,
+-		.regs = ksz9477_regs,
+-		.masks = ksz9477_masks,
+-		.shifts = ksz9477_shifts,
+-		.xmii_ctrl0 = ksz9477_xmii_ctrl0,
+-		.xmii_ctrl1 = ksz8795_xmii_ctrl1, /* Same as ksz8795 */
+-		.supports_mii = {false, false, true},
+-		.supports_rmii = {false, false, true},
+-		.supports_rgmii = {false, false, true},
+-		.internal_phy = {true, true, false},
+-		.gbit_capable = {false, false, true},
+-		.wr_table = &ksz8563_register_set,
+-		.rd_table = &ksz8563_register_set,
+-	},
+-
+ 	[KSZ8795] = {
+ 		.chip_id = KSZ8795_CHIP_ID,
+ 		.dev_name = "KSZ8795",
+@@ -1252,6 +1175,36 @@ const struct ksz_chip_data ksz_switch_ch
+ 		.gbit_capable	= {true, true, true, true, true, true, true},
+ 	},
+ 
++	[KSZ9567] = {
++		.chip_id = KSZ9567_CHIP_ID,
++		.dev_name = "KSZ9567",
++		.num_vlans = 4096,
++		.num_alus = 4096,
++		.num_statics = 16,
++		.cpu_ports = 0x7F,	/* can be configured as cpu port */
++		.port_cnt = 7,		/* total physical port count */
++		.port_nirqs = 3,
++		.ops = &ksz9477_dev_ops,
++		.phy_errata_9477 = true,
++		.mib_names = ksz9477_mib_names,
++		.mib_cnt = ARRAY_SIZE(ksz9477_mib_names),
++		.reg_mib_cnt = MIB_COUNTER_NUM,
++		.regs = ksz9477_regs,
++		.masks = ksz9477_masks,
++		.shifts = ksz9477_shifts,
++		.xmii_ctrl0 = ksz9477_xmii_ctrl0,
++		.xmii_ctrl1 = ksz9477_xmii_ctrl1,
++		.supports_mii	= {false, false, false, false,
++				   false, true, true},
++		.supports_rmii	= {false, false, false, false,
++				   false, true, true},
++		.supports_rgmii = {false, false, false, false,
++				   false, true, true},
++		.internal_phy	= {true, true, true, true,
++				   true, false, false},
++		.gbit_capable	= {true, true, true, true, true, true, true},
++	},
++
+ 	[KSZ9893] = {
+ 		.chip_id = KSZ9893_CHIP_ID,
+ 		.dev_name = "KSZ9893",
+@@ -1275,19 +1228,20 @@ const struct ksz_chip_data ksz_switch_ch
+ 		.supports_rgmii = {false, false, true},
+ 		.internal_phy = {true, true, false},
+ 		.gbit_capable = {true, true, true},
++		.wr_table = &ksz8563_register_set,
++		.rd_table = &ksz8563_register_set,
+ 	},
+ 
+-	[KSZ9567] = {
+-		.chip_id = KSZ9567_CHIP_ID,
+-		.dev_name = "KSZ9567",
++	[KSZ9563] = {
++		.chip_id = KSZ9563_CHIP_ID,
++		.dev_name = "KSZ9563",
+ 		.num_vlans = 4096,
+ 		.num_alus = 4096,
+ 		.num_statics = 16,
+-		.cpu_ports = 0x7F,	/* can be configured as cpu port */
+-		.port_cnt = 7,		/* total physical port count */
+-		.port_nirqs = 3,
++		.cpu_ports = 0x07,	/* can be configured as cpu port */
++		.port_cnt = 3,		/* total port count */
++		.port_nirqs = 2,
+ 		.ops = &ksz9477_dev_ops,
+-		.phy_errata_9477 = true,
+ 		.mib_names = ksz9477_mib_names,
+ 		.mib_cnt = ARRAY_SIZE(ksz9477_mib_names),
+ 		.reg_mib_cnt = MIB_COUNTER_NUM,
+@@ -1295,16 +1249,40 @@ const struct ksz_chip_data ksz_switch_ch
+ 		.masks = ksz9477_masks,
+ 		.shifts = ksz9477_shifts,
+ 		.xmii_ctrl0 = ksz9477_xmii_ctrl0,
+-		.xmii_ctrl1 = ksz9477_xmii_ctrl1,
+-		.supports_mii	= {false, false, false, false,
+-				   false, true, true},
+-		.supports_rmii	= {false, false, false, false,
+-				   false, true, true},
+-		.supports_rgmii = {false, false, false, false,
+-				   false, true, true},
+-		.internal_phy	= {true, true, true, true,
+-				   true, false, false},
+-		.gbit_capable	= {true, true, true, true, true, true, true},
++		.xmii_ctrl1 = ksz8795_xmii_ctrl1, /* Same as ksz8795 */
++		.supports_mii = {false, false, true},
++		.supports_rmii = {false, false, true},
++		.supports_rgmii = {false, false, true},
++		.internal_phy = {true, true, false},
++		.gbit_capable = {true, true, true},
++		.wr_table = &ksz8563_register_set,
++		.rd_table = &ksz8563_register_set,
++	},
++
++	[KSZ8563] = {
++		.chip_id = KSZ8563_CHIP_ID,
++		.dev_name = "KSZ8563",
++		.num_vlans = 4096,
++		.num_alus = 4096,
++		.num_statics = 16,
++		.cpu_ports = 0x07,	/* can be configured as cpu port */
++		.port_cnt = 3,		/* total port count */
++		.ops = &ksz9477_dev_ops,
++		.mib_names = ksz9477_mib_names,
++		.mib_cnt = ARRAY_SIZE(ksz9477_mib_names),
++		.reg_mib_cnt = MIB_COUNTER_NUM,
++		.regs = ksz9477_regs,
++		.masks = ksz9477_masks,
++		.shifts = ksz9477_shifts,
++		.xmii_ctrl0 = ksz9477_xmii_ctrl0,
++		.xmii_ctrl1 = ksz8795_xmii_ctrl1, /* Same as ksz8795 */
++		.supports_mii = {false, false, true},
++		.supports_rmii = {false, false, true},
++		.supports_rgmii = {false, false, true},
++		.internal_phy = {true, true, false},
++		.gbit_capable = {false, false, true},
++		.wr_table = &ksz8563_register_set,
++		.rd_table = &ksz8563_register_set,
+ 	},
+ 
+ 	[LAN9370] = {
+@@ -1681,14 +1659,19 @@ static int ksz_sw_mdio_write(struct mii_
+ static int ksz_irq_phy_setup(struct ksz_device *dev)
+ {
+ 	struct dsa_switch *ds = dev->ds;
++	struct ksz_port *p;
+ 	int phy;
+ 	int irq;
+ 	int ret;
+ 
+ 	for (phy = 0; phy < KSZ_MAX_NUM_PORTS; phy++) {
+ 		if (BIT(phy) & ds->phys_mii_mask) {
++			p = &dev->ports[phy];
++			irq = PORT_SRC_PHY_INT;
++			if (p->sgmii)
++				irq = 3;
+ 			irq = irq_find_mapping(dev->ports[phy].pirq.domain,
+-					       PORT_SRC_PHY_INT);
++					       irq);
+ 			if (irq < 0) {
+ 				ret = irq;
+ 				goto out;
+@@ -1790,7 +1773,7 @@ static void ksz_irq_bus_sync_unlock(stru
+ 	struct ksz_device *dev = kirq->dev;
+ 	int ret;
+ 
+-	ret = ksz_write32(dev, kirq->reg_mask, kirq->masked);
++	ret = ksz_write8(dev, kirq->reg_mask, kirq->masked);
+ 	if (ret)
+ 		dev_err(dev->dev, "failed to change IRQ mask\n");
+ 
+@@ -1851,6 +1834,12 @@ static irqreturn_t ksz_irq_thread_fn(int
+ 	if (ret)
+ 		goto out;
+ 
++	if (dev->dev_ops->handle_irq) {
++		ret = dev->dev_ops->handle_irq(dev, kirq->port, data);
++		if (!ret)
++			++nhandled;
++	}
++
+ 	for (n = 0; n < kirq->nirqs; ++n) {
+ 		if (data & BIT(n)) {
+ 			sub_irq = irq_find_mapping(kirq->domain, n);
+@@ -1894,10 +1883,11 @@ static int ksz_girq_setup(struct ksz_dev
+ {
+ 	struct ksz_irq *girq = &dev->girq;
+ 
++	girq->port = 0;
+ 	girq->nirqs = dev->info->port_cnt;
+ 	girq->reg_mask = REG_SW_PORT_INT_MASK__1;
+ 	girq->reg_status = REG_SW_PORT_INT_STATUS__1;
+-	snprintf(girq->name, sizeof(girq->name), "global_port_irq");
++	snprintf(girq->name, sizeof(girq->name), "%s", dev_name(dev->dev));
+ 
+ 	girq->irq_num = dev->irq;
+ 
+@@ -1908,10 +1898,12 @@ static int ksz_pirq_setup(struct ksz_dev
+ {
+ 	struct ksz_irq *pirq = &dev->ports[p].pirq;
+ 
++	pirq->port = p + 1;
+ 	pirq->nirqs = dev->info->port_nirqs;
+ 	pirq->reg_mask = dev->dev_ops->get_port_addr(p, REG_PORT_INT_MASK);
+ 	pirq->reg_status = dev->dev_ops->get_port_addr(p, REG_PORT_INT_STATUS);
+-	snprintf(pirq->name, sizeof(pirq->name), "port_irq-%d", p);
++	snprintf(pirq->name, sizeof(pirq->name), "%s-%d", dev_name(dev->dev),
++		 p);
+ 
+ 	pirq->irq_num = irq_find_mapping(dev->girq.domain, p);
+ 	if (pirq->irq_num < 0)
+@@ -1982,6 +1974,8 @@ static int ksz_setup(struct dsa_switch *
+ 			if (ret)
+ 				goto out_girq;
+ 		}
++		if (dev->dev_ops->enable_irq)
++			dev->dev_ops->enable_irq(dev);
+ 	}
+ 
+ 	ret = ksz_mdio_register(dev);
+@@ -2069,7 +2063,7 @@ static void ksz_mib_read_work(struct wor
+ 		if (!p->read) {
+ 			const struct dsa_port *dp = dsa_to_port(dev->ds, i);
+ 
+-			if (!netif_carrier_ok(dp->slave))
++			if (dp->slave && !netif_carrier_ok(dp->slave))
+ 				mib->cnt_ptr = dev->info->reg_mib_cnt;
+ 		}
+ 		port_r_cnt(dev, i);
+@@ -2226,7 +2220,7 @@ static int ksz_port_fdb_add(struct dsa_s
+ 	struct ksz_device *dev = ds->priv;
+ 
+ 	if (!dev->dev_ops->fdb_add)
+-		return -EOPNOTSUPP;
++		return 0;
+ 
+ 	return dev->dev_ops->fdb_add(dev, port, addr, vid, db);
+ }
+@@ -2238,7 +2232,7 @@ static int ksz_port_fdb_del(struct dsa_s
+ 	struct ksz_device *dev = ds->priv;
+ 
+ 	if (!dev->dev_ops->fdb_del)
+-		return -EOPNOTSUPP;
++		return 0;
+ 
+ 	return dev->dev_ops->fdb_del(dev, port, addr, vid, db);
+ }
+@@ -2383,6 +2377,7 @@ static enum dsa_tag_protocol ksz_get_tag
+ 
+ 	if (dev->chip_id == KSZ8830_CHIP_ID ||
+ 	    dev->chip_id == KSZ8563_CHIP_ID ||
++	    dev->chip_id == KSZ9563_CHIP_ID ||
+ 	    dev->chip_id == KSZ9893_CHIP_ID)
+ 		proto = DSA_TAG_PROTO_KSZ9893;
+ 
+@@ -2458,7 +2453,7 @@ static int ksz_change_mtu(struct dsa_swi
+ 	struct ksz_device *dev = ds->priv;
+ 
+ 	if (!dev->dev_ops->change_mtu)
+-		return -EOPNOTSUPP;
++		return 0;
+ 
+ 	return dev->dev_ops->change_mtu(dev, port, mtu);
+ }
+@@ -2468,7 +2463,7 @@ static int ksz_max_mtu(struct dsa_switch
+ 	struct ksz_device *dev = ds->priv;
+ 
+ 	if (!dev->dev_ops->max_mtu)
+-		return -EOPNOTSUPP;
++		return ETH_DATA_LEN + 4;
+ 
+ 	return dev->dev_ops->max_mtu(dev, port);
+ }
+@@ -2503,6 +2498,7 @@ static void ksz_set_xmii(struct ksz_devi
+ 		data8 |= bitval[P_RGMII_SEL];
+ 		/* On KSZ9893, disable RGMII in-band status support */
+ 		if (dev->chip_id == KSZ9893_CHIP_ID ||
++		    dev->chip_id == KSZ9563_CHIP_ID ||
+ 		    dev->chip_id == KSZ8563_CHIP_ID)
+ 			data8 &= ~P_MII_MAC_MODE;
+ 		break;
+@@ -2511,6 +2507,7 @@ static void ksz_set_xmii(struct ksz_devi
+ 			phy_modes(interface), port);
+ 		return;
+ 	}
++	data8 &= ~P_MII_100MBIT_M;
+ 
+ 	if (p->rgmii_tx_val)
+ 		data8 |= P_RGMII_ID_EG_ENABLE;
+@@ -2540,7 +2537,7 @@ phy_interface_t ksz_get_xmii(struct ksz_
+ 		else
+ 			interface = PHY_INTERFACE_MODE_MII;
+ 	} else if (val == bitval[P_RMII_SEL]) {
+-		interface = PHY_INTERFACE_MODE_RGMII;
++		interface = PHY_INTERFACE_MODE_RMII;
+ 	} else {
+ 		interface = PHY_INTERFACE_MODE_RGMII;
+ 		if (data8 & P_RGMII_ID_EG_ENABLE)
+@@ -2555,33 +2552,6 @@ phy_interface_t ksz_get_xmii(struct ksz_
+ 	return interface;
+ }
+ 
+-static void ksz_phylink_mac_config(struct dsa_switch *ds, int port,
+-				   unsigned int mode,
+-				   const struct phylink_link_state *state)
+-{
+-	struct ksz_device *dev = ds->priv;
+-
+-	if (ksz_is_ksz88x3(dev))
+-		return;
+-
+-	/* Internal PHYs */
+-	if (dev->info->internal_phy[port])
+-		return;
+-
+-	if (phylink_autoneg_inband(mode)) {
+-		dev_err(dev->dev, "In-band AN not supported!\n");
+-		return;
+-	}
+-
+-	ksz_set_xmii(dev, port, state->interface);
+-
+-	if (dev->dev_ops->phylink_mac_config)
+-		dev->dev_ops->phylink_mac_config(dev, port, mode, state);
+-
+-	if (dev->dev_ops->setup_rgmii_delay)
+-		dev->dev_ops->setup_rgmii_delay(dev, port);
+-}
+-
+ bool ksz_get_gbit(struct ksz_device *dev, int port)
+ {
+ 	const u8 *bitval = dev->info->xmii_ctrl1;
+@@ -2675,6 +2645,44 @@ static void ksz_duplex_flowctrl(struct k
+ 	ksz_prmw8(dev, port, regs[P_XMII_CTRL_0], mask, val);
+ }
+ 
++static void ksz_phylink_mac_config(struct dsa_switch *ds, int port,
++				   unsigned int mode,
++				   const struct phylink_link_state *state)
++{
++	struct ksz_device *dev = ds->priv;
++
++	if (ksz_is_ksz88x3(dev))
++		return;
++
++	/* Internal PHYs */
++	if (dev->info->internal_phy[port])
++		return;
++
++	if (phylink_autoneg_inband(mode)) {
++		dev_err(dev->dev, "In-band AN not supported!\n");
++		return;
++	}
++
++	if (state->interface == PHY_INTERFACE_MODE_SGMII)
++		return;
++
++	ksz_set_xmii(dev, port, state->interface);
++	if (ksz_is_ksz87xx(dev)) {
++		bool gbit = false;
++
++		if (state->interface != PHY_INTERFACE_MODE_MII &&
++		    state->interface != PHY_INTERFACE_MODE_RMII)
++			gbit = true;
++		ksz_set_gbit(dev, port, gbit);
++	}
++
++	if (dev->dev_ops->phylink_mac_config)
++		dev->dev_ops->phylink_mac_config(dev, port, mode, state);
++
++	if (dev->dev_ops->setup_rgmii_delay)
++		dev->dev_ops->setup_rgmii_delay(dev, port);
++}
++
+ static void ksz9477_phylink_mac_link_up(struct ksz_device *dev, int port,
+ 					unsigned int mode,
+ 					phy_interface_t interface,
+@@ -2718,6 +2726,17 @@ static int ksz_switch_detect(struct ksz_
+ 	u32 id32;
+ 	int ret;
+ 
++	/* First access to chip may not work in newer kernels when SPI mode
++	 * is not 0.
++	 */
++	ret = ksz_write8(dev, REG_CHIP_ID0, 0);
++	if (ret)
++		return ret;
++
++	/* Need to disable Auto Edge Detection in KSZ9897. */
++	if (ksz_is_ksz9897(dev))
++		ksz9477_detect_init(dev);
++
+ 	/* read chip id */
+ 	ret = ksz_read16(dev, REG_CHIP_ID0, &id16);
+ 	if (ret)
+@@ -2776,9 +2795,10 @@ static int ksz_switch_detect(struct ksz_
+ 
+ 			if (id4 == SKU_ID_KSZ8563)
+ 				dev->chip_id = KSZ8563_CHIP_ID;
++			else if (id4 == SKU_ID_KSZ9563)
++				dev->chip_id = KSZ9563_CHIP_ID;
+ 			else
+ 				dev->chip_id = KSZ9893_CHIP_ID;
+-
+ 			break;
+ 		default:
+ 			dev_err(dev->dev,
+@@ -2827,6 +2847,62 @@ static const struct dsa_switch_ops ksz_s
+ 	.port_max_mtu		= ksz_max_mtu,
+ };
+ 
++ssize_t ksz_registers_read(struct file *filp, struct kobject *kobj,
++			   struct bin_attribute *bin_attr, char *buf,
++			   loff_t off, size_t count)
++{
++	struct ksz_device *swdev;
++	struct device *dev;
++	size_t i;
++	u32 reg;
++
++	dev = container_of(kobj, struct device, kobj);
++	swdev = dev_get_drvdata(dev);
++
++	if (unlikely(off >= swdev->regs_size))
++		return 0;
++
++	if ((off + count) >= swdev->regs_size)
++		count = swdev->regs_size - off;
++
++	if (unlikely(!count))
++		return count;
++
++	reg = off;
++	i = regmap_bulk_read(swdev->regmap[0], reg, buf, count);
++	i = count;
++	return i;
++}
++EXPORT_SYMBOL_GPL(ksz_registers_read);
++
++ssize_t ksz_registers_write(struct file *filp, struct kobject *kobj,
++			    struct bin_attribute *bin_attr, char *buf,
++			    loff_t off, size_t count)
++{
++	struct ksz_device *swdev;
++	struct device *dev;
++	size_t i;
++	u32 reg;
++
++	dev = container_of(kobj, struct device, kobj);
++	swdev = dev_get_drvdata(dev);
++
++	if (unlikely(off >= swdev->regs_size))
++		return -EFBIG;
++
++	if ((off + count) >= swdev->regs_size)
++		count = swdev->regs_size - off;
++
++	if (unlikely(!count))
++		return count;
++
++	reg = off;
++	i = regmap_bulk_write(swdev->regmap[0], reg, buf, count);
++	i = count;
++	return i;
++}
++EXPORT_SYMBOL_GPL(ksz_registers_write);
++
+ struct ksz_device *ksz_switch_alloc(struct device *base, void *priv)
+ {
+ 	struct dsa_switch *ds;
+@@ -2980,6 +3056,9 @@ int ksz_switch_register(struct ksz_devic
+ 		if (!ports)
+ 			ports = of_get_child_by_name(dev->dev->of_node, "ports");
+ 		if (ports) {
++			u32 mode;
++
++			dev->sgmii_mode = 1;
+ 			for_each_available_child_of_node(ports, port) {
+ 				if (of_property_read_u32(port, "reg",
+ 							 &port_num))
+@@ -2993,6 +3072,10 @@ int ksz_switch_register(struct ksz_devic
+ 						&dev->ports[port_num].interface);
+ 
+ 				ksz_parse_rgmii_delay(dev, port_num, port);
++				if (of_property_read_u32(port, "mode", &mode))
++					continue;
++				if (port_num == 6)
++					dev->sgmii_mode = (u8) mode;
+ 			}
+ 			of_node_put(ports);
+ 		}
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_common.h linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_common.h
+--- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_common.h	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_common.h	2024-03-01 14:31:50.560961148 -0800
+@@ -1,7 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ /* Microchip switch driver common header
+  *
+- * Copyright (C) 2017-2019 Microchip Technology Inc.
++ * Copyright (C) 2017-2024 Microchip Technology Inc.
+  */
+ 
+ #ifndef __KSZ_COMMON_H
+@@ -77,6 +77,7 @@ struct ksz_irq {
+ 	struct irq_domain *domain;
+ 	int nirqs;
+ 	int irq_num;
++	u8 port;
+ 	char name[16];
+ 	struct ksz_device *dev;
+ };
+@@ -92,6 +93,9 @@ struct ksz_port {
+ 	u32 force:1;
+ 	u32 read:1;			/* read MIB counters in background */
+ 	u32 freeze:1;			/* MIB counter freeze is enabled */
++	u32 sgmii:1;			/* port is SGMII */
++	u32 sgmii_link:8;
++	u32 sgmii_setup:1;
+ 
+ 	struct ksz_port_mib mib;
+ 	phy_interface_t interface;
+@@ -116,6 +120,7 @@ struct ksz_device {
+ 
+ 	struct device *dev;
+ 	struct regmap *regmap[3];
++	u32 regs_size;
+ 
+ 	void *priv;
+ 	int irq;
+@@ -136,6 +141,8 @@ struct ksz_device {
+ 	struct ksz_port *ports;
+ 	struct delayed_work mib_read;
+ 	unsigned long mib_read_interval;
++	struct delayed_work sgmii_check;
++	u8 sgmii_mode;
+ 	u16 mirror_rx;
+ 	u16 mirror_tx;
+ 	u16 port_mask;
+@@ -145,7 +152,6 @@ struct ksz_device {
+ 
+ /* List of supported models */
+ enum ksz_model {
+-	KSZ8563,
+ 	KSZ8795,
+ 	KSZ8794,
+ 	KSZ8765,
+@@ -153,17 +159,19 @@ enum ksz_model {
+ 	KSZ9477,
+ 	KSZ9896,
+ 	KSZ9897,
+-	KSZ9893,
+ 	KSZ9567,
++	KSZ9893,
++	KSZ9563,
++	KSZ8563,
+ 	LAN9370,
+ 	LAN9371,
+ 	LAN9372,
+ 	LAN9373,
+ 	LAN9374,
++	LAN9646,
+ };
+ 
+ enum ksz_chip_id {
+-	KSZ8563_CHIP_ID = 0x8563,
+ 	KSZ8795_CHIP_ID = 0x8795,
+ 	KSZ8794_CHIP_ID = 0x8794,
+ 	KSZ8765_CHIP_ID = 0x8765,
+@@ -171,8 +179,10 @@ enum ksz_chip_id {
+ 	KSZ9477_CHIP_ID = 0x00947700,
+ 	KSZ9896_CHIP_ID = 0x00989600,
+ 	KSZ9897_CHIP_ID = 0x00989700,
+-	KSZ9893_CHIP_ID = 0x00989300,
+ 	KSZ9567_CHIP_ID = 0x00956700,
++	KSZ9893_CHIP_ID = 0x00989300,
++	KSZ9563_CHIP_ID = 0x00956300,
++	KSZ8563_CHIP_ID = 0x00856300,
+ 	LAN9370_CHIP_ID = 0x00937000,
+ 	LAN9371_CHIP_ID = 0x00937100,
+ 	LAN9372_CHIP_ID = 0x00937200,
+@@ -337,6 +347,8 @@ struct ksz_dev_ops {
+ 	int (*reset)(struct ksz_device *dev);
+ 	int (*init)(struct ksz_device *dev);
+ 	void (*exit)(struct ksz_device *dev);
++	void (*enable_irq)(struct ksz_device *dev);
++	int (*handle_irq)(struct ksz_device *dev, u8 port, u8 data);
+ };
+ 
+ struct ksz_device *ksz_switch_alloc(struct device *base, void *priv);
+@@ -350,6 +362,13 @@ bool ksz_get_gbit(struct ksz_device *dev
+ phy_interface_t ksz_get_xmii(struct ksz_device *dev, int port, bool gbit);
+ extern const struct ksz_chip_data ksz_switch_chips[];
+ 
++ssize_t ksz_registers_read(struct file *filp, struct kobject *kobj,
++			   struct bin_attribute *bin_attr, char *buf,
++			   loff_t off, size_t count);
++ssize_t ksz_registers_write(struct file *filp, struct kobject *kobj,
++			    struct bin_attribute *bin_attr, char *buf,
++			    loff_t off, size_t count);
++
+ /* Common register access functions */
+ 
+ static inline int ksz_read8(struct ksz_device *dev, u32 reg, u8 *val)
+@@ -524,6 +543,21 @@ static inline bool ksz_is_ksz88x3(struct
+ 	return dev->chip_id == KSZ8830_CHIP_ID;
+ }
+ 
++static inline bool ksz_is_ksz9893(struct ksz_device *dev)
++{
++	return dev->chip_id == KSZ9893_CHIP_ID ||
++		dev->chip_id == KSZ9563_CHIP_ID ||
++		dev->chip_id == KSZ8563_CHIP_ID;
++}
++
++static inline bool ksz_is_ksz9897(struct ksz_device *dev)
++{
++	return dev->chip_id == KSZ9477_CHIP_ID ||
++		dev->chip_id == KSZ9897_CHIP_ID ||
++		dev->chip_id == KSZ9896_CHIP_ID ||
++		dev->chip_id == KSZ9567_CHIP_ID;
++}
++
+ static inline int is_lan937x(struct ksz_device *dev)
+ {
+ 	return dev->chip_id == LAN9370_CHIP_ID ||
+@@ -557,6 +591,7 @@ static inline int is_lan937x(struct ksz_
+ 
+ /* KSZ9893, KSZ9563, KSZ8563 specific register  */
+ #define REG_CHIP_ID4			0x0f
++#define SKU_ID_KSZ9563			0x1c
+ #define SKU_ID_KSZ8563			0x3c
+ 
+ /* Driver set switch broadcast storm protection at 10% rate. */
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_spi.c linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_spi.c
+--- linux-linux4microchip-2023.10-orig/drivers/net/dsa/microchip/ksz_spi.c	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/dsa/microchip/ksz_spi.c	2024-02-28 18:05:39.960256845 -0800
+@@ -2,7 +2,7 @@
+ /*
+  * Microchip ksz series register access through SPI
+  *
+- * Copyright (C) 2017 Microchip Technology Inc.
++ * Copyright (C) 2017-2024 Microchip Technology Inc.
+  *	Tristram Ha <Tristram.Ha@microchip.com>
+  */
+ 
+@@ -54,6 +54,8 @@ static int ksz_spi_probe(struct spi_devi
+ 	if (!chip)
+ 		return -EINVAL;
+ 
++	/* Save chip id to do special initialization when probing. */
++	dev->chip_id = chip->chip_id;
+ 	if (chip->chip_id == KSZ8830_CHIP_ID)
+ 		regmap_config = ksz8863_regmap_config;
+ 	else if (chip->chip_id == KSZ8795_CHIP_ID ||
+@@ -82,12 +84,6 @@ static int ksz_spi_probe(struct spi_devi
+ 	if (spi->dev.platform_data)
+ 		dev->pdata = spi->dev.platform_data;
+ 
+-	/* setup spi */
+-	spi->mode = SPI_MODE_3;
+-	ret = spi_setup(spi);
+-	if (ret)
+-		return ret;
+-
+ 	dev->irq = spi->irq;
+ 
+ 	ret = ksz_switch_register(dev);
+@@ -163,7 +159,7 @@ static const struct of_device_id ksz_dt_
+ 	},
+ 	{
+ 		.compatible = "microchip,ksz9563",
+-		.data = &ksz_switch_chips[KSZ9893]
++		.data = &ksz_switch_chips[KSZ9563]
+ 	},
+ 	{
+ 		.compatible = "microchip,ksz8563",
+@@ -193,6 +189,10 @@ static const struct of_device_id ksz_dt_
+ 		.compatible = "microchip,lan9374",
+ 		.data = &ksz_switch_chips[LAN9374]
+ 	},
++	{
++		.compatible = "microchip,lan9646",
++		.data = &ksz_switch_chips[KSZ9477]
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, ksz_dt_ids);
+@@ -215,6 +215,7 @@ static const struct spi_device_id ksz_sp
+ 	{ "lan9372" },
+ 	{ "lan9373" },
+ 	{ "lan9374" },
++	{ "lan9646" },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(spi, ksz_spi_ids);
+@@ -241,6 +242,7 @@ MODULE_ALIAS("spi:ksz9563");
+ MODULE_ALIAS("spi:ksz8563");
+ MODULE_ALIAS("spi:ksz9567");
+ MODULE_ALIAS("spi:lan937x");
++MODULE_ALIAS("spi:lan9646");
+ MODULE_AUTHOR("Tristram Ha <Tristram.Ha@microchip.com>");
+ MODULE_DESCRIPTION("Microchip ksz Series Switch SPI Driver");
+ MODULE_LICENSE("GPL");

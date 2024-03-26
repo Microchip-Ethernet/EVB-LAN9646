@@ -1,0 +1,11 @@
+config BR2_PACKAGE_PTC_EXAMPLES
+	bool "ptc_examples"
+	select BR2_PACKAGE_LIBEVDEV
+	select BR2_PACKAGE_LIBGPIOD
+	help
+	  Demo for PTC wings, it includes the PTC firmware and configuration
+	  files.
+
+config BR2_PACKAGE_PTC_EXAMPLES_PLATFORM
+	depends on BR2_PACKAGE_PTC_EXAMPLES
+	string "board name; default SAMA5D27_PTC_EK"
