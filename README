@@ -1,18 +1,19 @@
 
 
-2024-03-01
+2024-03-26
 
 
 The Buildroot environment can be retrieved from
 <https://github.com/linux4sam/buildroot-at>.
 Or it can be downloaded from the main site <https://buildroot.org>.
 
+The newer Buildroot 2023.10 was added for updated packages.
+
 # Can use any Buildroot version
-cd buildroot-at91-linux4sam-2022.10
+cd buildroot-at91-linux4microchip-2023.10
 
 # Point BR2_EXTERNAL to provided source code location
-make BR2_EXTERNAL=../ung_apps_external
-    atmel_sama5d3_xplained_lan9646_6_1_defconfig
+make BR2_EXTERNAL=../ung_apps_external sam9x75_curiosity_defconfig
 
 make
 
@@ -20,11 +21,12 @@ Program the NAND using provided script.  Note the procedure is power down the
 board.  Remove the jumper next to the NAND chip.  Power up the board and put
 back the jumper.
 
-../ung_apps_external/flash.sh
+cd output
+./flash.sh
 
 # Test the MMC version
 make clean
-make atmel_sama5d3_xplained_lan9646_6_1_mmc_defconfig
+make sam9x75_curiosity_mmc_defconfig
 make
 
 Program the SD card using provided script.  Note the device may need to be
@@ -42,6 +44,32 @@ ethtool lan1
 ethtool lan5
 
 # The regs_bin utility can be used to access switch registers.
-regs_bin spi1.0
+regs_bin spi0.0
+
+
+It is recommendedd to use this build during initial debugging and testing of
+the LAN9646 board.  It is simple and uses sysinit for initial script running.
+After all hardware issues are addressed a newer and more complete software can
+be used to support all features of the SAM9X75 board.
+
+This new code is provided by buildroot-external-microchip.  It uses systemd to
+setup the system and acts like a Linux PC, so it takes a long time to boot.
+
+It uses the device tree overlay system so a different device tree can be
+loaded in U-Boot.
+
+The build procedure is simply to switch to the buildroot-external-microchip
+directory.
+
+make BR2_EXTERNAL=../buildroot-external-microchip \
+    sam9x75_curiosity_mmc_defconfig
+
+The NAND flash version is done through sam9x75_curiosity_defconfig.
+
+
+Note the SAM-BA 3.7 utility does not write to the NAND flash correctly as the
+OOB section is empty.  Because of that U-Boot cannot execute the "nand read"
+command.  It requires manual writing to correct this problem.  Read the file
+sam9x75_nand_setup.txt for instructions.
 
 

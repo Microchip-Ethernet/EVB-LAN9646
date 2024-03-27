@@ -1,0 +1,49 @@
+
+
+# Use network to download image if a TFTP server was already set up.
+# Note the LAN9646 board has PHY compatibility issue and may not have stable
+# link to complete the transfer.  Try to put a compatible switch between the
+# board and the PC.
+
+setenv -f ethaddr 00:10:A1:98:97:10
+setenv ipaddr 192.168.0.10
+setenv serverip 192.168.0.76
+saveenv
+reset
+
+kw 100 40
+kw 6301 18
+ping 192.168.0.76
+
+tftp 24000000 uboot-env.bin
+nand erase 100000 40000
+nand write 24000000 100000 40000
+
+tftp 24000000 sam9x75_curiosity.itb
+# check the reported filesize
+nand erase 180000 500000
+nand write 24000000 180000 $filesize
+
+tftp 24000000 rootfs.ubi
+# check the reported filesize
+nand erase 800000 6000000
+nand write 24000000 800000 $filesize
+
+reset
+
+
+# Alternatively the files can be transfered in SD card
+fatload mmc 0:1 24000000 uboot-env.bin
+nand erase 100000 40000
+nand write 24000000 100000 40000
+
+fatload mmc 0:1 24000000 sam9x75_curiosity.itb
+nand erase 180000 500000
+nand write 24000000 180000 $filesize
+
+# This one may not fit and requires a larger FAT partition
+# It may need to be put in EXT4 partition and done throught MTD in Linux
+fatload mmc 0:1 24000000 rootfs.ubi
+nand erase 800000 6000000
+nand write 24000000 800000 $filesize
+
