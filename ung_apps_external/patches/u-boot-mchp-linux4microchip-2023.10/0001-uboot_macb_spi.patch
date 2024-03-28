@@ -635,7 +635,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +static unsigned int	bus = CONFIG_DEFAULT_SPI_BUS;
 +static unsigned int	cs;
 +static unsigned int	mode = CONFIG_DEFAULT_SPI_MODE;
-+static unsigned int	freq = 20000000;
++static unsigned int	freq = 11000000;
 +static int   		bitlen;
 +static int		size;
 +static uchar 		dout[MAX_SPI_BYTES];

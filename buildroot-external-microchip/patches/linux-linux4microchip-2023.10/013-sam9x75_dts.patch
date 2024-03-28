@@ -679,7 +679,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +		reg = <0>;
 +		interrupt-parent = <&pioD>;
 +		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
-+		spi-max-frequency = <44000000>;
++		spi-max-frequency = <11000000>;
 +//		spi-cs-setup-delay-ns = <100>;
 +//		spi-cs-hold-delay-ns = <100>;
 +//		spi-cs-inactive-delay-ns = <0>;
@@ -1384,7 +1384,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +		reg = <0>;
 +		interrupt-parent = <&pioD>;
 +		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
-+		spi-max-frequency = <44000000>;
++		spi-max-frequency = <11000000>;
 +//		spi-cs-setup-delay-ns = <100>;
 +//		spi-cs-hold-delay-ns = <100>;
 +//		spi-cs-inactive-delay-ns = <0>;
