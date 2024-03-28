@@ -1,6 +1,6 @@
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/arch/arm/dts/at91-sam9x75_curiosity_dev.dts u-boot-mchp-linux4microchip-2023.10/arch/arm/dts/at91-sam9x75_curiosity_dev.dts
 --- u-boot-mchp-linux4microchip-2023.10-orig/arch/arm/dts/at91-sam9x75_curiosity_dev.dts	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/arch/arm/dts/at91-sam9x75_curiosity_dev.dts	2024-03-12 18:27:28.403138329 -0700
++++ u-boot-mchp-linux4microchip-2023.10/arch/arm/dts/at91-sam9x75_curiosity_dev.dts	2024-03-26 18:29:29.276178584 -0700
 @@ -0,0 +1,509 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -1045,7 +1045,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +);
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_dev_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_dev_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_dev_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_dev_defconfig	2024-03-20 14:19:26.013076549 -0700
++++ u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_dev_defconfig	2024-03-27 17:08:59.840868210 -0700
 @@ -0,0 +1,108 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -1083,7 +1083,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_d
 +# CONFIG_DISPLAY_BOARDINFO is not set
 +CONFIG_HUSH_PARSER=y
 +CONFIG_SYS_CBSIZE=256
-+CONFIG_SYS_PBSIZE=281
++CONFIG_SYS_PBSIZE=381
 +CONFIG_CMD_BOOTZ=y
 +CONFIG_CMD_CLK=y
 +CONFIG_CMD_DM=y
@@ -1157,7 +1157,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_d
 +CONFIG_MCHP_PIT64B_TIMER=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_dev_mmc_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_dev_mmc_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_dev_mmc_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_dev_mmc_defconfig	2024-03-20 15:45:24.045922023 -0700
++++ u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_dev_mmc_defconfig	2024-03-27 16:14:38.312238373 -0700
 @@ -0,0 +1,96 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -1193,7 +1193,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_d
 +# CONFIG_DISPLAY_BOARDINFO is not set
 +CONFIG_HUSH_PARSER=y
 +CONFIG_SYS_CBSIZE=256
-+CONFIG_SYS_PBSIZE=281
++CONFIG_SYS_PBSIZE=381
 +CONFIG_CMD_BOOTZ=y
 +CONFIG_CMD_CLK=y
 +CONFIG_CMD_DM=y
@@ -1255,45 +1255,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_d
 +CONFIG_ATMEL_QSPI=y
 +CONFIG_TIMER=y
 +CONFIG_MCHP_PIT64B_TIMER=y
-diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_mmc_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_mmc_defconfig
---- u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_mmc_defconfig	2023-12-18 02:10:05.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_mmc_defconfig	2024-03-19 14:48:04.661385074 -0700
-@@ -7,17 +7,18 @@ CONFIG_SYS_MALLOC_F_LEN=0x12000
- CONFIG_TARGET_SAM9X75_CURIOSITY=y
- CONFIG_ATMEL_LEGACY=y
- CONFIG_NR_DRAM_BANKS=8
-+CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
-+CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x20015f00
- CONFIG_ENV_SIZE=0x4000
- CONFIG_DM_GPIO=y
- CONFIG_DEFAULT_DEVICE_TREE="at91-sam9x75_curiosity"
- CONFIG_SYS_PROMPT="U-Boot> "
-+CONFIG_OF_LIBFDT_OVERLAY=y
- CONFIG_DEBUG_UART_BASE=0xfffff200
- CONFIG_DEBUG_UART_CLOCK=266666666
- CONFIG_DEBUG_UART_BOARD_INIT=y
- CONFIG_SYS_LOAD_ADDR=0x22000000
- CONFIG_DEBUG_UART=y
--CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
--CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x20015f00
- CONFIG_FIT=y
- CONFIG_SD_BOOT=y
- CONFIG_BOOTDELAY=3
-@@ -49,8 +50,8 @@ CONFIG_CMD_FAT=y
- CONFIG_OF_CONTROL=y
- CONFIG_ENV_IS_IN_FAT=y
- CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
-+CONFIG_ENV_FAT_FILE="uboot-env.bin"
- CONFIG_SYS_RELOC_GD_ENV_ADDR=y
--CONFIG_DM=y
- CONFIG_REGMAP=y
- CONFIG_SYSCON=y
- CONFIG_CLK=y
-@@ -80,4 +81,3 @@ CONFIG_DEBUG_UART_ANNOUNCE=y
- CONFIG_ATMEL_USART=y
- CONFIG_TIMER=y
- CONFIG_MCHP_PIT64B_TIMER=y
--CONFIG_OF_LIBFDT_OVERLAY=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-mchp-linux4microchip-2023.10/drivers/net/macb.c
 --- u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c	2023-12-18 02:10:05.000000000 -0800
 +++ u-boot-mchp-linux4microchip-2023.10/drivers/net/macb.c	2024-03-19 11:49:48.578577133 -0700
@@ -1422,7 +1383,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
  	       speed ? "100" : "10",
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/spi/atmel_spi.c u-boot-mchp-linux4microchip-2023.10/drivers/spi/atmel_spi.c
 --- u-boot-mchp-linux4microchip-2023.10-orig/drivers/spi/atmel_spi.c	2023-12-18 02:10:05.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/drivers/spi/atmel_spi.c	2024-03-19 11:57:11.523312785 -0700
++++ u-boot-mchp-linux4microchip-2023.10/drivers/spi/atmel_spi.c	2024-03-27 16:14:06.957578203 -0700
 @@ -118,6 +118,10 @@ struct atmel_spi_priv {
  #endif
  };
@@ -1447,13 +1408,12 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/spi/atmel_spi.c u-b
  	if (scbr > ATMEL_SPI_CSRx_SCBR_MAX)
  		return -EINVAL;
  
-@@ -336,6 +346,10 @@ static int atmel_spi_enable_clk(struct u
+@@ -336,6 +346,9 @@ static int atmel_spi_enable_clk(struct u
  		return -EINVAL;
  
  	priv->bus_clk_rate = clk_rate;
 +#ifdef CONFIG_HAVE_KSZ9897
 +	printf("rate: %ld\n", priv->bus_clk_rate);
-+	priv->bus_clk_rate = 200000000;
 +#endif
  
  	clk_free(&clk);
