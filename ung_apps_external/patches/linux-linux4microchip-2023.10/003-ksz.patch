@@ -93805,8 +93805,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c	2024-02-20 17:13:05.661319611 -0800
-@@ -0,0 +1,19644 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c	2024-03-27 15:37:48.682659232 -0700
+@@ -0,0 +1,19647 @@
 +/**
 + * Microchip gigabit switch common code
 + *
@@ -112879,6 +112879,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			sgmii = 1;
 +	}
 +	sw->sgmii_mode = sgmii;
++	sw->interface = PHY_INTERFACE_MODE_MII;
 +	setup_device_node(sw);
 +
 +#ifdef DEBUG_MSG
@@ -112900,7 +112901,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		info->phy = true;
 +		info->interface = PHY_INTERFACE_MODE_RGMII;
 +	}
-+	sw->interface = PHY_INTERFACE_MODE_RGMII;
 +	sw->ops->acquire(sw);
 +	for (; pi < mib_port_count; pi++) {
 +		u16 data;
@@ -113012,7 +113012,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			info->phy = port_sgmii_detect(sw, pi);
 +		}
 +		info->interface = phy;
-+		if (sw->HOST_PORT == pi)
++
++		/* Switch interface is not set through device tree. */
++		if (sw->HOST_PORT == pi &&
++		    sw->interface == PHY_INTERFACE_MODE_MII)
 +			sw->interface = phy;
 +		if (sw->HOST_PORT == pi)
 +dbg_msg("host: %d %d"NL, sw->HOST_PORT, sw->interface);
