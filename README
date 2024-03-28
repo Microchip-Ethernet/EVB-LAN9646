@@ -9,31 +9,41 @@ Or it can be downloaded from the main site <https://buildroot.org>.
 
 The newer Buildroot 2023.10 was added for updated packages.
 
+Internet is required to download code during initial build.  Afterwards it is
+not required unless new packages are added to the build image.
+
 # Can use any Buildroot version
 cd buildroot-at91-linux4microchip-2023.10
 
 # Point BR2_EXTERNAL to provided source code location
-make BR2_EXTERNAL=../ung_apps_external sam9x75_curiosity_defconfig
-
+make BR2_EXTERNAL=../ung_apps_external sam9x75_curiosity_mmc_defconfig
 make
 
-Program the NAND using provided script.  Note the procedure is power down the
-board.  Remove the jumper next to the NAND chip.  Power up the board and put
-back the jumper.
-
-cd output
-./flash.sh
-
-# Test the MMC version
-make clean
-make sam9x75_curiosity_mmc_defconfig
-make
+The image file sdcard.img is under the output/images directory.
 
 Program the SD card using provided script.  Note the device may need to be
 changed to different one depending on computer configuration.
 It is recommended to use Etcher to program the card.
 
 ../ung_apps_external/sdprog.sh
+
+
+# Test the NAND flash version if necessary
+make clean
+make sam9x75_curiosity_defconfig
+make
+
+Program the NAND flash using provided script.  A Micro-USB cable should be
+connected to the USB port.  This also provides power to the board.  Note the
+procedure is remove the jumper next to the NAND chip, reset the board, and put
+back the jumper.
+
+cd output
+./flash.sh
+
+There is a problem of using this procedure on the SAM9X75 board.  See at the
+end about SAM-BA 3.7 utility.
+
 
 # Verify the build is successful.  After kernel boots use these commands to
 # check the status.
