@@ -1,4 +1,5 @@
 BR2_arm=y
+BR2_TOOLCHAIN_BUILDROOT_UCLIBC=y
 BR2_DL_DIR="$(TOPDIR)/../buildroot-dl"
 BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_KSZ_PATH)/patches"
 BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_KSZ_PATH)/board/microchip/sam9x75_curiosity/rootfs_overlay"
