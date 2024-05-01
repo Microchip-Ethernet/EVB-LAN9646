@@ -46,3 +46,5 @@ source "$BR2_EXTERNAL_MCHP_PATH/package/libosmscout/Config.in"
 
 source "$BR2_EXTERNAL_MCHP_PATH/package/video-capture-at91/Config.in"
 source "$BR2_EXTERNAL_MCHP_PATH/package/ksz_regs_bin/Config.in"
+source "$BR2_EXTERNAL_MCHP_PATH/package/easyrun/Config.in"
+source "$BR2_EXTERNAL_MCHP_PATH/package/ef-loop/Config.in"
