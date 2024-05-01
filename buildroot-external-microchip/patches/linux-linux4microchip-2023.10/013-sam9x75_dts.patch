@@ -85,8 +85,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
  
 diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_curiosity_ksz9563.dts linux-linux4microchip-2023.10/arch/arm/boot/dts/at91-sam9x75_curiosity_ksz9563.dts
 --- linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_curiosity_ksz9563.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/arch/arm/boot/dts/at91-sam9x75_curiosity_ksz9563.dts	2024-03-28 12:26:12.261697935 -0700
-@@ -0,0 +1,672 @@
++++ linux-linux4microchip-2023.10/arch/arm/boot/dts/at91-sam9x75_curiosity_ksz9563.dts	2024-04-29 18:16:48.095577898 -0700
+@@ -0,0 +1,665 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * at91-sam9x75_curiosity.dts - Device Tree file for Microchip SAM9X75 Curiosity board
@@ -203,7 +203,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +	status = "okay";
 +
 +	spi3: spi@400 {
-+		dmas = <0>, <0>;
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&pinctrl_flx3_default>;
 +		status = "okay";
@@ -671,9 +670,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +	#size-cells = <0>;
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pinctrl_flx3_default>;
-+//	cs-gpios = <&pioC 25 0>, <&pioA 21 0>;
-+//	cs-gpios = <0>, <&pioA 21 0>;
-+	dmas = <0>, <0>;
 +	status = "okay";
 +
 +	ksz9563: ksz9563@0 {
@@ -682,9 +678,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +		interrupt-parent = <&pioD>;
 +		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
 +		spi-max-frequency = <11000000>;
-+//		spi-cs-setup-delay-ns = <100>;
-+//		spi-cs-hold-delay-ns = <100>;
-+//		spi-cs-inactive-delay-ns = <0>;
 +
 +		spi-cpha;
 +		spi-cpol;
@@ -761,8 +754,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +
 diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_curiosity_lan9646.dts linux-linux4microchip-2023.10/arch/arm/boot/dts/at91-sam9x75_curiosity_lan9646.dts
 --- linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_curiosity_lan9646.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/arch/arm/boot/dts/at91-sam9x75_curiosity_lan9646.dts	2024-03-28 12:24:26.998051834 -0700
-@@ -0,0 +1,732 @@
++++ linux-linux4microchip-2023.10/arch/arm/boot/dts/at91-sam9x75_curiosity_lan9646.dts	2024-04-29 18:16:27.992423486 -0700
+@@ -0,0 +1,725 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * at91-sam9x75_curiosity.dts - Device Tree file for Microchip SAM9X75 Curiosity board
@@ -879,7 +872,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +	status = "okay";
 +
 +	spi3: spi@400 {
-+		dmas = <0>, <0>;
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&pinctrl_flx3_default>;
 +		status = "okay";
@@ -1377,9 +1369,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +	#size-cells = <0>;
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pinctrl_flx3_default>;
-+//	cs-gpios = <&pioC 25 0>, <&pioA 21 0>;
-+//	cs-gpios = <0>, <&pioA 21 0>;
-+	dmas = <0>, <0>;
 +	status = "okay";
 +
 +	lan9646: lan9646@0 {
@@ -1388,9 +1377,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/arch/arm/boot/dts/at91-sam9x75_cu
 +		interrupt-parent = <&pioD>;
 +		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
 +		spi-max-frequency = <11000000>;
-+//		spi-cs-setup-delay-ns = <100>;
-+//		spi-cs-hold-delay-ns = <100>;
-+//		spi-cs-inactive-delay-ns = <0>;
 +
 +		spi-cpha;
 +		spi-cpol;
