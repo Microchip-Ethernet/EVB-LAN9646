@@ -10124,12 +10124,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz88
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz9897.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz9897.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz9897.h	2023-06-29 18:02:49.388456385 -0700
-@@ -0,0 +1,1730 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz9897.h	2024-04-29 16:09:18.813324020 -0700
+@@ -0,0 +1,1735 @@
 +/**
 + * Microchip KSZ9897 definition file
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2024 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2013-2015 Micrel, Inc.
@@ -11151,6 +11151,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz98
 +
 +#define MMD_DEVICE_ID_COMMON		2
 +
++#define MMD_COMMON_LED_MODE		0
++
++#define MMD_COMMON_SINGLE_LED		(1 << 4)
++
 +#define MMD_DEVICE_ID_EEE_ADV		7
 +
 +#define MMD_EEE_ADV			0x3C
@@ -11344,6 +11348,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz98
 +#define REG_PORT_PHY_DIGITAL_DEBUG_3	0x013C
 +
 +#define PORT_100BT_FIXED_LATENCY	(1 << 15)
++#define PORT_SINGLE_LED_MODE		(1 << 9)
 +
 +#define REG_PORT_PHY_PHY_CTRL		0x013E
 +
@@ -12005,8 +12010,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_c
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_cfg_9897.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_9897.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_cfg_9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_9897.h	2023-03-19 17:41:55.556012666 -0700
-@@ -0,0 +1,29 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_9897.h	2024-04-17 12:51:39.534579339 -0700
+@@ -0,0 +1,32 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -12023,6 +12028,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_c
 +
 +#if defined(CONFIG_IBA_KSZ9897)
 +#define CONFIG_KSZ_IBA_ONLY
++#elif defined(CONFIG_SOC_SAM9X7)
++/* Switch interrupt does not work properly in SAM9X75 when starting early. */
++#define CONFIG_DELAY_REQUEST_INTR
 +#endif
 +
 +
@@ -69672,12 +69680,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.c	2023-12-12 14:22:56.829443040 -0800
-@@ -0,0 +1,12227 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.c	2024-04-29 17:05:07.728461080 -0700
+@@ -0,0 +1,12262 @@
 +/**
 + * Microchip KSZ8795 switch common code
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2024 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -78425,7 +78433,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	if (skb->len < ETH_ZLEN)
 +		padlen = ETH_ZLEN - skb->len;
 +	len = skb_tailroom(skb);
-+	if (len < padlen) {
++	if (len < 1 + padlen) {
 +		need_new_copy = true;
 +		len = (skb->len + padlen + 4) & ~3;
 +	}
@@ -78669,7 +78677,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->port_state[sw->HOST_PORT].state = media_connected;
 +}  /* sw_init_mib */
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +static void sw_set_phylink_support(struct ksz_sw *sw, struct ksz_port *port,
 +				   unsigned long *supported,
 +				   struct phylink_link_state *state)
@@ -78846,7 +78854,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +				  &sw_port_phylink_mac_ops);
 +	if (IS_ERR(port->pl)) {
 +		netdev_err(port->netdev,
-+			   "error creating PHYLIK: %ld\n", PTR_ERR(port->pl));
++			   "error creating PHYLINK: %ld\n", PTR_ERR(port->pl));
 +		return PTR_ERR(port->pl);
 +	}
 +
@@ -78889,20 +78897,22 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +}  /* sw_init_phylink */
 +#endif
 +
-+static void setup_device_node(struct ksz_sw *sw)
++static int setup_device_node(struct ksz_sw *sw)
 +{
 +	struct sw_priv *ks = sw->dev;
 +	struct device_node *np;
-+	struct device_node *ports, *port;
-+	struct device_node *ethernet;
-+	const char *name;
-+	int err;
-+	u32 reg;
++	int cnt = 0;
 +
 +	if (!ks->of_dev)
-+		return;
++		goto err;
 +	np = ks->of_dev->of_node;
 +	if (np) {
++		struct device_node *ports, *port;
++		struct device_node *ethernet;
++		const char *name;
++		int err;
++		u32 reg;
++
 +		ports = of_get_child_by_name(np, "ports");
 +		if (ports) {
 +			for_each_available_child_of_node(ports, port) {
@@ -78926,9 +78936,22 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +dbg_msg(" name: %s\n", name);
 +				/* Save the device node. */
 +				sw->devnode[reg] = port;
++				cnt++;
 +			}
 +		}
++
++		/* Will get kernel crash if devnode is not present. */
++		if (cnt > sw->mib_port_cnt)
++			return 0;
 +	}
++
++err:
++	cnt = 0;
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	dev_err(ks->dev, "Please fix the device tree for correct ports.");
++	cnt = -1;
++#endif
++	return cnt;
 +}
 +
 +static int sw_open_dev(struct ksz_sw *sw, struct net_device *dev,
@@ -79099,7 +79122,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +static void sw_open(struct ksz_sw *sw)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw_init_phylink(sw, sw->main_port);
 +#endif
 +#ifdef CONFIG_KSZ_MRP
@@ -79120,7 +79143,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +static void sw_close(struct ksz_sw *sw)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw_exit_phylink(sw, sw->main_port);
 +#endif
 +#ifdef CONFIG_KSZ_MRP
@@ -79826,7 +79849,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		phydev->speed = 10;
 +	phydev->duplex = (info->duplex == 2);
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	/* Not started yet. */
 +	if (sw->phylink_ops && port != sw->main_port &&
 +	    phydev->state == PHY_READY)
@@ -80404,7 +80427,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int *mib_port_cnt, int *dev_cnt,
 +	const void *phylink_ops)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw->phylink_ops = phylink_ops;
 +#endif
 +	phy_offset = 0;
@@ -80445,7 +80468,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int dev_count = sw->dev_count + sw->dev_offset;
 +	struct sw_priv *ks = sw->dev;
 +	struct phy_priv *phydata;
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct ksz_port *port;
 +#endif
 +	int i;
@@ -80459,7 +80482,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		leave_mrp(&sw->mrp);
 +#endif
 +	for (i = 0; i < dev_count; i++) {
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +		port = sw->netport[i];
 +		if (port && port->pl) {
 +		       phylink_destroy(port->pl);
@@ -80584,8 +80607,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->netport[i] = port;
 +	port->netdev = dev;
 +	port->phydev = sw->phy[phy_id];
-+	port->dn = sw->devnode[phy_id - 1];
-+#ifdef CONFIG_PHYLINK
++	if (phy_id)
++		port->dn = sw->devnode[phy_id - 1];
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	setup_phylink(port);
 +#endif
 +	if (sw->dev_count > 1 && i && !(sw->features & DIFF_MAC_ADDR)) {
@@ -81041,7 +81065,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_sw *sw = &ks->sw;
 +	int ret = 0xffff;
 +
-+	if (phy_id > sw->mib_port_cnt + 1)
++	if (phy_id > sw->port_cnt)
++		return 0xffff;
++	if (phy_id && get_log_port(sw, phy_id - 1) > sw->mib_port_cnt)
 +		return 0xffff;
 +
 +	mutex_lock(&ks->lock);
@@ -81061,8 +81087,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct sw_priv *ks = bus->priv;
 +	struct ksz_sw *sw = &ks->sw;
 +
-+	if (phy_id > sw->mib_port_cnt + 1)
++	if (phy_id > sw->port_cnt)
 +		return -EINVAL;
++
++	/* Zero is used for the whole switch. */
++	if ((sw->multi_dev & 1) && phy_id == 0)
++		return 0;
 +
 +	mutex_lock(&ks->lock);
 +	if (regnum < 6) {
@@ -81075,6 +81105,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			first = 1;
 +			last = sw->mib_port_cnt;
 +		} else {
++			bool found;
 +			int n;
 +			int f;
 +			int l;
@@ -81082,11 +81113,19 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +			first = phy_id;
 +			last = phy_id;
++			found = false;
 +			for (n = 0; n < sw->eth_cnt; n++) {
 +				map = &sw->eth_maps[n];
 +				f = map->first;
 +				l = f + map->cnt - 1;
-+				if (f <= phy_id && phy_id < l) {
++				for (i = f; i <= l; i++) {
++					p = get_phy_port(sw, i);
++					if (phy_id == p + 1) {
++						found = true;
++						break;
++					}
++				}
++				if (found) {
 +					first = map->first;
 +					last = first + map->cnt - 1;
 +					break;
@@ -81120,7 +81159,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	uint n;
 +	uint p;
 +
-+	for (n = 0; n <= sw->mib_port_cnt + 1; n++) {
++	for (n = 0; n <= sw->port_cnt; n++) {
 +		phydata = &sw->phydata[n];
 +		port = &ks->ports[n];
 +		phydata->port = port;
@@ -81191,7 +81230,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	bus->write = ksz_mii_write;
 +	snprintf(bus->id, MII_BUS_ID_SIZE, "sw.%d", ks->sw.id);
 +	bus->parent = &pdev->dev;
-+	bus->phy_mask = ~((1 << (ks->sw.mib_port_cnt + 2)) - 1);
++	bus->phy_mask = ~((1 << (ks->sw.port_cnt + 1)) - 1);
 +	bus->priv = ks;
 +
 +	for (i = 0; i < PHY_MAX_ADDR; i++)
@@ -81496,6 +81535,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	ks->intr_mode = intr_mode ? IRQF_TRIGGER_FALLING :
 +		IRQF_TRIGGER_LOW;
++	ks->intr_mode |= IRQF_ONESHOT;
 +
 +	dev_set_drvdata(ks->dev, ks);
 +
@@ -81704,7 +81744,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	mutex_unlock(&ks->lock);
 +
 +	sw_init_phy_priv(ks);
-+	setup_device_node(sw);
++	if (setup_device_node(sw)) {
++		ret = -ENODEV;
++		goto err_mii;
++	}
 +
 +	ret = ksz_mii_init(ks);
 +	if (ret)
@@ -82899,12 +82942,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.c	2023-12-12 14:23:18.507004079 -0800
-@@ -0,0 +1,10019 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.c	2024-04-29 17:04:42.509521847 -0700
+@@ -0,0 +1,10046 @@
 +/**
 + * Microchip KSZ8895 switch common code
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2024 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -89704,7 +89747,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	if (skb->len < ETH_ZLEN)
 +		padlen = ETH_ZLEN - skb->len;
 +	len = skb_tailroom(skb);
-+	if (len < padlen) {
++	if (len < 1 + padlen) {
 +		need_new_copy = true;
 +		len = (skb->len + padlen + 4) & ~3;
 +	}
@@ -89938,7 +89981,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->port_state[sw->HOST_PORT].state = media_connected;
 +}  /* sw_init_mib */
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +static void sw_set_phylink_support(struct ksz_sw *sw, struct ksz_port *port,
 +				   unsigned long *supported,
 +				   struct phylink_link_state *state)
@@ -90105,7 +90148,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +				  &sw_port_phylink_mac_ops);
 +	if (IS_ERR(port->pl)) {
 +		netdev_err(port->netdev,
-+			   "error creating PHYLIK: %ld\n", PTR_ERR(port->pl));
++			   "error creating PHYLINK: %ld\n", PTR_ERR(port->pl));
 +		return PTR_ERR(port->pl);
 +	}
 +
@@ -90148,20 +90191,22 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +}  /* sw_init_phylink */
 +#endif
 +
-+static void setup_device_node(struct ksz_sw *sw)
++static int setup_device_node(struct ksz_sw *sw)
 +{
 +	struct sw_priv *ks = sw->dev;
 +	struct device_node *np;
-+	struct device_node *ports, *port;
-+	struct device_node *ethernet;
-+	const char *name;
-+	int err;
-+	u32 reg;
++	int cnt = 0;
 +
 +	if (!ks->of_dev)
-+		return;
++		goto err;
 +	np = ks->of_dev->of_node;
 +	if (np) {
++		struct device_node *ports, *port;
++		struct device_node *ethernet;
++		const char *name;
++		int err;
++		u32 reg;
++
 +		ports = of_get_child_by_name(np, "ports");
 +		if (ports) {
 +			for_each_available_child_of_node(ports, port) {
@@ -90172,22 +90217,27 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +				ethernet = of_parse_phandle(port, "ethernet", 0);
 +				if (ethernet)
 +dbg_msg(" found eth\n");
-+				if (ethernet) {
-+					name = of_get_property(port,
-+							       "phy-mode",
-+							       NULL);
-+					if (name && !strcmp(name, "rmii"))
-+						sw->interface =
-+							PHY_INTERFACE_MODE_RMII;
-+				}
 +				name = of_get_property(port, "label", NULL);
 +				if (name)
 +dbg_msg(" name: %s\n", name);
 +				/* Save the device node. */
 +				sw->devnode[reg] = port;
++				cnt++;
 +			}
 +		}
++
++		/* Will get kernel crash if devnode is not present. */
++		if (cnt > sw->mib_port_cnt)
++			return 0;
 +	}
++
++err:
++	cnt = 0;
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	dev_err(ks->dev, "Please fix the device tree for correct ports.");
++	cnt = -1;
++#endif
++	return cnt;
 +}
 +
 +static int sw_open_dev(struct ksz_sw *sw, struct net_device *dev,
@@ -90340,7 +90390,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +static void sw_open(struct ksz_sw *sw)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw_init_phylink(sw, sw->main_port);
 +#endif
 +#ifdef CONFIG_KSZ_MRP
@@ -90361,7 +90411,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +static void sw_close(struct ksz_sw *sw)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw_exit_phylink(sw, sw->main_port);
 +#endif
 +#ifdef CONFIG_KSZ_MRP
@@ -91052,7 +91102,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		phydev->speed = 10;
 +	phydev->duplex = (info->duplex == 2);
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	/* Not started yet. */
 +	if (sw->phylink_ops && port != sw->main_port &&
 +	    phydev->state == PHY_READY)
@@ -91565,7 +91615,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int *mib_port_cnt, int *dev_cnt,
 +	const void *phylink_ops)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw->phylink_ops = phylink_ops;
 +#endif
 +	phy_offset = 0;
@@ -91606,7 +91656,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int dev_count = sw->dev_count + sw->dev_offset;
 +	struct sw_priv *ks = sw->dev;
 +	struct phy_priv *phydata;
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct ksz_port *port;
 +#endif
 +	int i;
@@ -91620,7 +91670,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		leave_mrp(&sw->mrp);
 +#endif
 +	for (i = 0; i < dev_count; i++) {
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +		port = sw->netport[i];
 +		if (port && port->pl) {
 +		       phylink_destroy(port->pl);
@@ -91737,8 +91787,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->netport[i] = port;
 +	port->netdev = dev;
 +	port->phydev = sw->phy[phy_id];
-+	port->dn = sw->devnode[phy_id - 1];
-+#ifdef CONFIG_PHYLINK
++	if (phy_id)
++		port->dn = sw->devnode[phy_id - 1];
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	setup_phylink(port);
 +#endif
 +	if (sw->dev_count > 1 && i && !(sw->features & DIFF_MAC_ADDR)) {
@@ -92111,7 +92162,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	p = phydev->mdio.addr;
 +	phydev->priv = &sw->phydata[p];
-+	phydev->interface = PHY_INTERFACE_MODE_MII;
++	phydev->interface = sw->interface;
 +	return 0;
 +}
 +
@@ -92158,7 +92209,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int ret = 0xffff;
 +
 +	/* Last port can be a PHY. */
-+	if (phy_id > sw->mib_port_cnt + 1)
++	if (phy_id > sw->port_cnt)
++		return 0xffff;
++	if (phy_id && get_log_port(sw, phy_id - 1) > sw->mib_port_cnt)
 +		return 0xffff;
 +
 +	mutex_lock(&ks->lock);
@@ -92179,8 +92232,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_sw *sw = &ks->sw;
 +
 +	/* Last port can be a PHY. */
-+	if (phy_id > sw->mib_port_cnt + 1)
++	if (phy_id > sw->port_cnt)
 +		return -EINVAL;
++
++	/* Zero is used for the whole switch. */
++	if ((sw->multi_dev & 1) && phy_id == 0)
++		return 0;
 +
 +	mutex_lock(&ks->lock);
 +	if (regnum < 6) {
@@ -92193,6 +92250,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			first = 1;
 +			last = sw->mib_port_cnt;
 +		} else {
++			bool found;
 +			int n;
 +			int f;
 +			int l;
@@ -92200,11 +92258,19 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +			first = phy_id;
 +			last = phy_id;
++			found = false;
 +			for (n = 0; n < sw->eth_cnt; n++) {
 +				map = &sw->eth_maps[n];
 +				f = map->first;
 +				l = f + map->cnt - 1;
-+				if (f <= phy_id && phy_id < l) {
++				for (i = f; i <= l; i++) {
++					p = get_phy_port(sw, i);
++					if (phy_id == p + 1) {
++						found = true;
++						break;
++					}
++				}
++				if (found) {
 +					first = map->first;
 +					last = first + map->cnt - 1;
 +					break;
@@ -92238,7 +92304,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	uint n;
 +	uint p;
 +
-+	for (n = 0; n <= sw->mib_port_cnt + 1; n++) {
++	for (n = 0; n <= sw->port_cnt; n++) {
 +		phydata = &sw->phydata[n];
 +		port = &ks->ports[n];
 +		phydata->port = port;
@@ -92309,7 +92375,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	bus->write = ksz_mii_write;
 +	snprintf(bus->id, MII_BUS_ID_SIZE, "sw.%d", ks->sw.id);
 +	bus->parent = &pdev->dev;
-+	bus->phy_mask = ~((1 << (ks->sw.mib_port_cnt + 2)) - 1);
++	bus->phy_mask = ~((1 << (ks->sw.port_cnt + 1)) - 1);
 +	bus->priv = ks;
 +
 +	for (i = 0; i < PHY_MAX_ADDR; i++)
@@ -92629,6 +92695,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	ks->intr_mode = intr_mode ? IRQF_TRIGGER_FALLING :
 +		IRQF_TRIGGER_LOW;
++	ks->intr_mode |= IRQF_ONESHOT;
 +
 +	dev_set_drvdata(ks->dev, ks);
 +
@@ -92733,7 +92800,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		info->link = 0xFF;
 +		info->state = media_disconnected;
 +	}
-+	sw->interface = PHY_INTERFACE_MODE_MII;
++	sw->interface = PHY_INTERFACE_MODE_RMII;
 +	pi = sw->HOST_PORT;
 +	info = get_port_info(sw, pi);
 +	info->tx_rate = 100 * TX_RATE_UNIT;
@@ -92742,7 +92809,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	info->lpa = 0x05e1;
 +
 +	sw_init_phy_priv(ks);
-+	setup_device_node(sw);
++	if (setup_device_node(sw)) {
++		ret = -ENODEV;
++		goto err_mii;
++	}
 +
 +	ret = ksz_mii_init(ks);
 +	if (ret)
@@ -93805,12 +93875,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c	2024-03-27 15:37:48.682659232 -0700
-@@ -0,0 +1,19647 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c	2024-04-26 15:58:38.887887698 -0700
+@@ -0,0 +1,19689 @@
 +/**
 + * Microchip gigabit switch common code
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2024 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -108356,6 +108426,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	return skb;
 +}  /* sw_final_skb */
 +
++#ifdef CONFIG_DELAY_REQUEST_INTR
++static int sw_start_interrupt(struct sw_priv *ks, const char *name);
++#endif
++
 +static void sw_start(struct ksz_sw *sw, const u8 *addr)
 +{
 +	int need_tail_tag = false;
@@ -108473,7 +108547,24 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +if (!(sw->overrides & TAIL_TAGGING))
 +dbg_msg(" ! tail tag not set"NL);
 +	}
-+	sw_ena_intr(sw);
++
++	setup = true;
++
++#ifdef CONFIG_DELAY_REQUEST_INTR
++	/* SAM9X75 switch interrupt does not work when requesting early. */
++	do {
++		struct sw_priv *ks = sw->dev;
++		int ret;
++
++		ret = sw_start_interrupt(ks, dev_name(ks->dev));
++		if (ret < 0) {
++			printk(KERN_WARNING "No switch interrupt"NL);
++			setup = false;
++		}
++	} while (0);
++#endif
++	if (setup)
++		sw_ena_intr(sw);
 +	sw->ops->release(sw);
 +
 +#ifdef CONFIG_KSZ_STP
@@ -108826,7 +108917,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +				  &sw_port_phylink_mac_ops);
 +	if (IS_ERR(port->pl)) {
 +		netdev_err(port->netdev,
-+			   "error creating PHYLIK: %ld\n", PTR_ERR(port->pl));
++			   "error creating PHYLINK: %ld\n", PTR_ERR(port->pl));
 +		return PTR_ERR(port->pl);
 +	}
 +
@@ -108879,13 +108970,14 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +}  /* sw_init_phylink */
 +#endif
 +
-+static void setup_device_node(struct ksz_sw *sw)
++static int setup_device_node(struct ksz_sw *sw)
 +{
 +	struct sw_priv *ks = sw->dev;
 +	struct device_node *np;
++	int cnt = 0;
 +
 +	if (!ks->of_dev)
-+		return;
++		goto err;
 +	np = ks->of_dev->of_node;
 +	if (np) {
 +		struct device_node *ports, *port;
@@ -108921,6 +109013,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +dbg_msg(" name: %s\n", name);
 +				/* Save the device node. */
 +				sw->devnode[reg] = port;
++				cnt++;
 +
 +				err = of_property_read_u32(port, "mode", &mode);
 +				if (err)
@@ -108933,7 +109026,19 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +					sw->sgmii_mode = (u8) mode;
 +			}
 +		}
++
++		/* Will get kernel crash if devnode is not present. */
++		if (cnt > sw->mib_port_cnt)
++			return 0;
 +	}
++
++err:
++	cnt = 0;
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	dev_err(ks->dev, "Please fix the device tree for correct ports.");
++	cnt = -1;
++#endif
++	return cnt;
 +}
 +
 +static int sw_open_dev(struct ksz_sw *sw, struct net_device *dev,
@@ -112636,7 +112741,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	    id1 != FAMILY_ID_94 && id1 != FAMILY_ID_85 && id1 != 0x64) {
 +		dev_err(ks->dev, "failed to read device ID(0x%x)"NL, id);
 +		ret = -ENODEV;
-+		goto err_mii;
++		goto err_platform;
 +	}
 +	dev_info(ks->dev, "chip id 0x%08x"NL, id);
 +
@@ -112810,7 +112915,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	if (!port_count) {
 +		dev_err(ks->dev, "device not known"NL);
 +		ret = -ENODEV;
-+		goto err_mii;
++		goto err_platform;
 +	}
 +
 +	sw->id = sw_device_present;
@@ -112880,7 +112985,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	}
 +	sw->sgmii_mode = sgmii;
 +	sw->interface = PHY_INTERFACE_MODE_MII;
-+	setup_device_node(sw);
++	if (setup_device_node(sw)) {
++		ret = -ENODEV;
++		goto err_platform;
++	}
 +
 +#ifdef DEBUG_MSG
 +	flush_work(&db.dbg_print);
@@ -113226,9 +113334,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	if (ks->irq <= 0)
 +		return 0;
++
++	/* Default is enable interrupts. */
 +	sw->ops->acquire(sw);
-+	if (!reset)
-+		sw_dis_intr(sw);
++	sw_dis_intr(sw);
 +	sw->reg->w32(sw, REG_PTP_INT_STATUS__4, 0xffffffff);
 +	sw->reg->w8(sw, REG_SW_LUE_INT_MASK__1, LUE_INT_MASK);
 +	for (p = 0; p < sw->port_cnt; p++) {
@@ -113243,6 +113352,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		}
 +	}
 +	sw->ops->release(sw);
++
++#ifndef CONFIG_DELAY_REQUEST_INTR
 +	ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +	if (ret < 0) {
 +		printk(KERN_WARNING "No switch interrupt"NL);
@@ -113251,6 +113362,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw_ena_intr(sw);
 +		sw->ops->release(sw);
 +	}
++#endif
 +
 +	return 0;
 +
@@ -114976,12 +115088,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.c	2023-12-12 14:23:35.912260718 -0800
-@@ -0,0 +1,10226 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.c	2024-04-26 16:01:25.033223531 -0700
+@@ -0,0 +1,10259 @@
 +/**
 + * Microchip switch common code
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2024 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -122165,6 +122277,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	u8 dest;
 +	struct sk_buff *org_skb;
 +	int update_dst = (sw->overrides & TAIL_TAGGING);
++	int headlen = 0;
 +
 +#ifdef CONFIG_1588_PTP
 +	struct ptp_info *ptp = ptr;
@@ -122184,6 +122297,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		return skb;
 +#endif
 +
++	if (sw->features & SW_VLAN_DEV)
++		headlen = VLAN_HLEN;
 +	org_skb = skb;
 +	port = 0;
 +
@@ -122267,28 +122382,30 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	if (skb->len < ETH_ZLEN)
 +		padlen = ETH_ZLEN - skb->len;
 +	len = skb_tailroom(skb);
-+	if (len < padlen) {
++	if (len < 1 + padlen) {
 +		need_new_copy = true;
 +		len = (skb->len + padlen + 4) & ~3;
++	}
++	if (skb_headroom(skb) < headlen) {
++		need_new_copy = true;
 +	}
 +	if (need_new_copy) {
 +		int headerlen = skb_headroom(skb);
 +
-+		skb = alloc_skb(headerlen + len, GFP_ATOMIC);
++		if (headerlen < headlen)
++			headerlen = headlen;
++		skb = skb_copy_expand(org_skb, headerlen, len, GFP_ATOMIC);
 +		if (!skb)
 +			return NULL;
-+		skb_reserve(skb, headerlen);
-+		skb_put(skb, org_skb->len);
-+		skb_copy_bits(org_skb, -headerlen, skb->head,
-+			      headerlen + org_skb->len);
-+		skb_copy_header(skb, org_skb);
 +		consume_skb(org_skb);
 +	}
++
++	/* skb_put requires tail pointer set first. */
++	skb_set_tail_pointer(skb, skb->len);
 +	if (padlen) {
 +		if (__skb_put_padto(skb, skb->len + padlen, false))
 +			return NULL;
 +	}
-+	skb_set_tail_pointer(skb, skb->len);
 +	len = skb->len;
 +
 +	if (!dest) {
@@ -122521,7 +122638,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->port_state[sw->HOST_PORT].state = media_connected;
 +}  /* sw_init_mib */
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +static void sw_set_phylink_support(struct ksz_sw *sw, struct ksz_port *port,
 +				   unsigned long *supported,
 +				   struct phylink_link_state *state)
@@ -122688,7 +122805,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +				  &sw_port_phylink_mac_ops);
 +	if (IS_ERR(port->pl)) {
 +		netdev_err(port->netdev,
-+			   "error creating PHYLIK: %ld\n", PTR_ERR(port->pl));
++			   "error creating PHYLINK: %ld\n", PTR_ERR(port->pl));
 +		return PTR_ERR(port->pl);
 +	}
 +
@@ -122731,20 +122848,22 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +}  /* sw_init_phylink */
 +#endif
 +
-+static void setup_device_node(struct ksz_sw *sw)
++static int setup_device_node(struct ksz_sw *sw)
 +{
 +	struct sw_priv *ks = sw->dev;
 +	struct device_node *np;
-+	struct device_node *ports, *port;
-+	struct device_node *ethernet;
-+	const char *name;
-+	int err;
-+	u32 reg;
++	int cnt = 0;
 +
 +	if (!ks->of_dev)
-+		return;
++		goto err;
 +	np = ks->of_dev->of_node;
 +	if (np) {
++		struct device_node *ports, *port;
++		struct device_node *ethernet;
++		const char *name;
++		int err;
++		u32 reg;
++
 +		ports = of_get_child_by_name(np, "ports");
 +		if (ports) {
 +			for_each_available_child_of_node(ports, port) {
@@ -122755,22 +122874,27 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +				ethernet = of_parse_phandle(port, "ethernet", 0);
 +				if (ethernet)
 +dbg_msg(" found eth\n");
-+				if (ethernet) {
-+					name = of_get_property(port,
-+							       "phy-mode",
-+							       NULL);
-+					if (name && !strcmp(name, "rmii"))
-+						sw->interface =
-+							PHY_INTERFACE_MODE_RMII;
-+				}
 +				name = of_get_property(port, "label", NULL);
 +				if (name)
 +dbg_msg(" name: %s\n", name);
 +				/* Save the device node. */
 +				sw->devnode[reg] = port;
++				cnt++;
 +			}
 +		}
++
++		/* Will get kernel crash if devnode is not present. */
++		if (cnt > sw->mib_port_cnt)
++			return 0;
 +	}
++
++err:
++	cnt = 0;
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	dev_err(ks->dev, "Please fix the device tree for correct ports.");
++	cnt = -1;
++#endif
++	return cnt;
 +}
 +
 +static int sw_open_dev(struct ksz_sw *sw, struct net_device *dev,
@@ -122948,7 +123072,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +static void sw_open(struct ksz_sw *sw)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw_init_phylink(sw, sw->main_port);
 +#endif
 +#ifdef CONFIG_KSZ_DLR
@@ -122963,7 +123087,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +static void sw_close(struct ksz_sw *sw)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw_exit_phylink(sw, sw->main_port);
 +#endif
 +	ksz_stop_timer(sw->monitor_timer_info);
@@ -123631,7 +123755,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		phydev->speed = 10;
 +	phydev->duplex = (info->duplex == 2);
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	/* Not started yet. */
 +	if (sw->phylink_ops && port != sw->main_port &&
 +	    phydev->state == PHY_READY)
@@ -123860,7 +123984,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int *mib_port_cnt, int *dev_cnt,
 +	const void *phylink_ops)
 +{
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	sw->phylink_ops = phylink_ops;
 +#endif
 +	phy_offset = 0;
@@ -123908,7 +124032,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int dev_count = sw->dev_count + sw->dev_offset;
 +	struct sw_priv *ks = sw->dev;
 +	struct phy_priv *phydata;
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct ksz_port *port;
 +#endif
 +	int i;
@@ -123918,7 +124042,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		leave_stp(&sw->info->rstp);
 +#endif
 +	for (i = 0; i < dev_count; i++) {
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +		port = sw->netport[i];
 +		if (port && port->pl) {
 +		       phylink_destroy(port->pl);
@@ -124040,7 +124164,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	port->phydev = sw->phy[phy_id];
 +	if (phy_id)
 +		port->dn = sw->devnode[phy_id - 1];
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	setup_phylink(port);
 +#endif
 +
@@ -124431,7 +124555,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	p = phydev->mdio.addr;
 +	phydev->priv = &sw->phydata[p];
-+	phydev->interface = PHY_INTERFACE_MODE_MII;
++	phydev->interface = sw->interface;
 +	return 0;
 +}
 +
@@ -124933,6 +125057,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +{
 +	struct ksz_sw *sw;
 +	struct ksz_port_info *info;
++	bool rmii = false;
 +	u16 id;
 +	int i;
 +	uint mib_port_count;
@@ -124945,6 +125070,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	ks->intr_mode = intr_mode ? IRQF_TRIGGER_FALLING :
 +		IRQF_TRIGGER_LOW;
++	ks->intr_mode |= IRQF_ONESHOT;
 +
 +	mutex_init(&ks->hwlock);
 +	mutex_init(&ks->lock);
@@ -124969,6 +125095,14 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw->reg->r8(sw, 0);
 +#endif
 +	ret = sw_chk_id(sw, &id);
++#ifdef CONFIG_HAVE_KSZ8863
++	if (ret > 0) {
++		u8 mode = sw->reg->r8(sw, REG_MODE_INDICATOR);
++
++		if (mode & PORT_3_RMII)
++			rmii = true;
++	}
++#endif
 +	mutex_unlock(&ks->lock);
 +	if (ret < 0) {
 +		dev_err(ks->dev, "failed to read device ID(0x%x)\n", id);
@@ -125047,12 +125181,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		info->state = media_disconnected;
 +	}
 +	sw->interface = PHY_INTERFACE_MODE_MII;
++	if (rmii)
++		sw->interface = PHY_INTERFACE_MODE_RMII;
 +	info = get_port_info(sw, pi);
 +	info->state = media_connected;
++	info->tx_rate = 100 * TX_RATE_UNIT;
++	info->duplex = 2;
 +	info->lpa = 0x05e1;
 +
 +	sw_init_phy_priv(ks);
-+	setup_device_node(sw);
++	if (setup_device_node(sw)) {
++		ret = -ENODEV;
++#ifdef NO_PHYDEV
++		goto err_sw;
++#else
++		goto err_mii;
++#endif
++	}
 +
 +#ifndef NO_PHYDEV
 +	ret = ksz_mii_init(ks);
