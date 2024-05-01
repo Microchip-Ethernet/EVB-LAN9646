@@ -1,0 +1,6 @@
+config BR2_PACKAGE_EF_LOOP
+	bool "ef-loop"
+	select BR2_PACKAGE_LIBEV
+	help
+	  Microchip ef-loop utility.
+

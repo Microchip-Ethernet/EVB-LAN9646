@@ -1,5 +1,6 @@
 
 menu "Microchip UNG applications"
 	source "$BR2_EXTERNAL_KSZ_PATH/package/microchip/Config.in"
+	source "$BR2_EXTERNAL_KSZ_PATH/package/ung_cmake/Config.in"
 endmenu
 

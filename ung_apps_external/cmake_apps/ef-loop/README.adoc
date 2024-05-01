@@ -1,0 +1,30 @@
+# ef-loop
+
+This document explains how to use the ef-loop.
+
+# Usage
+
+```bash
+ef-loop --help
+options:
+--src:            source port
+--dst:            destination port
+--interval        interval of measurements
+--help:           help
+```
+
+This application justs forwards the frames between the ports in userspace.
+If the dst is not set, than the frames are not forward.
+
+The src is required argument. Represents the port on which calculats the
+througput.
+The dst is not a required argument. It can be the same port as the src. This
+represents the destination port of the received frames.
+The interval is by default 1 second.
+
+When the application start, a timer starts and every interval second displays the
+number of received frames and total size of the frames and calculates the
+throughput.
+
+# License
+[GPLv2](https://choosealicense.com/licenses/gpl-2.0/)

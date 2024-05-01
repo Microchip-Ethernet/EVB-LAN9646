@@ -1,0 +1,2 @@
+source "$BR2_EXTERNAL_KSZ_PATH/package/ung_cmake/easyrun/Config.in"
+source "$BR2_EXTERNAL_KSZ_PATH/package/ung_cmake/ef-loop/Config.in"
