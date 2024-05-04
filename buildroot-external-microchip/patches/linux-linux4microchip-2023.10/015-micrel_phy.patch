@@ -1,0 +1,28 @@
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/phy/micrel.c linux-linux4microchip-2023.10/drivers/net/phy/micrel.c
+--- linux-linux4microchip-2023.10-orig/drivers/net/phy/micrel.c	2023-12-18 02:18:42.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/phy/micrel.c	2024-05-03 17:17:01.621632721 -0700
+@@ -4204,6 +4204,15 @@ static int lan8841_probe(struct phy_devi
+ 	return 0;
+ }
+ 
++static int ksz9477_resume(struct phy_device *phydev)
++{
++	int ret = __phy_modify_changed(phydev, MII_BMCR, BMCR_PDOWN, 0);
++
++	if (ret == 1 && phy_interrupt_is_valid(phydev))
++		ret = phydev->drv->config_intr(phydev);
++	return ret;
++}
++
+ static struct phy_driver ksphy_driver[] = {
+ {
+ 	.phy_id		= PHY_ID_KS8737,
+@@ -4489,7 +4498,7 @@ static struct phy_driver ksphy_driver[]
+ 	.config_intr	= kszphy_config_intr,
+ 	.handle_interrupt = kszphy_handle_interrupt,
+ 	.suspend	= genphy_suspend,
+-	.resume		= genphy_resume,
++	.resume		= ksz9477_resume,
+ } };
+ 
+ module_phy_driver(ksphy_driver);
