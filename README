@@ -1,10 +1,8 @@
 
-
-2024-03-26
-
+Updated: 2024-05-29
 
 The Buildroot environment can be retrieved from
-<https://github.com/linux4sam/buildroot-at>.
+https://github.com/linux4sam/buildroot-at91.
 Or it can be downloaded from the main site <https://buildroot.org>.
 
 The newer Buildroot 2023.10 was added for updated packages.
@@ -12,8 +10,19 @@ The newer Buildroot 2023.10 was added for updated packages.
 Internet is required to download code during initial build.  Afterwards it is
 not required unless new packages are added to the build image.
 
+Install System Dependencies. The build is tested on Ubuntu 20.04 LTS. 
+The following system build dependenciesare required.
+
+sudo apt-get install subversion build-essential bison flex gettext \
+libncurses5-dev texinfo autoconf automake libtool mercurial git-core \
+gperf gawk expat curl cvs libexpat-dev bzr unzip bc python-dev \
+wget cpio rsync xxd bmap-tools libssl-dev
+
+Get the repo
+git clone https://github.com/Microchip-Ethernet/EVB-LAN9646.git
+
 # Can use any Buildroot version
-cd buildroot-at91-linux4microchip-2023.10
+cd EVB-LAN9646/buildroot-at91-linux4microchip-2023.10
 
 # Point BR2_EXTERNAL to provided source code location
 make BR2_EXTERNAL=../ung_apps_external sam9x75_curiosity_mmc_defconfig
@@ -26,7 +35,6 @@ changed to different one depending on computer configuration.
 It is recommended to use Etcher to program the card.
 
 ../ung_apps_external/sdprog.sh
-
 
 # Test the NAND flash version if necessary
 make clean
@@ -44,7 +52,6 @@ cd output
 There is a problem of using this procedure on the SAM9X75 board.  See at the
 end about SAM-BA 3.7 utility.
 
-
 # Verify the build is successful.  After kernel boots use these commands to
 # check the status.
 cat /proc/version
@@ -56,14 +63,13 @@ ethtool lan5
 # The regs_bin utility can be used to access switch registers.
 regs_bin spi0.0
 
-
-It is recommendedd to use this build during initial debugging and testing of
+It is suggested to use above build procedure (make BR2_EXTERNAL=../ung_apps_external 
+sam9x75_curiosity_mmc_defconfig) during initial debugging and testing of
 the LAN9646 board.  It is simple and uses sysinit for initial script running.
-After all hardware issues are addressed a newer and more complete software can
-be used to support all features of the SAM9X75 board.
 
-This new code is provided by buildroot-external-microchip.  It uses systemd to
-setup the system and acts like a Linux PC, so it takes a long time to boot.
+For production use, it is recommanded to use below build procedure. This build 
+uses 'buildroot-external-microchip' which is official microchip support for SAM
+processor family.
 
 It uses the device tree overlay system so a different device tree can be
 loaded in U-Boot.
@@ -75,7 +81,6 @@ make BR2_EXTERNAL=../buildroot-external-microchip \
     sam9x75_curiosity_mmc_defconfig
 
 The NAND flash version is done through sam9x75_curiosity_defconfig.
-
 
 Note the SAM-BA 3.7 utility does not write to the NAND flash correctly as the
 OOB section is empty.  Because of that U-Boot cannot execute the "nand read"
