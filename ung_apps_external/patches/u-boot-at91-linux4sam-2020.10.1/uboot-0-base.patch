@@ -1,12 +1,13 @@
 diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/dts/Makefile u-boot-at91-linux4sam-2020.10.1/arch/arm/dts/Makefile
 --- u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/dts/Makefile	2021-01-14 23:11:03.000000000 -0800
-+++ u-boot-at91-linux4sam-2020.10.1/arch/arm/dts/Makefile	2024-02-29 16:57:26.386504882 -0800
-@@ -789,6 +789,9 @@ dtb-$(CONFIG_TARGET_SAMA5D3XEK) += \
++++ u-boot-at91-linux4sam-2020.10.1/arch/arm/dts/Makefile	2024-05-07 13:03:20.733628244 -0700
+@@ -789,6 +789,10 @@ dtb-$(CONFIG_TARGET_SAMA5D3XEK) += \
  dtb-$(CONFIG_TARGET_SAMA5D3_XPLAINED) += \
  	at91-sama5d3_xplained.dtb
  
 +dtb-$(CONFIG_TARGET_SAMA5D3_XPLAINED_DEV) += \
-+	at91-sama5d3_xplained_dev.dtb
++	at91-sama5d3_xplained_dev.dtb \
++	at91-sama5d3_xplained_emac.dtb
 +
  dtb-$(CONFIG_TARGET_SAMA5D4EK) += \
  	at91-sama5d4ek.dtb
