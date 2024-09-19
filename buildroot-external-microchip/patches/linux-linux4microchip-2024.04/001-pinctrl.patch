@@ -1,0 +1,16 @@
+diff -Napur linux-linux4microchip-2024.04-orig/drivers/pinctrl/pinctrl-at91.c linux-linux4microchip-2024.04/drivers/pinctrl/pinctrl-at91.c
+--- linux-linux4microchip-2024.04-orig/drivers/pinctrl/pinctrl-at91.c	2024-05-24 05:04:06.000000000 -0700
++++ linux-linux4microchip-2024.04/drivers/pinctrl/pinctrl-at91.c	2024-08-28 11:43:46.846292774 -0700
+@@ -1570,7 +1570,12 @@ static void gpio_irq_unmask(struct irq_d
+ 	void __iomem	*pio = at91_gpio->regbase;
+ 	unsigned	mask = 1 << d->hwirq;
+ 	unsigned        gpio = irqd_to_hwirq(d);
++#if defined(CONFIG_KSZ_SWITCH) || defined(CONFIG_NET_DSA_TAG_KSZ) || defined(CONFIG_NET_DSA_TAG_KSZ_MODULE)
++	unsigned long	isr;
+ 
++	if (pio)
++		isr = readl_relaxed(pio + PIO_ISR);
++#endif
+ 	gpiochip_enable_irq(&at91_gpio->chip, gpio);
+ 
+ 	if (pio)

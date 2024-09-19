@@ -1,0 +1,379 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c	2024-05-24 05:04:06.000000000 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c	2024-09-12 16:39:06.665787447 -0700
+@@ -121,6 +121,8 @@ int ksz8_change_mtu(struct ksz_device *d
+ 	case KSZ8765_CHIP_ID:
+ 		return ksz8795_change_mtu(dev, frame_size);
+ 	case KSZ8830_CHIP_ID:
++	case KSZ8864_CHIP_ID:
++	case KSZ8895_CHIP_ID:
+ 		return ksz8863_change_mtu(dev, frame_size);
+ 	}
+ 
+@@ -283,7 +285,7 @@ static void ksz8863_r_mib_pkt(struct ksz
+ void ksz8_r_mib_pkt(struct ksz_device *dev, int port, u16 addr,
+ 		    u64 *dropped, u64 *cnt)
+ {
+-	if (ksz_is_ksz88x3(dev))
++	if (is_ksz88xx(dev))
+ 		ksz8863_r_mib_pkt(dev, port, addr, dropped, cnt);
+ 	else
+ 		ksz8795_r_mib_pkt(dev, port, addr, dropped, cnt);
+@@ -291,7 +293,7 @@ void ksz8_r_mib_pkt(struct ksz_device *d
+ 
+ void ksz8_freeze_mib(struct ksz_device *dev, int port, bool freeze)
+ {
+-	if (ksz_is_ksz88x3(dev))
++	if (is_ksz88xx(dev))
+ 		return;
+ 
+ 	/* enable the port for flush/freeze function */
+@@ -309,7 +311,8 @@ void ksz8_port_init_cnt(struct ksz_devic
+ 	struct ksz_port_mib *mib = &dev->ports[port].mib;
+ 	u64 *dropped;
+ 
+-	if (!ksz_is_ksz88x3(dev)) {
++	/* For KSZ8795 family. */
++	if (ksz_is_ksz87xx(dev)) {
+ 		/* flush all enabled port MIB counters */
+ 		ksz_cfg(dev, REG_SW_CTRL_6, BIT(port), true);
+ 		ksz_cfg(dev, REG_SW_CTRL_6, SW_MIB_COUNTER_FLUSH, true);
+@@ -507,11 +510,11 @@ static int ksz8_r_sta_mac_table(struct k
+ 			shifts[STATIC_MAC_FWD_PORTS];
+ 	alu->is_override = (data_hi & masks[STATIC_MAC_TABLE_OVERRIDE]) ? 1 : 0;
+ 
+-	/* KSZ8795 family switches have STATIC_MAC_TABLE_USE_FID and
++	/* KSZ8795/KSZ8895 family switches have STATIC_MAC_TABLE_USE_FID and
+ 	 * STATIC_MAC_TABLE_FID definitions off by 1 when doing read on the
+ 	 * static MAC table compared to doing write.
+ 	 */
+-	if (ksz_is_ksz87xx(dev))
++	if (ksz_is_ksz87xx(dev) || ksz_is_8895_family(dev))
+ 		data_hi >>= 1;
+ 	alu->is_static = true;
+ 	alu->is_use_fid = (data_hi & masks[STATIC_MAC_TABLE_USE_FID]) ? 1 : 0;
+@@ -1278,6 +1281,9 @@ static void ksz8795_cpu_interface_select
+ {
+ 	struct ksz_port *p = &dev->ports[port];
+ 
++	if (!ksz_is_ksz87xx(dev))
++		return;
++
+ 	if (!p->interface && dev->compat_interface) {
+ 		dev_warn(dev->dev,
+ 			 "Using legacy switch \"phy-mode\" property, because it is missing on port %d node. "
+@@ -1345,7 +1351,8 @@ void ksz8_config_cpu_port(struct dsa_swi
+ 	for (i = 0; i < dev->phy_port_cnt; i++) {
+ 		p = &dev->ports[i];
+ 
+-		if (!ksz_is_ksz88x3(dev)) {
++		/* For KSZ8795 family. */
++		if (ksz_is_ksz87xx(dev)) {
+ 			ksz_pread8(dev, i, regs[P_REMOTE_STATUS], &remote);
+ 			if (remote & KSZ8_PORT_FIBER_MODE)
+ 				p->fiber = 1;
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 16:24:47.919269692 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 16:50:13.390015681 -0700
+@@ -2,7 +2,7 @@
+ /*
+  * Microchip switch driver main logic
+  *
+- * Copyright (C) 2017-2019 Microchip Technology Inc.
++ * Copyright (C) 2017-2024 Microchip Technology Inc.
+  */
+ 
+ #include <linux/delay.h>
+@@ -425,6 +425,60 @@ static u8 ksz8863_shifts[] = {
+ 	[DYNAMIC_MAC_SRC_PORT]		= 20,
+ };
+ 
++static const u16 ksz8895_regs[] = {
++	[REG_IND_CTRL_0]		= 0x6E,
++	[REG_IND_DATA_8]		= 0x70,
++	[REG_IND_DATA_CHECK]		= 0x72,
++	[REG_IND_DATA_HI]		= 0x71,
++	[REG_IND_DATA_LO]		= 0x75,
++	[REG_IND_MIB_CHECK]		= 0x75,
++	[P_FORCE_CTRL]			= 0x0C,
++	[P_LINK_STATUS]			= 0x0E,
++	[P_LOCAL_CTRL]			= 0x0C,
++	[P_NEG_RESTART_CTRL]		= 0x0D,
++	[P_REMOTE_STATUS]		= 0x0E,
++	[P_SPEED_STATUS]		= 0x09,
++	[S_TAIL_TAG_CTRL]		= 0x0C,
++	[P_STP_CTRL]			= 0x02,
++	[S_START_CTRL]			= 0x01,
++	[S_BROADCAST_CTRL]		= 0x06,
++	[S_MULTICAST_CTRL]		= 0x04,
++};
++
++static const u32 ksz8895_masks[] = {
++	[PORT_802_1P_REMAPPING]		= BIT(7),
++	[SW_TAIL_TAG_ENABLE]		= BIT(1),
++	[MIB_COUNTER_OVERFLOW]		= BIT(7),
++	[MIB_COUNTER_VALID]		= BIT(6),
++	[VLAN_TABLE_FID]		= GENMASK(6, 0),
++	[VLAN_TABLE_MEMBERSHIP]		= GENMASK(11, 7),
++	[VLAN_TABLE_VALID]		= BIT(12),
++	[STATIC_MAC_TABLE_VALID]	= BIT(21),
++	[STATIC_MAC_TABLE_USE_FID]	= BIT(23),
++	[STATIC_MAC_TABLE_FID]		= GENMASK(30, 24),
++	[STATIC_MAC_TABLE_OVERRIDE]	= BIT(22),
++	[STATIC_MAC_TABLE_FWD_PORTS]	= GENMASK(20, 16),
++	[DYNAMIC_MAC_TABLE_ENTRIES_H]	= GENMASK(6, 0),
++	[DYNAMIC_MAC_TABLE_MAC_EMPTY]	= BIT(7),
++	[DYNAMIC_MAC_TABLE_NOT_READY]	= BIT(7),
++	[DYNAMIC_MAC_TABLE_ENTRIES]	= GENMASK(31, 29),
++	[DYNAMIC_MAC_TABLE_FID]		= GENMASK(22, 16),
++	[DYNAMIC_MAC_TABLE_SRC_PORT]	= GENMASK(26, 24),
++	[DYNAMIC_MAC_TABLE_TIMESTAMP]	= GENMASK(28, 27),
++};
++
++static const u8 ksz8895_shifts[] = {
++	[VLAN_TABLE_MEMBERSHIP_S]	= 7,
++	[VLAN_TABLE]			= 13,
++	[STATIC_MAC_FWD_PORTS]		= 16,
++	[STATIC_MAC_FID]		= 24,
++	[DYNAMIC_MAC_ENTRIES_H]		= 3,
++	[DYNAMIC_MAC_ENTRIES]		= 29,
++	[DYNAMIC_MAC_FID]		= 16,
++	[DYNAMIC_MAC_TIMESTAMP]		= 27,
++	[DYNAMIC_MAC_SRC_PORT]		= 24,
++};
++
+ static const u16 ksz9477_regs[] = {
+ 	[P_STP_CTRL]			= 0x0B04,
+ 	[S_START_CTRL]			= 0x0300,
+@@ -1250,6 +1304,57 @@ const struct ksz_chip_data ksz_switch_ch
+ 		.rd_table = &ksz8873_register_set,
+ 	},
+ 
++	[KSZ8864] = {
++		/* WARNING
++		 * =======
++		 * KSZ8864 is similar to KSZ8895, except the first port
++		 * does not exist.
++		 *           external  cpu
++		 * KSZ8864   1,2,3      4
++		 * KSZ8895   0,1,2,3    4
++		 * port_cnt is configured as 5, even though it is 4
++		 */
++		.chip_id = KSZ8864_CHIP_ID,
++		.dev_name = "KSZ8864",
++		.num_vlans = 4096,
++		.num_alus = 0,
++		.num_statics = 32,
++		.cpu_ports = 0x10,	/* can be configured as cpu port */
++		.port_cnt = 5,		/* total cpu and user ports */
++		.num_tx_queues = 4,
++		.ops = &ksz8_dev_ops,
++		.mib_names = ksz88xx_mib_names,
++		.mib_cnt = ARRAY_SIZE(ksz88xx_mib_names),
++		.reg_mib_cnt = MIB_COUNTER_NUM,
++		.regs = ksz8895_regs,
++		.masks = ksz8895_masks,
++		.shifts = ksz8895_shifts,
++		.supports_mii = {false, false, false, false, true},
++		.supports_rmii = {false, false, false, false, true},
++		.internal_phy = {false, true, true, true, false},
++	},
++
++	[KSZ8895] = {
++		.chip_id = KSZ8895_CHIP_ID,
++		.dev_name = "KSZ8895",
++		.num_vlans = 4096,
++		.num_alus = 0,
++		.num_statics = 32,
++		.cpu_ports = 0x10,	/* can be configured as cpu port */
++		.port_cnt = 5,		/* total cpu and user ports */
++		.num_tx_queues = 4,
++		.ops = &ksz8_dev_ops,
++		.mib_names = ksz88xx_mib_names,
++		.mib_cnt = ARRAY_SIZE(ksz88xx_mib_names),
++		.reg_mib_cnt = MIB_COUNTER_NUM,
++		.regs = ksz8895_regs,
++		.masks = ksz8895_masks,
++		.shifts = ksz8895_shifts,
++		.supports_mii = {false, false, false, false, true},
++		.supports_rmii = {false, false, false, false, true},
++		.internal_phy = {true, true, true, true, false},
++	},
++
+ 	[KSZ9477] = {
+ 		.chip_id = KSZ9477_CHIP_ID,
+ 		.dev_name = "KSZ9477",
+@@ -2638,9 +2743,7 @@ static enum dsa_tag_protocol ksz_get_tag
+ 	struct ksz_device *dev = ds->priv;
+ 	enum dsa_tag_protocol proto = DSA_TAG_PROTO_NONE;
+ 
+-	if (dev->chip_id == KSZ8795_CHIP_ID ||
+-	    dev->chip_id == KSZ8794_CHIP_ID ||
+-	    dev->chip_id == KSZ8765_CHIP_ID)
++	if (ksz_is_ksz87xx(dev) || ksz_is_8895_family(dev))
+ 		proto = DSA_TAG_PROTO_KSZ8795;
+ 
+ 	if (dev->chip_id == KSZ8830_CHIP_ID ||
+@@ -2756,6 +2859,8 @@ static int ksz_max_mtu(struct dsa_switch
+ 	case KSZ8765_CHIP_ID:
+ 		return KSZ8795_HUGE_PACKET_SIZE - VLAN_ETH_HLEN - ETH_FCS_LEN;
+ 	case KSZ8830_CHIP_ID:
++	case KSZ8864_CHIP_ID:
++	case KSZ8895_CHIP_ID:
+ 		return KSZ8863_HUGE_PACKET_SIZE - VLAN_ETH_HLEN - ETH_FCS_LEN;
+ 	case KSZ8563_CHIP_ID:
+ 	case KSZ8567_CHIP_ID:
+@@ -2931,7 +3036,7 @@ static void ksz_phylink_mac_config(struc
+ {
+ 	struct ksz_device *dev = ds->priv;
+ 
+-	if (ksz_is_ksz88x3(dev))
++	if (is_ksz88xx(dev))
+ 		return;
+ 
+ 	/* Internal PHYs */
+@@ -3118,6 +3223,18 @@ static int ksz_switch_detect(struct ksz_
+ 		else
+ 			return -ENODEV;
+ 		break;
++	case KSZ8895_FAMILY_ID:
++		if (id2 == KSZ8895_CHIP_ID_95 ||
++		    id2 == KSZ8895_CHIP_ID_95R)
++			dev->chip_id = KSZ8895_CHIP_ID;
++		else
++			return -ENODEV;
++		ret = ksz_read8(dev, REG_KSZ8864_CHIP_ID, &id4);
++		if (ret)
++			return ret;
++		if (id4 & SW_KSZ8864)
++			dev->chip_id = KSZ8864_CHIP_ID;
++		break;
+ 	default:
+ 		ret = ksz_read32(dev, REG_CHIP_ID0, &id32);
+ 		if (ret)
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h	2024-09-12 15:43:24.791977597 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h	2024-09-12 16:46:23.260256346 -0700
+@@ -1,7 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ /* Microchip switch driver common header
+  *
+- * Copyright (C) 2017-2019 Microchip Technology Inc.
++ * Copyright (C) 2017-2024 Microchip Technology Inc.
+  */
+ 
+ #ifndef __KSZ_COMMON_H
+@@ -179,6 +179,8 @@ enum ksz_model {
+ 	KSZ8794,
+ 	KSZ8765,
+ 	KSZ8830,
++	KSZ8864,
++	KSZ8895,
+ 	KSZ9477,
+ 	KSZ9896,
+ 	KSZ9897,
+@@ -198,6 +200,8 @@ enum ksz_chip_id {
+ 	KSZ8794_CHIP_ID = 0x8794,
+ 	KSZ8765_CHIP_ID = 0x8765,
+ 	KSZ8830_CHIP_ID = 0x8830,
++	KSZ8864_CHIP_ID = 0x8864,
++	KSZ8895_CHIP_ID = 0x8895,
+ 	KSZ9477_CHIP_ID = 0x00947700,
+ 	KSZ9896_CHIP_ID = 0x00989600,
+ 	KSZ9897_CHIP_ID = 0x00989700,
+@@ -615,6 +619,23 @@ static inline bool ksz_is_ksz88x3(struct
+ 	return dev->chip_id == KSZ8830_CHIP_ID;
+ }
+ 
++static inline bool ksz_is_8895_family(struct ksz_device *dev)
++{
++	return dev->chip_id == KSZ8895_CHIP_ID ||
++	       dev->chip_id == KSZ8864_CHIP_ID;
++}
++
++static inline bool is_ksz8(struct ksz_device *dev)
++{
++	return ksz_is_ksz87xx(dev) || ksz_is_ksz88x3(dev) ||
++	       ksz_is_8895_family(dev);
++}
++
++static inline bool is_ksz88xx(struct ksz_device *dev)
++{
++	return ksz_is_ksz88x3(dev) || ksz_is_8895_family(dev);
++}
++
+ static inline int is_lan937x(struct ksz_device *dev)
+ {
+ 	return dev->chip_id == LAN9370_CHIP_ID ||
+@@ -635,6 +656,7 @@ static inline int is_lan937x(struct ksz_
+ #define SW_FAMILY_ID_M			GENMASK(15, 8)
+ #define KSZ87_FAMILY_ID			0x87
+ #define KSZ88_FAMILY_ID			0x88
++#define KSZ8895_FAMILY_ID		0x95
+ 
+ #define KSZ8_PORT_STATUS_0		0x08
+ #define KSZ8_PORT_FIBER_MODE		BIT(7)
+@@ -643,6 +665,12 @@ static inline int is_lan937x(struct ksz_
+ #define KSZ87_CHIP_ID_94		0x6
+ #define KSZ87_CHIP_ID_95		0x9
+ #define KSZ88_CHIP_ID_63		0x3
++#define KSZ8895_CHIP_ID_95		0x4
++#define KSZ8895_CHIP_ID_95R		0x6
++
++/* KSZ8895 specific register */
++#define REG_KSZ8864_CHIP_ID		0xFE
++#define SW_KSZ8864			BIT(7)
+ 
+ #define SW_REV_ID_M			GENMASK(7, 4)
+ 
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_spi.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_spi.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_spi.c	2024-09-12 15:41:16.548127129 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_spi.c	2024-09-12 16:35:23.220759703 -0700
+@@ -2,7 +2,7 @@
+ /*
+  * Microchip ksz series register access through SPI
+  *
+- * Copyright (C) 2017 Microchip Technology Inc.
++ * Copyright (C) 2017-2024 Microchip Technology Inc.
+  *	Tristram Ha <Tristram.Ha@microchip.com>
+  */
+ 
+@@ -60,6 +60,9 @@ static int ksz_spi_probe(struct spi_devi
+ 		 chip->chip_id == KSZ8794_CHIP_ID ||
+ 		 chip->chip_id == KSZ8765_CHIP_ID)
+ 		regmap_config = ksz8795_regmap_config;
++	else if (chip->chip_id == KSZ8895_CHIP_ID ||
++		 chip->chip_id == KSZ8864_CHIP_ID)
++		regmap_config = ksz8863_regmap_config;
+ 	else
+ 		regmap_config = ksz9477_regmap_config;
+ 
+@@ -140,10 +143,18 @@ static const struct of_device_id ksz_dt_
+ 		.data = &ksz_switch_chips[KSZ8830]
+ 	},
+ 	{
++		.compatible = "microchip,ksz8864",
++		.data = &ksz_switch_chips[KSZ8864]
++	},
++	{
+ 		.compatible = "microchip,ksz8873",
+ 		.data = &ksz_switch_chips[KSZ8830]
+ 	},
+ 	{
++		.compatible = "microchip,ksz8895",
++		.data = &ksz_switch_chips[KSZ8895]
++	},
++	{
+ 		.compatible = "microchip,ksz9477",
+ 		.data = &ksz_switch_chips[KSZ9477]
+ 	},
+@@ -204,7 +215,9 @@ static const struct spi_device_id ksz_sp
+ 	{ "ksz8794" },
+ 	{ "ksz8795" },
+ 	{ "ksz8863" },
++	{ "ksz8864" },
+ 	{ "ksz8873" },
++	{ "ksz8895" },
+ 	{ "ksz9477" },
+ 	{ "ksz9896" },
+ 	{ "ksz9897" },

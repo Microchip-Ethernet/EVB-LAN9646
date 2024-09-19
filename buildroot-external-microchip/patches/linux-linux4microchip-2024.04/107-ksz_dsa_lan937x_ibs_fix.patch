@@ -1,0 +1,13 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 16:19:59.966832188 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 16:24:47.919269692 -0700
+@@ -2872,7 +2872,8 @@ static void ksz_set_xmii(struct ksz_devi
+ 		/* On KSZ9893, disable RGMII in-band status support */
+ 		if (dev->chip_id == KSZ9893_CHIP_ID ||
+ 		    dev->chip_id == KSZ8563_CHIP_ID ||
+-		    dev->chip_id == KSZ9563_CHIP_ID)
++		    dev->chip_id == KSZ9563_CHIP_ID ||
++		    is_lan937x(dev))
+ 			data8 &= ~P_MII_MAC_MODE;
+ 		break;
+ 	default:

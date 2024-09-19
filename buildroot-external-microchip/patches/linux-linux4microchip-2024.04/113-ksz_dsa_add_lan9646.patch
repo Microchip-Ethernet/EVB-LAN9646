@@ -1,0 +1,175 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477_i2c.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477_i2c.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477_i2c.c	2024-09-17 16:15:07.606974873 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477_i2c.c	2024-09-17 13:56:27.219658755 -0700
+@@ -16,6 +16,8 @@ KSZ_REGMAP_TABLE(ksz9477, not_used, 16,
+ 
+ static int ksz9477_i2c_probe(struct i2c_client *i2c)
+ {
++	const struct ksz_chip_data *chip;
++	struct device *ddev = &i2c->dev;
+ 	struct regmap_config rc;
+ 	struct ksz_device *dev;
+ 	int i, ret;
+@@ -24,6 +26,12 @@ static int ksz9477_i2c_probe(struct i2c_
+ 	if (!dev)
+ 		return -ENOMEM;
+ 
++	chip = device_get_match_data(ddev);
++	if (!chip)
++		return -EINVAL;
++
++	/* Save chip id to do special initialization when probing. */
++	dev->chip_id = chip->chip_id;
+ 	for (i = 0; i < __KSZ_NUM_REGMAPS; i++) {
+ 		rc = ksz9477_regmap_config[i];
+ 		rc.lock_arg = &dev->regmap_mutex;
+@@ -114,6 +122,10 @@ static const struct of_device_id ksz9477
+ 		.compatible = "microchip,ksz9567",
+ 		.data = &ksz_switch_chips[KSZ9567]
+ 	},
++	{
++		.compatible = "microchip,lan9646",
++		.data = &ksz_switch_chips[LAN9646]
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, ksz9477_dt_ids);
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-17 16:29:34.994188863 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-17 16:32:48.447430548 -0700
+@@ -1691,6 +1691,38 @@ const struct ksz_chip_data ksz_switch_ch
+ 				   false, false, true, true},
+ 		.ptp_capable = true,
+ 	},
++
++	[LAN9646] = {
++		.chip_id = LAN9646_CHIP_ID,
++		.dev_name = "LAN9646",
++		.num_vlans = 4096,
++		.num_alus = 4096,
++		.num_statics = 16,
++		.cpu_ports = 0x7F,	/* can be configured as cpu port */
++		.port_cnt = 7,		/* total physical port count */
++		.port_nirqs = 4,
++		.num_tx_queues = 4,
++		.ops = &ksz9477_dev_ops,
++		.mib_names = ksz9477_mib_names,
++		.mib_cnt = ARRAY_SIZE(ksz9477_mib_names),
++		.reg_mib_cnt = MIB_COUNTER_NUM,
++		.regs = ksz9477_regs,
++		.masks = ksz9477_masks,
++		.shifts = ksz9477_shifts,
++		.xmii_ctrl0 = ksz9477_xmii_ctrl0,
++		.xmii_ctrl1 = ksz9477_xmii_ctrl1,
++		.supports_mii	= {false, false, false, false,
++				   false, true, true},
++		.supports_rmii	= {false, false, false, false,
++				   false, true, true},
++		.supports_rgmii = {false, false, false, false,
++				   false, true, true},
++		.internal_phy	= {true, true, true, true,
++				   true, false, false},
++		.gbit_capable	= {true, true, true, true, true, true, true},
++		.wr_table = &ksz9477_register_set,
++		.rd_table = &ksz9477_register_set,
++	},
+ };
+ EXPORT_SYMBOL_GPL(ksz_switch_chips);
+ 
+@@ -2468,6 +2500,7 @@ static u32 ksz_get_phy_flags(struct dsa_
+ 	case KSZ9567_CHIP_ID:
+ 	case KSZ9896_CHIP_ID:
+ 	case KSZ9897_CHIP_ID:
++	case LAN9646_CHIP_ID:
+ 		/* KSZ9477 Errata DS80000754C
+ 		 *
+ 		 * Module 4: Energy Efficient Ethernet (EEE) feature select must
+@@ -2739,7 +2772,8 @@ static enum dsa_tag_protocol ksz_get_tag
+ 	    dev->chip_id == KSZ9477_CHIP_ID ||
+ 	    dev->chip_id == KSZ9896_CHIP_ID ||
+ 	    dev->chip_id == KSZ9897_CHIP_ID ||
+-	    dev->chip_id == KSZ9567_CHIP_ID)
++	    dev->chip_id == KSZ9567_CHIP_ID ||
++	    dev->chip_id == LAN9646_CHIP_ID)
+ 		proto = DSA_TAG_PROTO_KSZ9477;
+ 
+ 	if (is_lan937x(dev))
+@@ -2858,6 +2892,7 @@ static int ksz_max_mtu(struct dsa_switch
+ 	case LAN9372_CHIP_ID:
+ 	case LAN9373_CHIP_ID:
+ 	case LAN9374_CHIP_ID:
++	case LAN9646_CHIP_ID:
+ 		return KSZ9477_MAX_FRAME_SIZE - VLAN_ETH_HLEN - ETH_FCS_LEN;
+ 	}
+ 
+@@ -2880,6 +2915,7 @@ static int ksz_validate_eee(struct dsa_s
+ 	case KSZ9893_CHIP_ID:
+ 	case KSZ9896_CHIP_ID:
+ 	case KSZ9897_CHIP_ID:
++	case LAN9646_CHIP_ID:
+ 		return 0;
+ 	}
+ 
+@@ -3240,7 +3276,10 @@ static int ksz_switch_detect(struct ksz_
+ 		case LAN9372_CHIP_ID:
+ 		case LAN9373_CHIP_ID:
+ 		case LAN9374_CHIP_ID:
+-			dev->chip_id = id32;
++
++			/* LAN9646 does not have its own chip id. */
++			if (dev->chip_id != LAN9646_CHIP_ID)
++				dev->chip_id = id32;
+ 			break;
+ 		case KSZ9893_CHIP_ID:
+ 			ret = ksz_read8(dev, REG_CHIP_ID4,
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h	2024-09-17 16:29:34.994188863 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h	2024-09-17 16:30:58.201851878 -0700
+@@ -193,6 +193,7 @@ enum ksz_model {
+ 	LAN9372,
+ 	LAN9373,
+ 	LAN9374,
++	LAN9646,
+ };
+ 
+ enum ksz_chip_id {
+@@ -215,6 +216,7 @@ enum ksz_chip_id {
+ 	LAN9372_CHIP_ID = 0x00937200,
+ 	LAN9373_CHIP_ID = 0x00937300,
+ 	LAN9374_CHIP_ID = 0x00937400,
++	LAN9646_CHIP_ID = 0x00964600,
+ };
+ 
+ enum ksz_regs {
+@@ -643,7 +645,8 @@ static inline bool ksz_is_9897_family(st
+ 	       dev->chip_id == KSZ9897_CHIP_ID ||
+ 	       dev->chip_id == KSZ9896_CHIP_ID ||
+ 	       dev->chip_id == KSZ9567_CHIP_ID ||
+-	       dev->chip_id == KSZ8567_CHIP_ID;
++	       dev->chip_id == KSZ8567_CHIP_ID ||
++	       dev->chip_id == LAN9646_CHIP_ID;
+ }
+ 
+ static inline int is_lan937x(struct ksz_device *dev)
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_spi.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_spi.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_spi.c	2024-09-17 16:24:27.743510954 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_spi.c	2024-09-16 17:47:37.370134340 -0700
+@@ -208,6 +208,10 @@ static const struct of_device_id ksz_dt_
+ 		.compatible = "microchip,lan9374",
+ 		.data = &ksz_switch_chips[LAN9374]
+ 	},
++	{
++		.compatible = "microchip,lan9646",
++		.data = &ksz_switch_chips[LAN9646]
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, ksz_dt_ids);
+@@ -233,6 +237,7 @@ static const struct spi_device_id ksz_sp
+ 	{ "lan9372" },
+ 	{ "lan9373" },
+ 	{ "lan9374" },
++	{ "lan9646" },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(spi, ksz_spi_ids);

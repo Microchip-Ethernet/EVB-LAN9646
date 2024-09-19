@@ -1,0 +1,12 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-05-24 05:04:06.000000000 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 15:22:35.054159794 -0700
+@@ -2862,7 +2862,7 @@ phy_interface_t ksz_get_xmii(struct ksz_
+ 		else
+ 			interface = PHY_INTERFACE_MODE_MII;
+ 	} else if (val == bitval[P_RMII_SEL]) {
+-		interface = PHY_INTERFACE_MODE_RGMII;
++		interface = PHY_INTERFACE_MODE_RMII;
+ 	} else {
+ 		interface = PHY_INTERFACE_MODE_RGMII;
+ 		if (data8 & P_RGMII_ID_EG_ENABLE)

@@ -1,0 +1,25 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/ethernet/cadence/macb_main.c linux-linux4microchip-2024.04-new/drivers/net/ethernet/cadence/macb_main.c
+--- linux-linux4microchip-2024.04-old/drivers/net/ethernet/cadence/macb_main.c	2024-09-19 01:09:02.415768395 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/ethernet/cadence/macb_main.c	2024-09-19 01:10:23.511295150 -0700
+@@ -3020,8 +3020,10 @@ static int macb_close(struct net_device
+ 
+ static int macb_change_mtu(struct net_device *dev, int new_mtu)
+ {
++#if !defined(CONFIG_NET_DSA) && !defined(CONFIG_NET_DSA_MODULE)
+ 	if (netif_running(dev))
+ 		return -EBUSY;
++#endif
+ 
+ 	dev->mtu = new_mtu;
+ 
+@@ -5115,6 +5117,10 @@ static int macb_probe(struct platform_de
+ 		dev->max_mtu = bp->jumbo_max_len - ETH_HLEN - ETH_FCS_LEN;
+ 	else
+ 		dev->max_mtu = ETH_DATA_LEN;
++#if defined(CONFIG_NET_DSA) || defined(CONFIG_NET_DSA_MODULE)
++	if (dev->max_mtu == ETH_DATA_LEN)
++		dev->max_mtu += 8;
++#endif
+ 
+ 	if (bp->caps & MACB_CAPS_BD_RD_PREFETCH) {
+ 		val = GEM_BFEXT(RXBD_RDBUFF, gem_readl(bp, DCFG10));

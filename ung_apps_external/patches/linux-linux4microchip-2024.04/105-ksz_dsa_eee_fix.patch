@@ -1,0 +1,29 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 15:51:28.339561134 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 16:06:43.375818638 -0700
+@@ -2375,7 +2375,11 @@ static u32 ksz_get_phy_flags(struct dsa_
+ 		if (!port)
+ 			return MICREL_KSZ8_P1_ERRATA;
+ 		break;
++	case KSZ8567_CHIP_ID:
+ 	case KSZ9477_CHIP_ID:
++	case KSZ9567_CHIP_ID:
++	case KSZ9896_CHIP_ID:
++	case KSZ9897_CHIP_ID:
+ 		/* KSZ9477 Errata DS80000754C
+ 		 *
+ 		 * Module 4: Energy Efficient Ethernet (EEE) feature select must
+@@ -2385,6 +2389,13 @@ static u32 ksz_get_phy_flags(struct dsa_
+ 		 *   controls. If not disabled, the PHY ports can auto-negotiate
+ 		 *   to enable EEE, and this feature can cause link drops when
+ 		 *   linked to another device supporting EEE.
++		 *
++		 * The same item appears in the errata for the KSZ9567, KSZ9896,
++		 * and KSZ9897.
++		 *
++		 * A similar item appears in the errata for the KSZ8567, but
++		 * provides an alternative workaround. For now, use the simple
++		 * workaround of disabling the EEE feature for this device too.
+ 		 */
+ 		return MICREL_NO_EEE;
+ 	}

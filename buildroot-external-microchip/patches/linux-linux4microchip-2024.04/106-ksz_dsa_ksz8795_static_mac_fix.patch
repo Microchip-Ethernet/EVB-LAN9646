@@ -1,0 +1,30 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 16:06:43.375818638 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-12 16:19:59.966832188 -0700
+@@ -1143,7 +1143,7 @@ const struct ksz_chip_data ksz_switch_ch
+ 		.dev_name = "KSZ8795",
+ 		.num_vlans = 4096,
+ 		.num_alus = 0,
+-		.num_statics = 8,
++		.num_statics = 32,
+ 		.cpu_ports = 0x10,	/* can be configured as cpu port */
+ 		.port_cnt = 5,		/* total cpu and user ports */
+ 		.num_tx_queues = 4,
+@@ -1182,7 +1182,7 @@ const struct ksz_chip_data ksz_switch_ch
+ 		.dev_name = "KSZ8794",
+ 		.num_vlans = 4096,
+ 		.num_alus = 0,
+-		.num_statics = 8,
++		.num_statics = 32,
+ 		.cpu_ports = 0x10,	/* can be configured as cpu port */
+ 		.port_cnt = 5,		/* total cpu and user ports */
+ 		.num_tx_queues = 4,
+@@ -1207,7 +1207,7 @@ const struct ksz_chip_data ksz_switch_ch
+ 		.dev_name = "KSZ8765",
+ 		.num_vlans = 4096,
+ 		.num_alus = 0,
+-		.num_statics = 8,
++		.num_statics = 32,
+ 		.cpu_ports = 0x10,	/* can be configured as cpu port */
+ 		.port_cnt = 5,		/* total cpu and user ports */
+ 		.num_tx_queues = 4,

@@ -1,0 +1,16 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c	2024-05-24 05:04:06.000000000 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2024-09-12 15:30:10.899855688 -0700
+@@ -174,10 +174,8 @@ int ksz9477_reset_switch(struct ksz_devi
+ 			   SPI_AUTO_EDGE_DETECTION, 0);
+ 
+ 	/* default configuration */
+-	ksz_read8(dev, REG_SW_LUE_CTRL_1, &data8);
+-	data8 = SW_AGING_ENABLE | SW_LINK_AUTO_AGING |
+-	      SW_SRC_ADDR_FILTER | SW_FLUSH_STP_TABLE | SW_FLUSH_MSTP_TABLE;
+-	ksz_write8(dev, REG_SW_LUE_CTRL_1, data8);
++	ksz_write8(dev, REG_SW_LUE_CTRL_1,
++		   SW_AGING_ENABLE | SW_LINK_AUTO_AGING | SW_SRC_ADDR_FILTER);
+ 
+ 	/* disable interrupts */
+ 	ksz_write32(dev, REG_SW_INT_MASK__4, SWITCH_INT_MASK);
