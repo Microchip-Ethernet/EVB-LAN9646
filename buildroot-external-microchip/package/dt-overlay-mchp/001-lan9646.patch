@@ -260,8 +260,8 @@ diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/
  
 diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi.dtso dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi.dtso
 --- dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi.dtso	1969-12-31 16:00:00.000000000 -0800
-+++ dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi.dtso	2024-03-26 11:30:31.991857285 -0700
-@@ -0,0 +1,155 @@
++++ dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi.dtso	2024-09-19 09:31:56.619959404 -0700
+@@ -0,0 +1,159 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Device Tree file for SAM9X75 CURIOSITY board overlay blob for the LAN9646
@@ -300,7 +300,6 @@ diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/
 +	pinctrl-0 = <&pinctrl_flx3_default>;
 +//	cs-gpios = <&pioC 25 0>, <&pioA 21 0>;
 +//	cs-gpios = <0>, <&pioA 21 0>;
-+	dmas = <0>, <0>;
 +	status = "okay";
 +
 +	lan9646: lan9646@0 {
@@ -351,8 +350,8 @@ diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/
 +			port@6 {
 +				reg = <6>;
 +				label = "lan5";
++				phy-mode = "sgmii";
 +				phy-handle = <&swphy6>;
-+				mode = <1>;
 +			};
 +		};
 +		mdio {
@@ -415,12 +414,336 @@ diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/
 +};
 +
 +&{/} {
-+	model = "SAM9X75-Curiosity: KSZ9563(SPI) RGMII PHY Daughter Card";
++	model = "SAM9X75-Curiosity: LAN9646(SPI) RGMII PHY Daughter Card";
++
++	sfp: sfp {
++		compatible = "sff,sfp";
++		i2c-bus = <&i2c7>;
++	};
++};
+diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_no_sfp.dtso dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_no_sfp.dtso
+--- dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_no_sfp.dtso	1969-12-31 16:00:00.000000000 -0800
++++ dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_no_sfp.dtso	2024-09-19 09:31:07.405483410 -0700
+@@ -0,0 +1,156 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Device Tree file for SAM9X75 CURIOSITY board overlay blob for the LAN9646
++ * using I2C and RGMII Daughter Card.
++ *
++ * Copyright (C) 2023 Microchip Technology Inc. and its subsidiaries
++ *
++ * Author: Mihai Sain <mihai.sain@microchip.com>
++ *
++ */
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++#include <dt-bindings/mfd/atmel-flexcom.h>
++#include <dt-bindings/pinctrl/at91.h>
++
++&gmac {
++	phy-mode = "rgmii-id";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_gmac_rgmii_default>;
++	magic-packet;
++	status = "okay";
++
++	fixed-link {
++		speed = <1000>;
++		full-duplex;
++	};
++};
++
++&spi3 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_flx3_default>;
++//	cs-gpios = <&pioC 25 0>, <&pioA 21 0>;
++//	cs-gpios = <0>, <&pioA 21 0>;
++	status = "okay";
++
++	lan9646: lan9646@0 {
++		compatible = "microchip,lan9646";
++		reg = <0>;
++		interrupt-parent = <&pioD>;
++		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
++		spi-max-frequency = <11000000>;
++
++		spi-cpha;
++		spi-cpol;
++		status = "okay";
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			port@0 {
++				reg = <0>;
++				label = "lan1";
++				phy-handle = <&swphy0>;
++			};
++			port@1 {
++				reg = <1>;
++				label = "lan2";
++				phy-handle = <&swphy1>;
++			};
++			port@2 {
++				reg = <2>;
++				label = "lan3";
++				phy-handle = <&swphy2>;
++			};
++			port@3 {
++				reg = <3>;
++				label = "lan4";
++				phy-handle = <&swphy3>;
++			};
++			port@5 {
++				reg = <5>;
++				phy-mode = "rgmii-id";
++				rx-internal-delay-ps = <2000>;
++				tx-internal-delay-ps = <2000>;
++				ethernet = <&gmac>;
++				fixed-link {
++					speed = <1000>;
++					full-duplex;
++				};
++			};
++			port@6 {
++				reg = <6>;
++				label = "lan5";
++				fixed-link {
++					speed = <1000>;
++					full-duplex;
++				};
++			};
++		};
++		mdio {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			swphy0: ethernet-phy@0 {
++				reg = <0>;
++				eee-broken-100tx;
++				eee-broken-1000t;
++			};
++			swphy1: ethernet-phy@1 {
++				reg = <1>;
++				eee-broken-100tx;
++				eee-broken-1000t;
++			};
++			swphy2: ethernet-phy@2 {
++				reg = <2>;
++				eee-broken-100tx;
++				eee-broken-1000t;
++			};
++			swphy3: ethernet-phy@3 {
++				reg = <3>;
++				eee-broken-100tx;
++				eee-broken-1000t;
++			};
++		};
++	};
++};
++
++&pinctrl {
++	gmac-pins {
++		pinctrl_gmac_rgmii_default: gmac-rgmii-default {
++			atmel,pins =
++				<AT91_PIOB 13 AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TX0   */
++				 AT91_PIOB 14 AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TX1   */
++				 AT91_PIOB 4  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TX2   */
++				 AT91_PIOB 5  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TX3   */
++				 AT91_PIOB 7  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TXCTL  */
++				 AT91_PIOB 6  AT91_PERIPH_A (AT91_PINCTRL_PULL_UP | AT91_PINCTRL_SLEWRATE_DIS)	/* ETH_TXCK  */
++
++				 AT91_PIOB 11 AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RX0   */
++				 AT91_PIOB 12 AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RX1   */
++				 AT91_PIOB 0  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RX2   */
++				 AT91_PIOB 1  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RX3   */
++				 AT91_PIOB 8  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RXCK   */
++				 AT91_PIOB 3  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RXCTL */
++
++				 AT91_PIOB 10 AT91_PERIPH_A  AT91_PINCTRL_NONE					/* ETH_MDC   */
++				 AT91_PIOB 9  AT91_PERIPH_A  AT91_PINCTRL_NONE					/* ETH_MDIO  */
++
++				 AT91_PIOB 2  AT91_PERIPH_A  AT91_PINCTRL_DIS_SCHMIT			 	/* ETH_125CK */
++				 AT91_PIOD 5  AT91_PERIPH_GPIO  AT91_PINCTRL_NONE>;				/* ETH_INT   */
++		};
++	};
++};
++
++&{/} {
++	model = "SAM9X75-Curiosity: LAN9646(SPI) RGMII PHY Daughter Card";
++
++	sfp: sfp {
++		compatible = "sff,sfp";
++		i2c-bus = <&i2c7>;
++	};
++};
+diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_sfp.dtso dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_sfp.dtso
+--- dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_sfp.dtso	1969-12-31 16:00:00.000000000 -0800
++++ dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_sfp.dtso	2024-09-19 09:31:25.703660073 -0700
+@@ -0,0 +1,155 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Device Tree file for SAM9X75 CURIOSITY board overlay blob for the LAN9646
++ * using I2C and RGMII Daughter Card.
++ *
++ * Copyright (C) 2023 Microchip Technology Inc. and its subsidiaries
++ *
++ * Author: Mihai Sain <mihai.sain@microchip.com>
++ *
++ */
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++#include <dt-bindings/mfd/atmel-flexcom.h>
++#include <dt-bindings/pinctrl/at91.h>
++
++&gmac {
++	phy-mode = "rgmii-id";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_gmac_rgmii_default>;
++	magic-packet;
++	status = "okay";
++
++	fixed-link {
++		speed = <1000>;
++		full-duplex;
++	};
++};
++
++&spi3 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_flx3_default>;
++//	cs-gpios = <&pioC 25 0>, <&pioA 21 0>;
++//	cs-gpios = <0>, <&pioA 21 0>;
++	status = "okay";
++
++	lan9646: lan9646@0 {
++		compatible = "microchip,lan9646";
++		reg = <0>;
++		interrupt-parent = <&pioD>;
++		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
++		spi-max-frequency = <11000000>;
++
++		spi-cpha;
++		spi-cpol;
++		status = "okay";
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			port@0 {
++				reg = <0>;
++				label = "lan1";
++				phy-handle = <&swphy0>;
++			};
++			port@1 {
++				reg = <1>;
++				label = "lan2";
++				phy-handle = <&swphy1>;
++			};
++			port@2 {
++				reg = <2>;
++				label = "lan3";
++				phy-handle = <&swphy2>;
++			};
++			port@3 {
++				reg = <3>;
++				label = "lan4";
++				phy-handle = <&swphy3>;
++			};
++			port@5 {
++				reg = <5>;
++				phy-mode = "rgmii-id";
++				rx-internal-delay-ps = <2000>;
++				tx-internal-delay-ps = <2000>;
++				ethernet = <&gmac>;
++				fixed-link {
++					speed = <1000>;
++					full-duplex;
++				};
++			};
++			port@6 {
++				reg = <6>;
++				label = "lan5";
++				phy-mode = "sgmii";
++				sfp = <&sfp>;
++				managed = "in-band-status";
++			};
++		};
++		mdio {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			swphy0: ethernet-phy@0 {
++				reg = <0>;
++				eee-broken-100tx;
++				eee-broken-1000t;
++			};
++			swphy1: ethernet-phy@1 {
++				reg = <1>;
++				eee-broken-100tx;
++				eee-broken-1000t;
++			};
++			swphy2: ethernet-phy@2 {
++				reg = <2>;
++				eee-broken-100tx;
++				eee-broken-1000t;
++			};
++			swphy3: ethernet-phy@3 {
++				reg = <3>;
++				eee-broken-100tx;
++				eee-broken-1000t;
++			};
++		};
++	};
++};
++
++&pinctrl {
++	gmac-pins {
++		pinctrl_gmac_rgmii_default: gmac-rgmii-default {
++			atmel,pins =
++				<AT91_PIOB 13 AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TX0   */
++				 AT91_PIOB 14 AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TX1   */
++				 AT91_PIOB 4  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TX2   */
++				 AT91_PIOB 5  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TX3   */
++				 AT91_PIOB 7  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_TXCTL  */
++				 AT91_PIOB 6  AT91_PERIPH_A (AT91_PINCTRL_PULL_UP | AT91_PINCTRL_SLEWRATE_DIS)	/* ETH_TXCK  */
++
++				 AT91_PIOB 11 AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RX0   */
++				 AT91_PIOB 12 AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RX1   */
++				 AT91_PIOB 0  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RX2   */
++				 AT91_PIOB 1  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RX3   */
++				 AT91_PIOB 8  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RXCK   */
++				 AT91_PIOB 3  AT91_PERIPH_A  AT91_PINCTRL_SLEWRATE_DIS				/* ETH_RXCTL */
++
++				 AT91_PIOB 10 AT91_PERIPH_A  AT91_PINCTRL_NONE					/* ETH_MDC   */
++				 AT91_PIOB 9  AT91_PERIPH_A  AT91_PINCTRL_NONE					/* ETH_MDIO  */
++
++				 AT91_PIOB 2  AT91_PERIPH_A  AT91_PINCTRL_DIS_SCHMIT			 	/* ETH_125CK */
++				 AT91_PIOD 5  AT91_PERIPH_GPIO  AT91_PINCTRL_NONE>;				/* ETH_INT   */
++		};
++	};
++};
++
++&{/} {
++	model = "SAM9X75-Curiosity: LAN9646(SPI) RGMII PHY Daughter Card";
++
++	sfp: sfp {
++		compatible = "sff,sfp";
++		i2c-bus = <&i2c7>;
++	};
 +};
 diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity.its dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity.its
 --- dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity.its	2024-02-15 05:34:19.000000000 -0800
-+++ dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity.its	2024-03-20 18:23:00.848226093 -0700
-@@ -90,6 +90,51 @@
++++ dt-overlay-mchp-linux4microchip-fpga-2024.02/sam9x75_curiosity.its	2024-09-19 09:37:37.314885825 -0700
+@@ -90,6 +90,81 @@
  			};
  		};
  
@@ -469,10 +792,40 @@ diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity.
 +			};
 +		};
 +
++		fdt_gmac_lan9646_sfp {
++			description = "Device Tree blob for LAN9646 RGMII switch using SFP overlay";
++			data = /incbin/("./sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_sfp.dtbo");
++			type = "flat_dt";
++			arch = "arm";
++			compression = "none";
++			load = <0x23120000>;
++			hash-1 {
++				algo = "crc32";
++			};
++			hash-2 {
++				algo = "sha1";
++			};
++		};
++
++		fdt_gmac_lan9646_no_sfp {
++			description = "Device Tree blob for LAN9646 RGMII switch not using SFP overlay";
++			data = /incbin/("./sam9x75_curiosity/sam9x75_curiosity_gmac_lan9646spi_no_sfp.dtbo");
++			type = "flat_dt";
++			arch = "arm";
++			compression = "none";
++			load = <0x23120000>;
++			hash-1 {
++				algo = "crc32";
++			};
++			hash-2 {
++				algo = "sha1";
++			};
++		};
++
  		fdt_i2s_proto {
  			description = "Device Tree blob PROTO Audio board overlay";
  			data = /incbin/("./sam9x75_curiosity/sam9x75_curiosity_i2s_proto.dtbo");
-@@ -135,6 +180,21 @@
+@@ -135,6 +210,31 @@
  			fdt = "fdt_gmac_lan8840";
  		};
  
@@ -489,6 +842,16 @@ diff -Napur dt-overlay-mchp-linux4microchip-fpga-2024.02-orig/sam9x75_curiosity.
 +		lan9646 {
 +			description = "FDT overlay blob for LAN9646 RGMII switch Daughter Card using SPI";
 +			fdt = "fdt_gmac_lan9646";
++		};
++
++		lan9646_sfp {
++			description = "FDT overlay blob for LAN9646 RGMII switch Daughter Card using SFP";
++			fdt = "fdt_gmac_lan9646_sfp";
++		};
++
++		lan9646_no_sfp {
++			description = "FDT overlay blob for LAN9646 RGMII switch Daughter Card not using SFP";
++			fdt = "fdt_gmac_lan9646_no_sfp";
 +		};
 +
  		i2s_proto {
