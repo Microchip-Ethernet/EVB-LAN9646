@@ -579,8 +579,17 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477_
  
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-17 16:43:42.189212654 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-18 12:59:29.450400889 -0700
-@@ -858,8 +858,7 @@ static const struct regmap_range ksz9477
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-23 14:41:11.864891351 -0700
+@@ -258,6 +258,8 @@ static const struct ksz_dev_ops ksz9477_
+ 	.reset = ksz9477_reset_switch,
+ 	.init = ksz9477_switch_init,
+ 	.exit = ksz9477_switch_exit,
++	.pcs_get_state = ksz9477_pcs_get_state,
++	.pcs_link_up = ksz9477_pcs_link_up,
+ };
+ 
+ static const struct ksz_dev_ops lan937x_dev_ops = {
+@@ -858,8 +860,7 @@ static const struct regmap_range ksz9477
  	regmap_reg_range(0x701b, 0x701b),
  	regmap_reg_range(0x701f, 0x7020),
  	regmap_reg_range(0x7030, 0x7030),
@@ -590,7 +599,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	regmap_reg_range(0x7300, 0x7301),
  	regmap_reg_range(0x7400, 0x7401),
  	regmap_reg_range(0x7403, 0x7403),
-@@ -1342,6 +1341,7 @@ const struct ksz_chip_data ksz_switch_ch
+@@ -1342,6 +1343,7 @@ const struct ksz_chip_data ksz_switch_ch
  				   true, false, false},
  		.gbit_capable	= {true, true, true, true, true, true, true},
  		.ptp_capable = true,
@@ -598,7 +607,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  		.wr_table = &ksz9477_register_set,
  		.rd_table = &ksz9477_register_set,
  	},
-@@ -1720,6 +1720,7 @@ const struct ksz_chip_data ksz_switch_ch
+@@ -1720,6 +1722,7 @@ const struct ksz_chip_data ksz_switch_ch
  		.internal_phy	= {true, true, true, true,
  				   true, false, false},
  		.gbit_capable	= {true, true, true, true, true, true, true},
@@ -606,7 +615,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  		.wr_table = &ksz9477_register_set,
  		.rd_table = &ksz9477_register_set,
  	},
-@@ -1786,6 +1787,63 @@ static void ksz_phylink_get_caps(struct
+@@ -1786,6 +1789,63 @@ static void ksz_phylink_get_caps(struct
  		dev->dev_ops->get_caps(dev, port, config);
  }
  
@@ -670,7 +679,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  void ksz_r_mib_stats64(struct ksz_device *dev, int port)
  {
  	struct ethtool_pause_stats *pstats;
-@@ -2292,6 +2350,12 @@ static int ksz_setup(struct dsa_switch *
+@@ -2292,6 +2352,12 @@ static int ksz_setup(struct dsa_switch *
  			return ret;
  	}
  
@@ -683,7 +692,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	/* Start with learning disabled on standalone user ports, and enabled
  	 * on the CPU port. In lack of other finer mechanisms, learning on the
  	 * CPU port will avoid flooding bridge local addresses on the network
-@@ -3062,6 +3126,17 @@ static void ksz_phylink_mac_config(struc
+@@ -3062,6 +3128,17 @@ static void ksz_phylink_mac_config(struc
  	if (dev->info->internal_phy[port])
  		return;
  
@@ -701,7 +710,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	if (phylink_autoneg_inband(mode)) {
  		dev_err(dev->dev, "In-band AN not supported!\n");
  		return;
-@@ -3625,6 +3700,7 @@ static const struct dsa_switch_ops ksz_s
+@@ -3625,6 +3702,7 @@ static const struct dsa_switch_ops ksz_s
  	.phy_read		= ksz_phy_read16,
  	.phy_write		= ksz_phy_write16,
  	.phylink_get_caps	= ksz_phylink_get_caps,
@@ -709,7 +718,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	.phylink_mac_config	= ksz_phylink_mac_config,
  	.phylink_mac_link_up	= ksz_phylink_mac_link_up,
  	.phylink_mac_link_down	= ksz_mac_link_down,
-@@ -3800,6 +3876,9 @@ int ksz_switch_register(struct ksz_devic
+@@ -3800,6 +3878,9 @@ int ksz_switch_register(struct ksz_devic
  		dev->ports[i].num = i;
  	}
  
@@ -719,7 +728,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	/* set the real number of ports */
  	dev->ds->num_ports = dev->info->port_cnt;
  
-@@ -3828,6 +3907,13 @@ int ksz_switch_register(struct ksz_devic
+@@ -3828,6 +3909,13 @@ int ksz_switch_register(struct ksz_devic
  				of_get_phy_mode(port,
  						&dev->ports[port_num].interface);
  
