@@ -1,0 +1,15 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/phy/phylink.c linux-linux4microchip-2024.04-new/drivers/net/phy/phylink.c
+--- linux-linux4microchip-2024.04-old/drivers/net/phy/phylink.c	2024-05-24 05:04:06.000000000 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/phy/phylink.c	2024-09-23 13:23:34.523600101 -0700
+@@ -3105,6 +3105,11 @@ static int phylink_sfp_config_phy(struct
+ 	phy_interface_t iface;
+ 	int ret;
+ 
++	/* The newly created PHY device has empty settings. */
++	if (linkmode_empty(phy->supported)) {
++		linkmode_copy(phy->supported, pl->sfp_support);
++		linkmode_copy(phy->advertising, pl->sfp_support);
++	}
+ 	linkmode_copy(support, phy->supported);
+ 
+ 	memset(&config, 0, sizeof(config));
