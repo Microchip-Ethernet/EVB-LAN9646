@@ -1,6 +1,6 @@
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c	2024-09-17 16:43:31.129656190 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2024-09-18 13:35:45.845976156 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2024-09-23 18:22:33.933054285 -0700
 @@ -2,7 +2,7 @@
  /*
   * Microchip KSZ9477 switch driver main logic
@@ -19,7 +19,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  #include <net/dsa.h>
  #include <net/switchdev.h>
  
-@@ -161,6 +163,373 @@ static int ksz9477_wait_alu_sta_ready(st
+@@ -161,6 +163,383 @@ static int ksz9477_wait_alu_sta_ready(st
  					10, 1000);
  }
  
@@ -64,10 +64,10 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
 +
 +static int port_sgmii_detect(struct ksz_device *dev, uint p)
 +{
++	struct ksz_port *port = &dev->ports[p];
 +	int ret = 0;
 +
 +	if (dev->sgmii_mode) {
-+		struct ksz_port *port = &dev->ports[p];
 +		u16 buf[6];
 +		int i = 0;
 +
@@ -88,6 +88,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
 +		}
 +	} else {
 +		/* Need to be told to run in direct mode. */
++		port->fiber = 1;
 +		ret = 1;
 +	}
 +	return ret;
@@ -175,20 +176,29 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
 +	/* Typical register values in different modes.
 +	 * 10/100/1000: 1f0001 = 01ad  1f0005 = 4000  1f8002 = 0008
 +	 *              1f0001 = 01bd  1f0005 = d000  1f8002 = 001a
-+	 * 1000:        1f0001 = 018d  1f0005 = 0000  1f8002 = 0001
-+	 *              1f0001 = 01ad  1f0005 = 40a0  1f8002 = 0000
-+	 *              1f0001 = 01ad  1f0005 = 41a0  1f8002 = 0000
-+	 * fiber:       1f0001 = 0189  1f0005 = 0000  1f8002 = 0001
-+	 *              1f0001 = 01ad  1f0005 = 41a0  1f8002 = 0000
++	 * 1000:        1f0001 = 018d  1f0005 = 0000  1f8002 = 0000
++	 *              1f0001 = 01ad  1f0005 = 40a0  1f8002 = 0001
++	 *              1f0001 = 01ad  1f0005 = 41a0  1f8002 = 0001
++	 * fiber:       1f0001 = 0189  1f0005 = 0000  1f8002 = 0000
++	 *              1f0001 = 01ad  1f0005 = 41a0  1f8002 = 0001
 +	 */
 +
++	if (data & SR_MII_AUTO_NEG_COMPLETE_INTR) {
++		data &= ~SR_MII_AUTO_NEG_COMPLETE_INTR;
++		port_sgmii_w(dev, p, SR_MII, MMD_SR_MII_AUTO_NEG_STATUS, &data,
++			     1);
++	}
++
 +	/* Running in fiber mode. */
-+	if (info->fiber && !data &&
-+	    (status & (PORT_AUTO_NEG_ACKNOWLEDGE | PORT_LINK_STATUS)) ==
-+	    (PORT_AUTO_NEG_ACKNOWLEDGE | PORT_LINK_STATUS)) {
-+		data = SR_MII_STAT_LINK_UP |
-+		       (SR_MII_STAT_1000_MBPS << SR_MII_STAT_S) |
-+		       SR_MII_STAT_FULL_DUPLEX;
++	if (info->fiber && !data) {
++		u16 link_up = PORT_LINK_STATUS;
++
++		if (dev->sgmii_mode == 1)
++			link_up |= PORT_AUTO_NEG_ACKNOWLEDGE;
++		if ((status & link_up) == link_up)
++			data = SR_MII_STAT_LINK_UP |
++			       (SR_MII_STAT_1000_MBPS << SR_MII_STAT_S) |
++			       SR_MII_STAT_FULL_DUPLEX;
 +	}
 +	if (data & SR_MII_STAT_LINK_UP) {
 +		ret = PORT_LINK_UP;
@@ -393,7 +403,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  int ksz9477_reset_switch(struct ksz_device *dev)
  {
  	u8 data8;
-@@ -276,7 +645,7 @@ int ksz9477_r_phy(struct ksz_device *dev
+@@ -276,7 +655,7 @@ int ksz9477_r_phy(struct ksz_device *dev
  	 * A fixed PHY can be setup in the device tree, but this function is
  	 * still called for that port during initialization.
  	 * For RGMII PHY there is no way to access it so the fixed PHY should
@@ -402,7 +412,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  	 */
  	if (!dev->info->internal_phy[addr]) {
  		struct ksz_port *p = &dev->ports[addr];
-@@ -286,7 +655,10 @@ int ksz9477_r_phy(struct ksz_device *dev
+@@ -286,7 +665,10 @@ int ksz9477_r_phy(struct ksz_device *dev
  			val = 0x1140;
  			break;
  		case MII_BMSR:
@@ -414,7 +424,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  			break;
  		case MII_PHYSID1:
  			val = 0x0022;
-@@ -299,6 +671,10 @@ int ksz9477_r_phy(struct ksz_device *dev
+@@ -299,6 +681,10 @@ int ksz9477_r_phy(struct ksz_device *dev
  			break;
  		case MII_LPA:
  			val = 0xc5e1;
@@ -425,7 +435,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  			break;
  		case MII_CTRL1000:
  			val = 0x0700;
-@@ -309,6 +685,24 @@ int ksz9477_r_phy(struct ksz_device *dev
+@@ -309,6 +695,24 @@ int ksz9477_r_phy(struct ksz_device *dev
  			else
  				val = 0;
  			break;
@@ -450,7 +460,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  		}
  	} else {
  		ret = ksz_pread16(dev, addr, 0x100 + (reg << 1), &val);
-@@ -904,11 +1298,28 @@ static phy_interface_t ksz9477_get_inter
+@@ -904,11 +1308,28 @@ static phy_interface_t ksz9477_get_inter
  void ksz9477_get_caps(struct ksz_device *dev, int port,
  		      struct phylink_config *config)
  {
@@ -479,7 +489,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  }
  
  int ksz9477_set_ageing_time(struct ksz_device *dev, unsigned int msecs)
-@@ -1010,6 +1421,8 @@ void ksz9477_port_setup(struct ksz_devic
+@@ -1010,6 +1431,8 @@ void ksz9477_port_setup(struct ksz_devic
  		     PORT_FORCE_TX_FLOW_CTRL | PORT_FORCE_RX_FLOW_CTRL,
  		     !dev->info->internal_phy[port]);
  
@@ -488,7 +498,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  	if (cpu_port)
  		member = dsa_user_ports(ds);
  	else
-@@ -1078,6 +1491,10 @@ void ksz9477_config_cpu_port(struct dsa_
+@@ -1078,6 +1501,10 @@ void ksz9477_config_cpu_port(struct dsa_
  			continue;
  		ksz_port_stp_state_set(ds, i, BR_STATE_DISABLED);
  	}
@@ -499,7 +509,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  }
  
  int ksz9477_enable_stp_addr(struct ksz_device *dev)
-@@ -1142,6 +1559,23 @@ int ksz9477_setup(struct dsa_switch *ds)
+@@ -1142,6 +1569,23 @@ int ksz9477_setup(struct dsa_switch *ds)
  	/* enable global MIB counter freeze function */
  	ksz_cfg(dev, REG_SW_MAC_CTRL_6, SW_MIB_COUNTER_FREEZE, true);
  
@@ -523,7 +533,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  	return 0;
  }
  
-@@ -1166,6 +1600,8 @@ int ksz9477_switch_init(struct ksz_devic
+@@ -1166,6 +1610,8 @@ int ksz9477_switch_init(struct ksz_devic
  
  void ksz9477_switch_exit(struct ksz_device *dev)
  {
