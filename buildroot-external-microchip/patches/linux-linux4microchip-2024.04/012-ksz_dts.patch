@@ -1,7 +1,7 @@
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646.dts	2024-09-17 18:22:08.339350269 -0700
-@@ -0,0 +1,579 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646.dts	2024-10-08 17:04:03.821988995 -0700
+@@ -0,0 +1,583 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -127,6 +127,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -223,7 +224,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -306,6 +308,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -378,7 +381,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -583,8 +587,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_no_sfp.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_no_sfp.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_no_sfp.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_no_sfp.dts	2024-09-17 18:21:05.263879869 -0700
-@@ -0,0 +1,573 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_no_sfp.dts	2024-10-08 17:05:03.137841643 -0700
+@@ -0,0 +1,577 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -710,6 +714,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -803,7 +808,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -886,6 +892,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -955,7 +962,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -1160,8 +1168,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_sfp.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_sfp.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_sfp.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_sfp.dts	2024-09-17 15:30:25.817526355 -0700
-@@ -0,0 +1,576 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_lan9646_sfp.dts	2024-10-08 17:05:17.813310367 -0700
+@@ -0,0 +1,580 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -1287,6 +1295,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -1379,7 +1388,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -1462,6 +1472,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -1530,7 +1541,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -1740,8 +1752,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_cascade.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_cascade.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_cascade.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_cascade.dts	2023-12-11 16:51:23.000000000 -0800
-@@ -0,0 +1,568 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_cascade.dts	2024-10-08 17:05:45.659302277 -0700
+@@ -0,0 +1,572 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -1866,6 +1878,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -1931,7 +1944,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -2022,6 +2036,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -2107,7 +2122,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -2312,8 +2328,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071.dts	2024-09-17 18:23:04.854083782 -0700
-@@ -0,0 +1,599 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071.dts	2024-10-08 17:05:58.135850601 -0700
+@@ -0,0 +1,603 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -2444,6 +2460,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -2545,7 +2562,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -2633,6 +2651,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -2710,7 +2729,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -2915,8 +2935,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_sfp.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_sfp.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_sfp.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_sfp.dts	2024-09-17 18:23:33.634929544 -0700
-@@ -0,0 +1,595 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8071_sfp.dts	2024-10-08 17:06:07.525510678 -0700
+@@ -0,0 +1,599 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -3047,6 +3067,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -3144,7 +3165,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -3232,6 +3254,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -3304,7 +3327,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -3514,8 +3538,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087.dts	2023-12-13 11:40:58.148003104 -0800
-@@ -0,0 +1,743 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087.dts	2024-10-08 17:06:33.554568376 -0700
+@@ -0,0 +1,753 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -3614,6 +3638,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -3674,6 +3699,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -3716,6 +3742,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -3752,6 +3779,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -3788,6 +3816,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -3820,6 +3849,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -3902,7 +3932,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -3969,6 +4000,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -4027,6 +4059,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -4056,7 +4089,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -4261,8 +4295,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts	2024-09-11 14:09:36.074325828 -0700
-@@ -0,0 +1,787 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts	2024-10-09 11:49:21.014391258 -0700
+@@ -0,0 +1,793 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -4357,6 +4391,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -4403,6 +4438,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -4445,6 +4481,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -4711,7 +4748,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -4811,7 +4849,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +
 +					interrupt-parent = <&pioB>;
 +					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
-+					status = "okay";
++					status = "disabled";
 +					ports {
 +						#address-cells = <1>;
 +						#size-cells = <0>;
@@ -4832,6 +4870,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -4847,7 +4886,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -5052,8 +5092,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts	2024-04-22 16:36:04.198533517 -0700
-@@ -0,0 +1,481 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts	2024-10-09 11:50:43.514404605 -0700
+@@ -0,0 +1,483 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -5225,7 +5265,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -5332,7 +5373,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -5537,8 +5579,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts	2024-09-11 14:08:37.091748936 -0700
-@@ -0,0 +1,787 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts	2024-10-09 11:50:16.848369962 -0700
+@@ -0,0 +1,793 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -5633,6 +5675,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -5679,6 +5722,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -5721,6 +5765,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -5987,7 +6032,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -6087,7 +6133,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +
 +					interrupt-parent = <&pioB>;
 +					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
-+					status = "okay";
++					status = "disabled";
 +					ports {
 +						#address-cells = <1>;
 +						#size-cells = <0>;
@@ -6108,6 +6154,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -6123,7 +6170,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -6328,8 +6376,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_rmii.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_rmii.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_rmii.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_rmii.dts	2024-06-28 16:10:34.122502205 -0700
-@@ -0,0 +1,787 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_rmii.dts	2024-10-09 11:52:02.899530731 -0700
+@@ -0,0 +1,793 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -6424,6 +6472,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -6470,6 +6519,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -6512,6 +6562,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -6778,7 +6829,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -6878,7 +6930,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +
 +					interrupt-parent = <&pioB>;
 +					interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
-+					status = "okay";
++					status = "disabled";
 +					ports {
 +						#address-cells = <1>;
 +						#size-cells = <0>;
@@ -6899,6 +6951,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -6914,7 +6967,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -7119,8 +7173,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts	2023-12-11 16:50:21.000000000 -0800
-@@ -0,0 +1,578 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts	2024-10-08 17:10:02.338010014 -0700
+@@ -0,0 +1,583 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -7224,6 +7278,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <1000>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@5 {
@@ -7323,7 +7378,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <1000>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
@@ -7400,6 +7456,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +					};
@@ -7446,6 +7503,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								speed = <100>;
 +								full-duplex;
 +								pause;
++								asym-pause;
 +							};
 +						};
 +						port@6 {
@@ -7496,7 +7554,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +				fixed-link {
 +					speed = <100>;
 +					full-duplex;
-+					pause;
++					/* MAC can only receive PAUSE frames. */
++					asym-pause;
 +				};
 +			};
 +
