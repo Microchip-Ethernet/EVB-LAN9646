@@ -1,0 +1,182 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c	2024-09-24 14:24:26.307804928 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c	2024-10-09 17:21:24.853416102 -0700
+@@ -779,6 +779,17 @@ int ksz8_r_phy(struct ksz_device *dev, u
+ 		if (link & PORT_MDIX_STATUS)
+ 			data |= KSZ886X_CTRL_MDIX_STAT;
+ 		break;
++
++	/* No MMD access. */
++	case MII_MMD_CTRL:
++	case MII_MMD_DATA:
++		break;
++	case MII_TPISTATUS:
++		/* This register holds the PHY interrupt status for simulated
++		 * Micrel KSZ PHY.
++		 */
++		data = 0x0505;
++		break;
+ 	default:
+ 		processed = false;
+ 		break;
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-24 14:24:26.308804892 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-10-09 17:22:52.167757981 -0700
+@@ -320,6 +320,8 @@ static const u16 ksz8795_regs[] = {
+ 	[S_MULTICAST_CTRL]		= 0x04,
+ 	[P_XMII_CTRL_0]			= 0x06,
+ 	[P_XMII_CTRL_1]			= 0x06,
++	[S_INTR_STATUS]			= 0x7C,
++	[S_INTR_ENABLE]			= 0x7D,
+ };
+ 
+ static const u32 ksz8795_masks[] = {
+@@ -392,6 +394,8 @@ static const u16 ksz8863_regs[] = {
+ 	[S_START_CTRL]			= 0x01,
+ 	[S_BROADCAST_CTRL]		= 0x06,
+ 	[S_MULTICAST_CTRL]		= 0x04,
++	[S_INTR_STATUS]			= 0xBC,
++	[S_INTR_ENABLE]			= 0xBB,
+ };
+ 
+ static const u32 ksz8863_masks[] = {
+@@ -445,6 +449,8 @@ static const u16 ksz8895_regs[] = {
+ 	[S_START_CTRL]			= 0x01,
+ 	[S_BROADCAST_CTRL]		= 0x06,
+ 	[S_MULTICAST_CTRL]		= 0x04,
++	[S_INTR_STATUS]			= 0x7C,
++	[S_INTR_ENABLE]			= 0x7D,
+ };
+ 
+ static const u32 ksz8895_masks[] = {
+@@ -486,6 +492,8 @@ static const u16 ksz9477_regs[] = {
+ 	[S_START_CTRL]			= 0x0300,
+ 	[S_BROADCAST_CTRL]		= 0x0332,
+ 	[S_MULTICAST_CTRL]		= 0x0331,
++	[S_INTR_STATUS]			= REG_SW_PORT_INT_STATUS__1,
++	[S_INTR_ENABLE]			= REG_SW_PORT_INT_MASK__1,
+ 	[P_XMII_CTRL_0]			= 0x0300,
+ 	[P_XMII_CTRL_1]			= 0x0301,
+ };
+@@ -2067,14 +2075,25 @@ static int ksz_sw_mdio_write(struct mii_
+ static int ksz_irq_phy_setup(struct ksz_device *dev)
+ {
+ 	struct dsa_switch *ds = dev->ds;
++	struct ksz_irq *pirq = &dev->girq;
+ 	int phy;
+ 	int irq;
+ 	int ret;
++	int src;
+ 
+ 	for (phy = 0; phy < KSZ_MAX_NUM_PORTS; phy++) {
+ 		if (BIT(phy) & ds->phys_mii_mask) {
+-			irq = irq_find_mapping(dev->ports[phy].pirq.domain,
+-					       PORT_SRC_PHY_INT);
++
++			/* Older switches do not have separate interrupts for
++			 * each port.  They only have 1 global interrupt for
++			 * PHY link indication.
++			 */
++			src = phy;
++			if (dev->info->port_nirqs) {
++				pirq = &dev->ports[phy].pirq;
++				src = PORT_SRC_PHY_INT;
++			}
++			irq = irq_find_mapping(pirq->domain, src);
+ 			if (irq < 0) {
+ 				ret = irq;
+ 				goto out;
+@@ -2174,9 +2193,15 @@ static void ksz_irq_bus_sync_unlock(stru
+ {
+ 	struct ksz_irq *kirq  = irq_data_get_irq_chip_data(d);
+ 	struct ksz_device *dev = kirq->dev;
++	u8 masked = kirq->masked;
+ 	int ret;
+ 
+-	ret = ksz_write8(dev, kirq->reg_mask, kirq->masked);
++	/* Switches having only global interrupt use bits for enabling
++	 * interrupt rather than masking it.
++	 */
++	if (!dev->info->port_nirqs)
++		masked = ~masked;
++	ret = ksz_write8(dev, kirq->reg_mask, masked);
+ 	if (ret)
+ 		dev_err(dev->dev, "failed to change IRQ mask\n");
+ 
+@@ -2237,6 +2262,15 @@ static irqreturn_t ksz_irq_thread_fn(int
+ 	if (ret)
+ 		goto out;
+ 
++	/* Switches that do not have separate port interrupt needs to
++	 * acknowledge the interrupt here.
++	 */
++	if (!dev->info->port_nirqs && data) {
++		ret = ksz_write8(dev, kirq->reg_status, data);
++		if (ret)
++			goto out;
++	}
++
+ 	for (n = 0; n < kirq->nirqs; ++n) {
+ 		if (data & BIT(n)) {
+ 			sub_irq = irq_find_mapping(kirq->domain, n);
+@@ -2281,8 +2315,8 @@ static int ksz_girq_setup(struct ksz_dev
+ 	struct ksz_irq *girq = &dev->girq;
+ 
+ 	girq->nirqs = dev->info->port_cnt;
+-	girq->reg_mask = REG_SW_PORT_INT_MASK__1;
+-	girq->reg_status = REG_SW_PORT_INT_STATUS__1;
++	girq->reg_mask = dev->info->regs[S_INTR_ENABLE];
++	girq->reg_status = dev->info->regs[S_INTR_STATUS];
+ 	snprintf(girq->name, sizeof(girq->name), "global_port_irq");
+ 
+ 	girq->irq_num = dev->irq;
+@@ -2309,6 +2343,7 @@ static int ksz_pirq_setup(struct ksz_dev
+ static int ksz_setup(struct dsa_switch *ds)
+ {
+ 	struct ksz_device *dev = ds->priv;
++	bool have_port_irq = false;
+ 	struct dsa_port *dp;
+ 	struct ksz_port *p;
+ 	const u16 *regs;
+@@ -2367,11 +2402,15 @@ static int ksz_setup(struct dsa_switch *
+ 	p->learning = true;
+ 
+ 	if (dev->irq > 0) {
++		if (dev->info->port_nirqs)
++			have_port_irq = true;
+ 		ret = ksz_girq_setup(dev);
+ 		if (ret)
+ 			return ret;
+ 
+ 		dsa_switch_for_each_user_port(dp, dev->ds) {
++			if (!dev->info->port_nirqs)
++				break;
+ 			ret = ksz_pirq_setup(dev, dp->index);
+ 			if (ret)
+ 				goto out_girq;
+@@ -2409,11 +2448,11 @@ out_ptp_clock_unregister:
+ 	if (dev->info->ptp_capable)
+ 		ksz_ptp_clock_unregister(ds);
+ out_ptpirq:
+-	if (dev->irq > 0 && dev->info->ptp_capable)
++	if (have_port_irq && dev->info->ptp_capable)
+ 		dsa_switch_for_each_user_port(dp, dev->ds)
+ 			ksz_ptp_irq_free(ds, dp->index);
+ out_pirq:
+-	if (dev->irq > 0)
++	if (have_port_irq)
+ 		dsa_switch_for_each_user_port(dp, dev->ds)
+ 			ksz_irq_free(&dev->ports[dp->index].pirq);
+ out_girq:
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h	2024-09-24 14:24:26.309804855 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h	2024-10-04 15:52:49.451731841 -0700
+@@ -257,6 +257,8 @@ enum ksz_regs {
+ 	S_MULTICAST_CTRL,
+ 	P_XMII_CTRL_0,
+ 	P_XMII_CTRL_1,
++	S_INTR_STATUS,
++	S_INTR_ENABLE,
+ };
+ 
+ enum ksz_masks {
