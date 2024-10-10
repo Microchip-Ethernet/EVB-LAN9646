@@ -601,8 +601,8 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/Makefile u-boot-mchp-li
  obj-$(CONFIG_CMD_SYSBOOT) += sysboot.o
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-linux4microchip-2023.10/cmd/spi_ksz.c
 --- u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/cmd/spi_ksz.c	2024-03-14 11:04:27.442196423 -0700
-@@ -0,0 +1,440 @@
++++ u-boot-mchp-linux4microchip-2023.10/cmd/spi_ksz.c	2024-10-07 15:55:24.547943636 -0700
+@@ -0,0 +1,477 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * (C) Copyright 2002
@@ -651,6 +651,11 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +#define SPI_ADDR_MASK			((1 << SPI_ADDR_SHIFT) - 1)
 +#define SPI_TURNAROUND_SHIFT		5
 +
++static int spi_addr_shift = SPI_ADDR_SHIFT;
++static int spi_addr_mask = SPI_ADDR_MASK;
++static int spi_turnaround = SPI_TURNAROUND_SHIFT;
++static int spi_cmd_len = 4;
++
 +static int spi_cmd(uint addr, int len, int read)
 +{
 +	int j;
@@ -658,14 +663,41 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +
 +	if (read)
 +		op = KS_SPIOP_RD;
-+	addr &= SPI_ADDR_MASK;
-+	addr |= op << SPI_ADDR_SHIFT;
-+	addr <<= SPI_TURNAROUND_SHIFT;
-+	for (j = 0; j < 4; j++) {
-+		dout[3 - j] = (uchar) addr;
++	addr &= spi_addr_mask;
++	addr |= op << spi_addr_shift;
++	addr <<= spi_turnaround;
++	for (j = 0; j < spi_cmd_len; j++) {
++		dout[spi_cmd_len - 1 - j] = (uchar) addr;
 +		addr >>= 8;
 +	}
 +	return j;
++}
++
++static void spi_set_cmd(int mode)
++{
++	switch (mode) {
++	case 1:
++		/* KSZ8795 */
++		spi_addr_shift = 12;
++		spi_addr_mask = ((1 << 12) - 1);
++		spi_turnaround = 1;
++		spi_cmd_len = 2;
++		break;
++	case 2:
++		/* KSZ8863/KSZ8895 */
++		spi_addr_shift = 8;
++		spi_addr_mask = ((1 << 8) - 1);
++		spi_turnaround = 0;
++		spi_cmd_len = 2;
++		break;
++	default:
++		/* KSZ9897 */
++		spi_addr_shift = SPI_ADDR_SHIFT;
++		spi_addr_mask = SPI_ADDR_MASK;
++		spi_turnaround = SPI_TURNAROUND_SHIFT;
++		spi_cmd_len = 4;
++		break;
++	}
 +}
 +
 +static int spi_def_size(void)
@@ -1015,6 +1047,11 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +			if (*cp == '@')
 +				freq = dectoul(cp + 1, &cp);
 +		}
++		if (argc >= 3) {
++			int mode = dectoul(argv[2], &cp);
++
++			spi_set_cmd(mode);
++		}
 +	}
 +
 +	return 0;
@@ -1257,7 +1294,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_d
 +CONFIG_MCHP_PIT64B_TIMER=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-mchp-linux4microchip-2023.10/drivers/net/macb.c
 --- u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c	2023-12-18 02:10:05.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/drivers/net/macb.c	2024-03-19 11:49:48.578577133 -0700
++++ u-boot-mchp-linux4microchip-2023.10/drivers/net/macb.c	2024-10-09 11:24:13.393970065 -0700
 @@ -516,6 +516,7 @@ static int _macb_recv(struct macb_device
  	}
  }
@@ -1274,7 +1311,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
  
  /**
   * macb_linkspd_cb - Linkspeed change callback function
-@@ -660,12 +662,20 @@ static int macb_phy_init(struct udevice
+@@ -660,12 +662,21 @@ static int macb_phy_init(struct udevice
  {
  	struct macb_device *macb = dev_get_priv(dev);
  	u32 ncfgr;
@@ -1284,6 +1321,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
 +#else
 +	u16 lpa;
 +	int speed, duplex;
++	char *phy_mode;
 +#endif
  	int ret;
 +#ifndef CONFIG_PHY_FIXED
@@ -1295,7 +1333,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
  	/* Auto-detect phy_addr */
  	ret = macb_phy_find(macb, name);
  	if (ret)
-@@ -677,6 +687,7 @@ static int macb_phy_init(struct udevice
+@@ -677,6 +688,7 @@ static int macb_phy_init(struct udevice
  		printf("%s: No PHY present\n", name);
  		return -ENODEV;
  	}
@@ -1303,12 +1341,13 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
  
  #ifdef CONFIG_PHYLIB
  	macb->phydev = phy_connect(macb->bus, macb->phy_addr, dev,
-@@ -687,8 +698,12 @@ static int macb_phy_init(struct udevice
+@@ -687,8 +699,13 @@ static int macb_phy_init(struct udevice
  	}
  
  	phy_config(macb->phydev);
 +#ifdef CONFIG_PHY_FIXED
 +	phy_startup(macb->phydev);
++	phy_mode = env_get("phy-mode");
 +#endif
  #endif
  
@@ -1316,7 +1355,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
  	status = macb_mdio_read(macb, macb->phy_addr, MII_BMSR);
  	if (!(status & BMSR_LSTATUS)) {
  		/* Try to re-negotiate if we don't have link already. */
-@@ -713,23 +728,44 @@ static int macb_phy_init(struct udevice
+@@ -713,23 +730,47 @@ static int macb_phy_init(struct udevice
  		       name, status);
  		return -ENETDOWN;
  	}
@@ -1331,6 +1370,9 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
 +			lpa = 0x7800;
 +		else
 +			lpa = 0x0000;
++		if (phy_mode && (!strcmp(phy_mode, "rmii") ||
++		    !strcmp(phy_mode, "mii")))
++			lpa = 0;
 +		speed = env_get_ulong("speed", 10, macb->phydev->speed);
 +#endif
  
@@ -1361,7 +1403,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
  			ncfgr |= GEM_BIT(GBE);
  
  			if (duplex)
-@@ -745,6 +781,7 @@ static int macb_phy_init(struct udevice
+@@ -745,6 +786,7 @@ static int macb_phy_init(struct udevice
  		}
  	}
  
@@ -1369,18 +1411,38 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/net/macb.c u-boot-m
  	/* fall back for EMAC checking */
  	adv = macb_mdio_read(macb, macb->phy_addr, MII_ADVERTISE);
  	lpa = macb_mdio_read(macb, macb->phy_addr, MII_LPA);
-@@ -752,6 +789,11 @@ static int macb_phy_init(struct udevice
+@@ -752,6 +794,11 @@ static int macb_phy_init(struct udevice
  	speed = (media & (ADVERTISE_100FULL | ADVERTISE_100HALF)
  		 ? 1 : 0);
  	duplex = (media & ADVERTISE_FULL) ? 1 : 0;
 +#else
-+	speed = macb->phydev->speed == SPEED_100;
++	speed = macb->phydev->speed >= SPEED_100;
 +	duplex = macb->phydev->duplex;
 +	lpa = 0x05e1;
 +#endif
  	printf("%s: link up, %sMbps %s-duplex (lpa: 0x%04x)\n",
  	       name,
  	       speed ? "100" : "10",
+@@ -922,6 +969,19 @@ static int _macb_init(struct udevice *de
+ 
+ 		if (macb->config->caps & MACB_CAPS_USRIO_HAS_CLKEN)
+ 			val |= macb->config->usrio->clken;
++		do {
++			char *phy_mode = env_get("phy-mode");
++			int phy_clk = env_get_ulong("phy-clk", 10, 0);
++
++			if (phy_mode) {
++				if (!strcmp(phy_mode, "rmii"))
++					val = macb->config->usrio->rmii;
++				else if (!strcmp(phy_mode, "mii"))
++					val = macb->config->usrio->mii;
++			}
++			if (phy_clk)
++				val |= macb->config->usrio->clken;
++		} while (0);
+ 
+ 		gem_writel(macb, USRIO, val);
+ 
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/drivers/spi/atmel_spi.c u-boot-mchp-linux4microchip-2023.10/drivers/spi/atmel_spi.c
 --- u-boot-mchp-linux4microchip-2023.10-orig/drivers/spi/atmel_spi.c	2023-12-18 02:10:05.000000000 -0800
 +++ u-boot-mchp-linux4microchip-2023.10/drivers/spi/atmel_spi.c	2024-03-27 16:14:06.957578203 -0700
