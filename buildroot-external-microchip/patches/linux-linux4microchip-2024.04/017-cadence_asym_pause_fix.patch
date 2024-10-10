@@ -1,0 +1,15 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/ethernet/cadence/macb_main.c linux-linux4microchip-2024.04-new/drivers/net/ethernet/cadence/macb_main.c
+--- linux-linux4microchip-2024.04-old/drivers/net/ethernet/cadence/macb_main.c	2024-10-09 17:41:09.049094697 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/ethernet/cadence/macb_main.c	2024-10-09 17:43:19.164992507 -0700
+@@ -876,7 +876,10 @@ static int macb_mii_probe(struct net_dev
+ 		bp->phylink_config.get_fixed_state = macb_get_pcs_fixed_state;
+ 	}
+ 
+-	bp->phylink_config.mac_capabilities = MAC_ASYM_PAUSE |
++	/* MAC cannot send PAUSE frames so the correct advertisement is
++	 * MAC_SYM_PAUSE | MAC_ASYM_PAUSE.
++	 */
++	bp->phylink_config.mac_capabilities = MAC_ASYM_PAUSE | MAC_SYM_PAUSE |
+ 		MAC_10 | MAC_100;
+ 
+ 	__set_bit(PHY_INTERFACE_MODE_MII,
