@@ -1,7 +1,7 @@
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c	2024-09-23 14:39:41.609199552 -0700
 +++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c	2024-09-24 13:53:48.187975136 -0700
-@@ -1397,6 +1397,18 @@ int ksz8_enable_stp_addr(struct ksz_devi
+@@ -1408,6 +1408,18 @@ int ksz8_enable_stp_addr(struct ksz_devi
  	return ksz8_w_sta_mac_table(dev, 0, &alu);
  }
  
@@ -20,7 +20,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.
  int ksz8_setup(struct dsa_switch *ds)
  {
  	struct ksz_device *dev = ds->priv;
-@@ -1441,6 +1453,10 @@ int ksz8_setup(struct dsa_switch *ds)
+@@ -1452,6 +1464,10 @@ int ksz8_setup(struct dsa_switch *ds)
  	for (i = 0; i < (dev->info->num_vlans / 4); i++)
  		ksz8_r_vlan_entries(dev, i);
  
@@ -31,7 +31,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.
  	return ksz8_handle_global_errata(ds);
  }
  
-@@ -1478,6 +1494,7 @@ int ksz8_switch_init(struct ksz_device *
+@@ -1495,6 +1511,7 @@ int ksz8_switch_init(struct ksz_device *
  
  void ksz8_switch_exit(struct ksz_device *dev)
  {
@@ -84,7 +84,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-24 14:06:28.016208811 -0700
 +++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-24 13:31:42.124433257 -0700
-@@ -3741,6 +3741,62 @@ static const struct dsa_switch_ops ksz_s
+@@ -3796,6 +3796,62 @@ static const struct dsa_switch_ops ksz_s
  	.set_mac_eee		= ksz_set_mac_eee,
  };
  
@@ -158,7 +158,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  
  	void *priv;
  	int irq;
-@@ -412,6 +413,13 @@ bool ksz_get_gbit(struct ksz_device *dev
+@@ -414,6 +415,13 @@ bool ksz_get_gbit(struct ksz_device *dev
  phy_interface_t ksz_get_xmii(struct ksz_device *dev, int port, bool gbit);
  extern const struct ksz_chip_data ksz_switch_chips[];
  
