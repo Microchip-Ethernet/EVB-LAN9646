@@ -4295,8 +4295,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts	2024-10-09 11:49:21.014391258 -0700
-@@ -0,0 +1,793 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8795.dts	2024-10-10 16:48:47.404615843 -0700
+@@ -0,0 +1,829 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -4500,14 +4500,17 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <0>;
 +							label = "lan1";
++							phy-handle = <&swphy_0>;
 +						};
 +						port@1 {
 +							reg = <1>;
 +							label = "lan2";
++							phy-handle = <&swphy_1>;
 +						};
 +						port@2 {
 +							reg = <2>;
 +							label = "lan3";
++							phy-handle = <&swphy_2>;
 +						};
 +						port@3 {
 +							reg = <4>;
@@ -4519,6 +4522,19 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								full-duplex;
 +								pause;
 +							};
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy_0: ethernet-phy@0 {
++							reg = <0>;
++						};
++						swphy_1: ethernet-phy@1 {
++							reg = <1>;
++						};
++						swphy_2: ethernet-phy@2 {
++							reg = <2>;
 +						};
 +					};
 +				};
@@ -4536,18 +4552,22 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <0>;
 +							label = "lan1";
++							phy-handle = <&swphy0>;
 +						};
 +						port@1 {
 +							reg = <1>;
 +							label = "lan2";
++							phy-handle = <&swphy1>;
 +						};
 +						port@2 {
 +							reg = <2>;
 +							label = "lan3";
++							phy-handle = <&swphy2>;
 +						};
 +						port@3 {
 +							reg = <3>;
 +							label = "lan4";
++							phy-handle = <&swphy3>;
 +						};
 +						port@4 {
 +							reg = <4>;
@@ -4559,6 +4579,22 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								full-duplex;
 +								pause;
 +							};
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy0: ethernet-phy@0 {
++							reg = <0>;
++						};
++						swphy1: ethernet-phy@1 {
++							reg = <1>;
++						};
++						swphy2: ethernet-phy@2 {
++							reg = <2>;
++						};
++						swphy3: ethernet-phy@3 {
++							reg = <3>;
 +						};
 +					};
 +				};
@@ -5092,8 +5128,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts	2024-10-09 11:50:43.514404605 -0700
-@@ -0,0 +1,483 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8863.dts	2024-10-10 14:54:12.578769013 -0700
+@@ -0,0 +1,507 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -5190,10 +5226,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <0>;
 +							label = "lan1";
++							phy-handle = <&swphy_0>;
 +						};
 +						port@1 {
 +							reg = <1>;
 +							label = "lan2";
++							phy-handle = <&swphy_1>;
 +						};
 +						port@2 {
 +							reg = <2>;
@@ -5205,6 +5243,16 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								full-duplex;
 +								pause;
 +							};
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy_0: ethernet-phy@0 {
++							reg = <0>;
++						};
++						swphy_1: ethernet-phy@1 {
++							reg = <1>;
 +						};
 +					};
 +				};
@@ -5322,10 +5370,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <0>;
 +							label = "lan1";
++							phy-handle = <&swphy0>;
 +						};
 +						port@1 {
 +							reg = <1>;
 +							label = "lan2";
++							phy-handle = <&swphy1>;
 +						};
 +						port@2 {
 +							reg = <2>;
@@ -5337,6 +5387,16 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								full-duplex;
 +								pause;
 +							};
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy0: ethernet-phy@0 {
++							reg = <0>;
++						};
++						swphy1: ethernet-phy@1 {
++							reg = <1>;
 +						};
 +					};
 +				};
@@ -5579,8 +5639,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts	2024-10-09 11:50:16.848369962 -0700
-@@ -0,0 +1,793 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8087_ksz8895.dts	2024-10-10 16:49:39.183776953 -0700
+@@ -0,0 +1,829 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -5860,18 +5920,22 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <0>;
 +							label = "lan1";
++							phy-handle = <&swphy0>;
 +						};
 +						port@1 {
 +							reg = <1>;
 +							label = "lan2";
++							phy-handle = <&swphy1>;
 +						};
 +						port@2 {
 +							reg = <2>;
 +							label = "lan3";
++							phy-handle = <&swphy2>;
 +						};
 +						port@3 {
 +							reg = <3>;
 +							label = "lan4";
++							phy-handle = <&swphy3>;
 +						};
 +						port@4 {
 +							reg = <4>;
@@ -5883,6 +5947,22 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								full-duplex;
 +								pause;
 +							};
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy0: ethernet-phy@0 {
++							reg = <0>;
++						};
++						swphy1: ethernet-phy@1 {
++							reg = <1>;
++						};
++						swphy2: ethernet-phy@2 {
++							reg = <2>;
++						};
++						swphy3: ethernet-phy@3 {
++							reg = <3>;
 +						};
 +					};
 +				};
@@ -5900,14 +5980,17 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <1>;
 +							label = "lan1";
++							phy-handle = <&swphy_1>;
 +						};
 +						port@1 {
 +							reg = <2>;
 +							label = "lan2";
++							phy-handle = <&swphy_2>;
 +						};
 +						port@2 {
 +							reg = <3>;
 +							label = "lan3";
++							phy-handle = <&swphy_3>;
 +						};
 +						port@3 {
 +							reg = <4>;
@@ -5919,6 +6002,19 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +								full-duplex;
 +								pause;
 +							};
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy_1: ethernet-phy@1 {
++							reg = <1>;
++						};
++						swphy_2: ethernet-phy@2 {
++							reg = <2>;
++						};
++						swphy_3: ethernet-phy@3 {
++							reg = <3>;
 +						};
 +					};
 +				};
@@ -7173,8 +7269,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +};
 diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts
 --- linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts	2024-10-08 17:10:02.338010014 -0700
-@@ -0,0 +1,583 @@
++++ linux-linux4microchip-2024.04/arch/arm/boot/dts/microchip/at91-sama5d3_xplained_ung8221.dts	2024-10-10 17:20:23.471278709 -0700
+@@ -0,0 +1,669 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * at91-sama5d3_xplained.dts - Device Tree file for the SAMA5D3 Xplained board
@@ -7256,24 +7352,30 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <0>;
 +							label = "lan1";
++							phy-handle = <&swphy9374_0>;
 +						};
 +						port@1 {
 +							reg = <1>;
 +							label = "lan2";
++							phy-handle = <&swphy9374_1>;
 +						};
 +						port@2 {
 +							reg = <2>;
 +							label = "lan3";
++							phy-handle = <&swphy9374_2>;
 +						};
 +						port@3 {
 +							reg = <3>;
 +							label = "lan4";
++							phy-handle = <&swphy9374_3>;
 +						};
 +						port@4 {
 +							reg = <4>;
 +							label = "cpu";
 +							ethernet = <&macb0>;
 +							phy-mode = "rgmii-id";
++							rx-internal-delay-ps = <2000>;
++							tx-internal-delay-ps = <2000>;
 +							fixed-link {
 +								speed = <1000>;
 +								full-duplex;
@@ -7293,10 +7395,37 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@6 {
 +							reg = <6>;
 +							label = "lan5";
++							phy-handle = <&swphy9374_6>;
 +						};
 +						port@7 {
 +							reg = <7>;
 +							label = "lan6";
++							phy-handle = <&swphy9374_7>;
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy9374_0: ethernet-phy@0 {
++							reg = <0>;
++						};
++						swphy9374_1: ethernet-phy@1 {
++							reg = <1>;
++						};
++						swphy9374_2: ethernet-phy@2 {
++							reg = <2>;
++						};
++						swphy9374_3: ethernet-phy@3 {
++							reg = <3>;
++						};
++						swphy9374_5: ethernet-phy@5 {
++							reg = <5>;
++						};
++						swphy9374_6: ethernet-phy@6 {
++							reg = <6>;
++						};
++						swphy9374_7: ethernet-phy@7 {
++							reg = <7>;
 +						};
 +					};
 +				};
@@ -7435,29 +7564,50 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <0>;
 +							label = "lan1";
++							phy-handle = <&swphy9370_0>;
 +						};
 +						port@1 {
 +							reg = <1>;
 +							label = "lan2";
++							phy-handle = <&swphy9370_1>;
 +						};
 +						port@2 {
 +							reg = <2>;
 +							label = "lan3";
++							phy-handle = <&swphy9370_2>;
 +						};
 +						port@3 {
 +							reg = <3>;
 +							label = "lan4";
++							phy-handle = <&swphy9370_3>;
 +						};
 +						port@4 {
 +							reg = <4>;
 +							label = "cpu";
 +							ethernet = <&macb1>;
++							phy-mode = "rmii";
 +							fixed-link {
 +								speed = <100>;
 +								full-duplex;
 +								pause;
 +								asym-pause;
 +							};
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy9370_0: ethernet-phy@0 {
++							reg = <0>;
++						};
++						swphy9370_1: ethernet-phy@1 {
++							reg = <1>;
++						};
++						swphy9370_2: ethernet-phy@2 {
++							reg = <2>;
++						};
++						swphy9370_3: ethernet-phy@3 {
++							reg = <3>;
 +						};
 +					};
 +				};
@@ -7478,27 +7628,33 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@0 {
 +							reg = <0>;
 +							label = "lan1";
++							phy-handle = <&swphy9373_0>;
 +						};
 +						port@1 {
 +							reg = <1>;
 +							label = "lan2";
++							phy-handle = <&swphy9373_1>;
 +						};
 +						port@2 {
 +							reg = <2>;
 +							label = "lan3";
++							phy-handle = <&swphy9373_2>;
 +						};
 +						port@3 {
 +							reg = <3>;
 +							label = "lan4";
++							phy-handle = <&swphy9373_3>;
 +						};
 +						port@4 {
 +							reg = <4>;
 +							label = "lan7";
++							phy-handle = <&swphy9373_4>;
 +						};
 +						port@5 {
 +							reg = <5>;
 +							label = "cpu";
 +							ethernet = <&macb1>;
++							phy-mode = "rmii";
 +							fixed-link {
 +								speed = <100>;
 +								full-duplex;
@@ -7518,6 +7674,32 @@ diff -Napur linux-linux4microchip-2024.04-orig/arch/arm/boot/dts/microchip/at91-
 +						port@7 {
 +							reg = <7>;
 +							label = "lan5";
++							phy-handle = <&swphy9373_7>;
++						};
++					};
++					mdio {
++						#address-cells = <1>;
++						#size-cells = <0>;
++						swphy9373_0: ethernet-phy@0 {
++							reg = <0>;
++						};
++						swphy9373_1: ethernet-phy@1 {
++							reg = <1>;
++						};
++						swphy9373_2: ethernet-phy@2 {
++							reg = <2>;
++						};
++						swphy9373_3: ethernet-phy@3 {
++							reg = <3>;
++						};
++						swphy9373_4: ethernet-phy@4 {
++							reg = <4>;
++						};
++						swphy9373_6: ethernet-phy@6 {
++							reg = <6>;
++						};
++						swphy9373_7: ethernet-phy@7 {
++							reg = <7>;
 +						};
 +					};
 +				};
