@@ -1,6 +1,6 @@
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/phy/micrel.c linux-linux4microchip-2024.04-new/drivers/net/phy/micrel.c
 --- linux-linux4microchip-2024.04-old/drivers/net/phy/micrel.c	2024-05-24 05:04:06.000000000 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/phy/micrel.c	2024-10-04 18:50:50.191140399 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/phy/micrel.c	2024-10-10 15:25:29.305118825 -0700
 @@ -770,6 +770,17 @@ static int ksz8061_config_init(struct ph
  {
  	int ret;
@@ -159,7 +159,16 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/phy/micrel.c linux-lin
  }, {
  	.phy_id		= PHY_ID_KSZ9021,
  	.phy_id_mask	= 0x000ffffe,
-@@ -4878,6 +4976,8 @@ static struct phy_driver ksphy_driver[]
+@@ -4870,6 +4968,8 @@ static struct phy_driver ksphy_driver[]
+ 	.config_init	= kszphy_config_init,
+ 	.config_aneg	= ksz886x_config_aneg,
+ 	.read_status	= ksz886x_read_status,
++	.config_intr	= kszphy_config_intr,
++	.handle_interrupt = kszphy_handle_interrupt,
+ 	.suspend	= genphy_suspend,
+ 	.resume		= genphy_resume,
+ 	.cable_test_start	= ksz886x_cable_test_start,
+@@ -4878,6 +4978,8 @@ static struct phy_driver ksphy_driver[]
  	.name		= "Micrel KSZ87XX Switch",
  	/* PHY_BASIC_FEATURES */
  	.config_init	= kszphy_config_init,
@@ -168,7 +177,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/phy/micrel.c linux-lin
  	.match_phy_device = ksz8795_match_phy_device,
  	.suspend	= genphy_suspend,
  	.resume		= genphy_resume,
-@@ -4890,7 +4990,7 @@ static struct phy_driver ksphy_driver[]
+@@ -4890,7 +4992,7 @@ static struct phy_driver ksphy_driver[]
  	.config_intr	= kszphy_config_intr,
  	.handle_interrupt = kszphy_handle_interrupt,
  	.suspend	= genphy_suspend,
@@ -177,7 +186,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/phy/micrel.c linux-lin
  	.get_features	= ksz9477_get_features,
  } };
  
-@@ -4914,6 +5014,7 @@ static struct mdio_device_id __maybe_unu
+@@ -4914,6 +5016,7 @@ static struct mdio_device_id __maybe_unu
  	{ PHY_ID_KSZ8081, MICREL_PHY_ID_MASK },
  	{ PHY_ID_KSZ8873MLL, MICREL_PHY_ID_MASK },
  	{ PHY_ID_KSZ886X, MICREL_PHY_ID_MASK },
