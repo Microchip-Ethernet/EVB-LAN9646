@@ -172,3 +172,45 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  /* Common register access functions */
  static inline struct regmap *ksz_regmap_8(struct ksz_device *dev)
  {
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/lan937x_main.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/lan937x_main.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/lan937x_main.c	2024-05-24 05:04:06.000000000 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/lan937x_main.c	2024-10-10 17:10:59.509307303 -0700
+@@ -352,6 +352,18 @@ int lan937x_switch_init(struct ksz_devic
+ 	return 0;
+ }
+ 
++#define LAN937X_REGS_SIZE		0x8000
++
++static struct bin_attribute lan937x_registers_attr = {
++	.attr = {
++		.name	= "registers",
++		.mode	= 00600,
++	},
++	.size	= LAN937X_REGS_SIZE,
++	.read	= ksz_registers_read,
++	.write	= ksz_registers_write,
++};
++
+ int lan937x_setup(struct dsa_switch *ds)
+ {
+ 	struct ksz_device *dev = ds->priv;
+@@ -386,6 +398,11 @@ int lan937x_setup(struct dsa_switch *ds)
+ 	lan937x_cfg(dev, REG_SW_GLOBAL_OUTPUT_CTRL__1,
+ 		    (SW_CLK125_ENB | SW_CLK25_ENB), true);
+ 
++	dev->regs_size = LAN937X_REGS_SIZE;
++	ret = sysfs_create_bin_file(&dev->dev->kobj,
++				    &lan937x_registers_attr);
++	(void)ret;
++
+ 	return 0;
+ }
+ 
+@@ -396,6 +413,7 @@ void lan937x_teardown(struct dsa_switch
+ 
+ void lan937x_switch_exit(struct ksz_device *dev)
+ {
++	sysfs_remove_bin_file(&dev->dev->kobj, &lan937x_registers_attr);
+ 	lan937x_reset_switch(dev);
+ }
+ 
