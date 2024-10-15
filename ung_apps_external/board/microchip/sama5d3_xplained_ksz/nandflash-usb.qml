@@ -31,7 +31,7 @@ SerialConnection {
 		applet.erase(0, applet.memorySize)
 
 		// write files
-		applet.write(0x000000, "at91bootstrap.bin", true)
+		applet.write(0x000000, "at91bootstrap.bin", true, true)
 		applet.write(0x040000, "u-boot.bin")
 		applet.write(0x100000, "uboot-env.bin")
 		applet.write(0x180000, "at91-sama5d3_xplained.dtb")
