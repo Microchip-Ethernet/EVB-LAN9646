@@ -601,8 +601,8 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/Makefile u-boot-mchp-li
  obj-$(CONFIG_CMD_SYSBOOT) += sysboot.o
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-linux4microchip-2023.10/cmd/spi_ksz.c
 --- u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/cmd/spi_ksz.c	2024-12-12 15:36:44.116706742 -0800
-@@ -0,0 +1,526 @@
++++ u-boot-mchp-linux4microchip-2023.10/cmd/spi_ksz.c	2025-01-06 17:17:55.591798226 -0800
+@@ -0,0 +1,518 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * (C) Copyright 2002
@@ -659,7 +659,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +static int spi_turnaround = SPI_TURNAROUND_SHIFT;
 +static int spi_cmd_len = 4;
 +static int spi_ksz_mode = KSZ9897_MODE;
-+static unsigned int spi_mode_save = CONFIG_DEFAULT_SPI_MODE;
 +
 +static int ksz9897_spi_cmd(uint addr, int len, int read)
 +{
@@ -895,9 +894,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +	if (ret)
 +		ret = -EIO;
 +#endif
-+	/* Revert to previous mode when using KSZ8463. */
-+	if (spi_ksz_mode == KSZ8463_MODE)
-+		mode = spi_mode_save;
 +	if (ret) {
 +		printf("Error %d during SPI transaction\n", ret);
 +	}
@@ -1054,9 +1050,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +		bitlen = len * 8;
 +	}
 +
-+	/* Hack to read KSZ8463 in SAM9X75 Curiosity board. */
-+	if (read && spi_ksz_mode == KSZ8463_MODE && mode != 2)
-+		mode = 2;
 +	if (do_spi_xfer(bus, cs, read, start))
 +		return 1;
 +
@@ -1092,7 +1085,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/cmd/spi_ksz.c u-boot-mchp-l
 +				mode = dectoul(cp + 1, &cp);
 +			if (*cp == '@')
 +				freq = dectoul(cp + 1, &cp);
-+			spi_mode_save = mode;
 +		}
 +		if (argc >= 3) {
 +			int mode = dectoul(argv[2], &cp);
