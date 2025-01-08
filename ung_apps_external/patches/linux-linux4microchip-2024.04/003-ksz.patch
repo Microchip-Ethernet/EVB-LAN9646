@@ -11861,8 +11861,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz98
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8463.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8463.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8463.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8463.h	2024-08-28 11:44:00.822718644 -0700
-@@ -0,0 +1,39 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8463.h	2025-01-07 18:07:10.031977369 -0800
+@@ -0,0 +1,45 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -11892,6 +11892,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_c
 +/* KSZ8463 and KSZ8863 use same ksz_sw.c code. */
 +#undef CONFIG_HAVE_KSZ8863
 +
++#if defined(CONFIG_SOC_SAM9X7)
++/* Switch interrupt does not work properly in SAM9X75 when starting early. */
++#define CONFIG_DELAY_REQUEST_INTR
++#endif
++
++
 +#include "ksz_common.h"
 +
 +#include "ksz_req.h"
@@ -11904,8 +11910,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_c
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8795.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8795.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8795.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8795.h	2024-08-28 11:44:00.822718644 -0700
-@@ -0,0 +1,29 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8795.h	2025-01-07 18:06:59.908390265 -0800
+@@ -0,0 +1,34 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -11925,6 +11931,11 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_c
 +/* Can be defined if KSZ9897 driver is included also. */
 +#undef CONFIG_KSZ_HSR
 +
++#if defined(CONFIG_SOC_SAM9X7)
++/* Switch interrupt does not work properly in SAM9X75 when starting early. */
++#define CONFIG_DELAY_REQUEST_INTR
++#endif
++
 +
 +#include "ksz_common.h"
 +
@@ -11937,8 +11948,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_c
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8863.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8863.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8863.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8863.h	2024-08-28 11:44:00.822718644 -0700
-@@ -0,0 +1,33 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8863.h	2025-01-07 18:07:39.882759889 -0800
+@@ -0,0 +1,39 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -11962,6 +11973,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_c
 +/* KSZ8463 and KSZ8863 use same ksz_sw.c code. */
 +#undef CONFIG_HAVE_KSZ8463
 +
++#if defined(CONFIG_SOC_SAM9X7)
++/* Switch interrupt does not work properly in SAM9X75 when starting early. */
++#define CONFIG_DELAY_REQUEST_INTR
++#endif
++
++
 +#include "ksz_common.h"
 +
 +/* For ksz_request used by PTP or MRP driver. */
@@ -11974,8 +11991,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_c
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8895.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8895.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8895.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8895.h	2024-08-28 11:44:00.823718603 -0700
-@@ -0,0 +1,30 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_cfg_8895.h	2025-01-07 18:06:51.760722572 -0800
+@@ -0,0 +1,35 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -11995,6 +12012,11 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_c
 +/* Can be defined if KSZ9897 driver is included also. */
 +#undef CONFIG_KSZ_DLR
 +#undef CONFIG_KSZ_HSR
++
++#if defined(CONFIG_SOC_SAM9X7)
++/* Switch interrupt does not work properly in SAM9X75 when starting early. */
++#define CONFIG_DELAY_REQUEST_INTR
++#endif
 +
 +
 +#include "ksz_common.h"
@@ -69837,12 +69859,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2024-11-26 14:23:59.517058998 -0800
-@@ -0,0 +1,12271 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-01-07 18:15:16.112152333 -0800
+@@ -0,0 +1,12294 @@
 +/**
 + * Microchip KSZ8795 switch common code
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -78664,10 +78686,15 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	return skb;
 +}  /* sw_final_skb */
 +
++#ifdef CONFIG_DELAY_REQUEST_INTR
++static int sw_start_interrupt(struct sw_priv *ks, const char *name);
++#endif
++
 +static void sw_start(struct ksz_sw *sw, const u8 *addr)
 +{
 +	int need_tail_tag = false;
 +	int need_vlan = false;
++	int setup = true;
 +
 +	sw->ops->acquire(sw);
 +	sw_setup(sw);
@@ -78765,7 +78792,22 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw->ops->acquire(sw);
 +		sw_ena_vlan(sw);
 +	}
-+	sw_ena_intr(sw);
++
++#ifdef CONFIG_DELAY_REQUEST_INTR
++	/* SAM9X75 switch interrupt does not work when requesting early. */
++	do {
++		struct sw_priv *ks = sw->dev;
++		int ret;
++
++		ret = sw_start_interrupt(ks, dev_name(ks->dev));
++		if (ret < 0) {
++			printk(KERN_WARNING "No switch interrupt"NL);
++			setup = false;
++		}
++	} while (0);
++#endif
++	if (setup)
++		sw_ena_intr(sw);
 +	sw->ops->release(sw);
 +
 +#ifdef CONFIG_KSZ_STP
@@ -82009,6 +82051,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->reg->w8(sw, REG_INT_STATUS, ks->intr_mask);
 +	sw->reg->w8(sw, REG_ACL_INT_STATUS, INT_PORT_ALL);
 +	mutex_unlock(&ks->lock);
++
++#ifndef CONFIG_DELAY_REQUEST_INTR
 +	ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +	if (ret < 0)
 +		printk(KERN_WARNING "No switch interrupt\n");
@@ -82018,6 +82062,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw->reg->w8(sw, REG_ACL_INT_ENABLE, INT_PORT_ALL);
 +		mutex_unlock(&ks->lock);
 +	}
++#endif
 +
 +	return 0;
 +
@@ -83108,12 +83153,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2024-11-26 14:24:17.636380162 -0800
-@@ -0,0 +1,10055 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-01-07 18:15:27.455689682 -0800
+@@ -0,0 +1,10078 @@
 +/**
 + * Microchip KSZ8895 switch common code
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -89987,10 +90032,15 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	return skb;
 +}  /* sw_final_skb */
 +
++#ifdef CONFIG_DELAY_REQUEST_INTR
++static int sw_start_interrupt(struct sw_priv *ks, const char *name);
++#endif
++
 +static void sw_start(struct ksz_sw *sw, const u8 *addr)
 +{
 +	int need_tail_tag = false;
 +	int need_vlan = false;
++	int setup = true;
 +
 +	sw->ops->acquire(sw);
 +	sw_setup(sw);
@@ -90078,7 +90128,22 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw->ops->acquire(sw);
 +		sw_ena_vlan(sw);
 +	}
-+	sw_ena_intr(sw);
++
++#ifdef CONFIG_DELAY_REQUEST_INTR
++	/* SAM9X75 switch interrupt does not work when requesting early. */
++	do {
++		struct sw_priv *ks = sw->dev;
++		int ret;
++
++		ret = sw_start_interrupt(ks, dev_name(ks->dev));
++		if (ret < 0) {
++			printk(KERN_WARNING "No switch interrupt"NL);
++			setup = false;
++		}
++	} while (0);
++#endif
++	if (setup)
++		sw_ena_intr(sw);
 +	sw->ops->release(sw);
 +
 +#ifdef CONFIG_KSZ_STP
@@ -93073,6 +93138,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->reg->w8(sw, REG_INT_ENABLE, 0);
 +	sw->reg->w8(sw, REG_INT_STATUS, ks->intr_mask);
 +	mutex_unlock(&ks->lock);
++
++#ifndef CONFIG_DELAY_REQUEST_INTR
 +	ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +	if (ret < 0)
 +		printk(KERN_WARNING "No switch interrupt\n");
@@ -93081,6 +93148,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw->reg->w8(sw, REG_INT_ENABLE, ks->intr_mask);
 +		mutex_unlock(&ks->lock);
 +	}
++#endif
 +
 +	return 0;
 +
@@ -115342,12 +115410,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c	2024-11-26 14:23:39.141822358 -0800
-@@ -0,0 +1,10268 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c	2025-01-07 18:15:08.104478929 -0800
+@@ -0,0 +1,10318 @@
 +/**
 + * Microchip switch common code
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -119779,6 +119847,20 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (check_sw_reg_range(reg))
 +			*addr = SW_R(sw, reg);
 +	}
++
++	/* 16-bit access with odd address. */
++	if (SW_SIZE != 1 && (reg & 1)) {
++		/*
++		 * Return zero to let the calling program know the boundary
++		 * must be 16-bit.
++		 */
++		if (!(count & 1))
++			i = 0;
++		else if (count == 1)
++			buf[0] = buf[1];
++	}
++	if (count == 1)
++		i = 1;
 +	return i;
 +}
 +
@@ -119788,6 +119870,19 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	SW_D *addr;
 +
 +	addr = (SW_D *) buf;
++
++	/* 16-bit access with 8-bit write. */
++	if (SW_SIZE != 1 && count == 1) {
++		SW_D tmp = SW_R(sw, reg);
++
++		if (reg & 1)
++			tmp = (tmp & 0x00ff) | (buf[0] << 8);
++		else
++			tmp = (tmp & 0xff00) | buf[0];
++		if (check_sw_reg_range(reg))
++			SW_W(sw, reg, tmp);
++		return 1;
++	}
 +	for (i = 0; i < count; i += SW_SIZE, reg += SW_SIZE, addr++) {
 +		if (check_sw_reg_range(reg))
 +			SW_W(sw, reg, *addr);
@@ -122733,10 +122828,15 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	return skb;
 +}  /* sw_final_skb */
 +
++#ifdef CONFIG_DELAY_REQUEST_INTR
++static int sw_start_interrupt(struct sw_priv *ks, const char *name);
++#endif
++
 +static void sw_start(struct ksz_sw *sw, const u8 *addr)
 +{
 +	int need_tail_tag = false;
 +	int need_vlan = false;
++	int setup = true;
 +
 +	sw->ops->acquire(sw);
 +	sw_setup(sw);
@@ -122816,7 +122916,22 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	if (need_vlan) {
 +		sw_ena_vlan(sw);
 +	}
-+	sw_ena_intr(sw);
++
++#ifdef CONFIG_DELAY_REQUEST_INTR
++	/* SAM9X75 switch interrupt does not work when requesting early. */
++	do {
++		struct sw_priv *ks = sw->dev;
++		int ret;
++
++		ret = sw_start_interrupt(ks, dev_name(ks->dev));
++		if (ret < 0) {
++			printk(KERN_WARNING "No switch interrupt"NL);
++			setup = false;
++		}
++	} while (0);
++#endif
++	if (setup)
++		sw_ena_intr(sw);
 +	sw->ops->release(sw);
 +
 +#ifdef CONFIG_KSZ_STP
@@ -125305,6 +125420,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	mutex_lock(&ks->lock);
 +	sw_setup_intr(sw);
 +	mutex_unlock(&ks->lock);
++
++#ifndef CONFIG_DELAY_REQUEST_INTR
 +	ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +	if (ret < 0)
 +		printk(KERN_WARNING "No switch interrupt\n");
@@ -125313,6 +125430,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw_ena_intr(sw);
 +		mutex_unlock(&ks->lock);
 +	}
++#endif
 +#endif
 +}
 +
@@ -134860,12 +134978,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/smi-k
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-ksz8463.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz8463.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-ksz8463.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz8463.c	2024-08-28 11:44:00.859717124 -0700
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz8463.c	2025-01-08 15:30:41.528022392 -0800
 @@ -0,0 +1,507 @@
 +/**
 + * Microchip KSZ8463 SPI driver
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + * Copyright (c) 2010-2015 Micrel, Inc.
 + *
 + * Copyright 2009 Simtec Electronics
@@ -134928,8 +135046,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-k
 +#define KS8463MLI_DEV0			"ksz8463"
 +#define KS8463MLI_DEV2			"ksz8463_2"
 +
-+#define SW_DRV_RELDATE			"Mar 25, 2023"
-+#define SW_DRV_VERSION			"1.2.3"
++#define SW_DRV_RELDATE			"Jan 8, 2025"
++#define SW_DRV_VERSION			"1.2.4"
 +
 +/* -------------------------------------------------------------------------- */
 +
