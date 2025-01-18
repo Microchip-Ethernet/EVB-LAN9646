@@ -1,0 +1,12 @@
+diff -Napur at91bootstrap-orig/Makefile at91bootstrap/Makefile
+--- at91bootstrap-orig/Makefile	2024-12-02 17:46:45.839792168 -0800
++++ at91bootstrap/Makefile	2024-12-04 15:29:58.885864206 -0800
+@@ -509,7 +509,7 @@ clean:
+ 	$(Q)rm -f $(call rwildcard,$(BUILDDIR),*.o *.srec *~)
+ 
+ distclean: clean config-clean
+-#	rm -fr $(BINDIR)
++	$(Q)rm -fr $(BUILDDIR)
+ 	$(Q)rm -fr .config .config.cmd .config.old
+ 	$(Q)rm -fr .auto.deps
+ 	$(Q)rm -f .installed
