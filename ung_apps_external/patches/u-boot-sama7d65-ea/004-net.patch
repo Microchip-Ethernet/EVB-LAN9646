@@ -1,0 +1,151 @@
+diff -Napur u-boot-at91-orig/drivers/net/macb.c u-boot-at91/drivers/net/macb.c
+--- u-boot-at91-orig/drivers/net/macb.c	2024-12-02 17:48:40.119352670 -0800
++++ u-boot-at91/drivers/net/macb.c	2025-01-14 15:41:53.670950919 -0800
+@@ -516,6 +516,7 @@ static int _macb_recv(struct macb_device
+ 	}
+ }
+ 
++#ifndef CONFIG_PHY_FIXED
+ static void macb_phy_reset(struct macb_device *macb, const char *name)
+ {
+ 	int i;
+@@ -567,6 +568,7 @@ static int macb_phy_find(struct macb_dev
+ 
+ 	return -ENODEV;
+ }
++#endif
+ 
+ /**
+  * macb_linkspd_cb - Linkspeed change callback function
+@@ -660,12 +662,21 @@ static int macb_phy_init(struct udevice
+ {
+ 	struct macb_device *macb = dev_get_priv(dev);
+ 	u32 ncfgr;
++#ifndef CONFIG_PHY_FIXED
+ 	u16 phy_id, status, adv, lpa;
+ 	int media, speed, duplex;
++#else
++	u16 lpa;
++	int speed, duplex;
++	char *phy_mode;
++#endif
+ 	int ret;
++#ifndef CONFIG_PHY_FIXED
+ 	int i;
++#endif
+ 
+ 	arch_get_mdio_control(name);
++#ifndef CONFIG_PHY_FIXED
+ 	/* Auto-detect phy_addr */
+ 	ret = macb_phy_find(macb, name);
+ 	if (ret)
+@@ -677,6 +688,7 @@ static int macb_phy_init(struct udevice
+ 		printf("%s: No PHY present\n", name);
+ 		return -ENODEV;
+ 	}
++#endif
+ 
+ #ifdef CONFIG_PHYLIB
+ 	macb->phydev = phy_connect(macb->bus, macb->phy_addr, dev,
+@@ -687,8 +699,13 @@ static int macb_phy_init(struct udevice
+ 	}
+ 
+ 	phy_config(macb->phydev);
++#ifdef CONFIG_PHY_FIXED
++	phy_startup(macb->phydev);
++	phy_mode = env_get("phy-mode");
++#endif
+ #endif
+ 
++#ifndef CONFIG_PHY_FIXED
+ 	status = macb_mdio_read(macb, macb->phy_addr, MII_BMSR);
+ 	if (!(status & BMSR_LSTATUS)) {
+ 		/* Try to re-negotiate if we don't have link already. */
+@@ -713,23 +730,47 @@ static int macb_phy_init(struct udevice
+ 		       name, status);
+ 		return -ENETDOWN;
+ 	}
++#endif
+ 
+ 	/* First check for GMAC and that it is GiB capable */
+ 	if (gem_is_gigabit_capable(macb)) {
++#ifndef CONFIG_PHY_FIXED
+ 		lpa = macb_mdio_read(macb, macb->phy_addr, MII_STAT1000);
++#else
++		if (macb->phydev->speed == SPEED_1000)
++			lpa = 0x7800;
++		else
++			lpa = 0x0000;
++		if (phy_mode && (!strcmp(phy_mode, "rmii") ||
++		    !strcmp(phy_mode, "mii")))
++			lpa = 0;
++		speed = env_get_ulong("speed", 10, macb->phydev->speed);
++#endif
+ 
+ 		if (lpa & (LPA_1000FULL | LPA_1000HALF | LPA_1000XFULL |
+ 					LPA_1000XHALF)) {
+ 			duplex = ((lpa & (LPA_1000FULL | LPA_1000XFULL)) ?
+ 					1 : 0);
+ 
++#ifdef CONFIG_PHY_FIXED
++			printf("%s: link up, %sMbps %s-duplex (lpa: 0x%04x)\n",
++			       name,
++			       speed == SPEED_1000 ? "1000" : "100",
++#else
+ 			printf("%s: link up, 1000Mbps %s-duplex (lpa: 0x%04x)\n",
+ 			       name,
++#endif
+ 			       duplex ? "full" : "half",
+ 			       lpa);
+ 
+ 			ncfgr = macb_readl(macb, NCFGR);
+ 			ncfgr &= ~(MACB_BIT(SPD) | MACB_BIT(FD));
++#ifdef CONFIG_PHY_FIXED
++			ncfgr &= ~GEM_BIT(GBE);
++			if (speed == SPEED_100)
++				ncfgr |= MACB_BIT(SPD);
++			else
++#endif
+ 			ncfgr |= GEM_BIT(GBE);
+ 
+ 			if (duplex)
+@@ -745,6 +786,7 @@ static int macb_phy_init(struct udevice
+ 		}
+ 	}
+ 
++#ifndef CONFIG_PHY_FIXED
+ 	/* fall back for EMAC checking */
+ 	adv = macb_mdio_read(macb, macb->phy_addr, MII_ADVERTISE);
+ 	lpa = macb_mdio_read(macb, macb->phy_addr, MII_LPA);
+@@ -752,6 +794,11 @@ static int macb_phy_init(struct udevice
+ 	speed = (media & (ADVERTISE_100FULL | ADVERTISE_100HALF)
+ 		 ? 1 : 0);
+ 	duplex = (media & ADVERTISE_FULL) ? 1 : 0;
++#else
++	speed = macb->phydev->speed >= SPEED_100;
++	duplex = macb->phydev->duplex;
++	lpa = 0x05e1;
++#endif
+ 	printf("%s: link up, %sMbps %s-duplex (lpa: 0x%04x)\n",
+ 	       name,
+ 	       speed ? "100" : "10",
+@@ -922,6 +969,19 @@ static int _macb_init(struct udevice *de
+ 
+ 		if (macb->config->caps & MACB_CAPS_USRIO_HAS_CLKEN)
+ 			val |= macb->config->usrio->clken;
++		do {
++			char *phy_mode = env_get("phy-mode");
++			int phy_clk = env_get_ulong("phy-clk", 10, 0);
++
++			if (phy_mode) {
++				if (!strcmp(phy_mode, "rmii"))
++					val = macb->config->usrio->rmii;
++				else if (!strcmp(phy_mode, "mii"))
++					val = macb->config->usrio->mii;
++			}
++			if (phy_clk)
++				val |= macb->config->usrio->clken;
++		} while (0);
+ 
+ 		gem_writel(macb, USRIO, val);
+ 

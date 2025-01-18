@@ -1,0 +1,60 @@
+diff -Napur u-boot-at91-orig/drivers/spi/atmel_spi.c u-boot-at91/drivers/spi/atmel_spi.c
+--- u-boot-at91-orig/drivers/spi/atmel_spi.c	2024-12-02 17:48:40.187350029 -0800
++++ u-boot-at91/drivers/spi/atmel_spi.c	2025-01-14 15:41:53.670950919 -0800
+@@ -118,6 +118,10 @@ struct atmel_spi_priv {
+ #endif
+ };
+ 
++#ifdef CONFIG_HAVE_KSZ9897
++static u32 last_freq;
++#endif
++
+ static int atmel_spi_claim_bus(struct udevice *dev)
+ {
+ 	struct udevice *bus = dev_get_parent(dev);
+@@ -130,6 +134,12 @@ static int atmel_spi_claim_bus(struct ud
+ 	u32 scbr, csrx, mode;
+ 
+ 	scbr = (priv->bus_clk_rate + freq - 1) / freq;
++#ifdef CONFIG_HAVE_KSZ9897
++	if (last_freq != freq) {
++		last_freq = freq;
++		printf("%s %d %x\n", __func__, freq, scbr);
++	}
++#endif
+ 	if (scbr > ATMEL_SPI_CSRx_SCBR_MAX)
+ 		return -EINVAL;
+ 
+@@ -336,6 +346,9 @@ static int atmel_spi_enable_clk(struct u
+ 		return -EINVAL;
+ 
+ 	priv->bus_clk_rate = clk_rate;
++#ifdef CONFIG_HAVE_KSZ9897
++	printf("rate: %ld\n", priv->bus_clk_rate);
++#endif
+ 
+ 	clk_free(&clk);
+ 
+diff -Napur u-boot-at91-orig/drivers/spi/spi-uclass.c u-boot-at91/drivers/spi/spi-uclass.c
+--- u-boot-at91-orig/drivers/spi/spi-uclass.c	2024-12-02 17:48:40.191349873 -0800
++++ u-boot-at91/drivers/spi/spi-uclass.c	2025-01-14 15:41:53.670950919 -0800
+@@ -489,6 +489,11 @@ int _spi_get_bus_and_cs(int busnum, int
+ 			goto err;
+ 	}
+ 
++#ifdef CONFIG_HAVE_KSZ9897
++	ret = spi_set_speed_mode(bus, speed, mode);
++	if (ret)
++		goto err_speed_mode;
++#else
+ 	/* In case bus frequency or mode changed, update it. */
+ 	if ((speed && bus_data->speed && bus_data->speed != speed) ||
+ 	    (plat && plat->mode != mode)) {
+@@ -496,6 +501,7 @@ int _spi_get_bus_and_cs(int busnum, int
+ 		if (ret)
+ 			goto err_speed_mode;
+ 	}
++#endif
+ 
+ 	*busp = bus;
+ 	*devp = slave;

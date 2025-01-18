@@ -1,0 +1,549 @@
+diff -Napur u-boot-at91-orig/cmd/Kconfig u-boot-at91/cmd/Kconfig
+--- u-boot-at91-orig/cmd/Kconfig	2024-12-02 17:48:39.931359973 -0800
++++ u-boot-at91/cmd/Kconfig	2025-01-14 16:30:14.838838095 -0800
+@@ -1481,6 +1481,12 @@ config CMD_SF_TEST
+ 	  equal the SPI bus speed for a single-bit-wide SPI bus, assuming
+ 	  everything is working properly.
+ 
++config CMD_SPI_KSZ
++	bool "kspi - Command to access spi device"
++	depends on SPI && (SAMA5D3 || SAM9X7 || SAMA7D65)
++	help
++	  SPI utility command.
++
+ config CMD_SPI
+ 	bool "sspi - Command to access spi device"
+ 	depends on SPI
+diff -Napur u-boot-at91-orig/cmd/Makefile u-boot-at91/cmd/Makefile
+--- u-boot-at91-orig/cmd/Makefile	2024-12-02 17:48:39.931359973 -0800
++++ u-boot-at91/cmd/Makefile	2025-01-14 15:41:53.666951052 -0800
+@@ -162,6 +162,7 @@ obj-$(CONFIG_CMD_SEAMA) += seama.o
+ obj-$(CONFIG_CMD_SETEXPR) += setexpr.o
+ obj-$(CONFIG_CMD_SETEXPR_FMT) += printf.o
+ obj-$(CONFIG_CMD_SPI) += spi.o
++obj-$(CONFIG_CMD_SPI_KSZ) += spi_ksz.o
+ obj-$(CONFIG_CMD_STRINGS) += strings.o
+ obj-$(CONFIG_CMD_SMC) += smccc.o
+ obj-$(CONFIG_CMD_SYSBOOT) += sysboot.o
+diff -Napur u-boot-at91-orig/cmd/spi_ksz.c u-boot-at91/cmd/spi_ksz.c
+--- u-boot-at91-orig/cmd/spi_ksz.c	1969-12-31 16:00:00.000000000 -0800
++++ u-boot-at91/cmd/spi_ksz.c	2025-01-14 15:41:53.666951052 -0800
+@@ -0,0 +1,518 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * (C) Copyright 2002
++ * Gerald Van Baren, Custom IDEAS, vanbaren@cideas.com
++ */
++
++/*
++ * SPI Read/Write Utilities
++ */
++
++#include <common.h>
++#include <command.h>
++#include <dm.h>
++#include <errno.h>
++#include <spi.h>
++
++/*-----------------------------------------------------------------------
++ * Definitions
++ */
++
++#ifndef MAX_SPI_BYTES
++#   define MAX_SPI_BYTES 32	/* Maximum number of bytes we can handle */
++#endif
++
++#define MAX_SPI_DATA_BYTES	(MAX_SPI_BYTES - 4)
++
++/*
++ * Values from last command.
++ */
++static unsigned int	bus = CONFIG_DEFAULT_SPI_BUS;
++static unsigned int	cs;
++static unsigned int	mode = CONFIG_DEFAULT_SPI_MODE;
++static unsigned int	freq = 11000000;
++static int   		bitlen;
++static int		size;
++static uchar 		dout[MAX_SPI_BYTES];
++static uchar 		din[MAX_SPI_BYTES];
++
++/* SPI frame opcodes */
++#define KS_SPIOP_RD			3
++#define KS_SPIOP_WR			2
++
++#define SPI_ADDR_SHIFT			24
++#define SPI_ADDR_MASK			((1 << SPI_ADDR_SHIFT) - 1)
++#define SPI_TURNAROUND_SHIFT		5
++
++enum {
++	KSZ9897_MODE,
++	KSZ8463_MODE
++};
++
++static int spi_addr_shift = SPI_ADDR_SHIFT;
++static int spi_addr_mask = SPI_ADDR_MASK;
++static int spi_turnaround = SPI_TURNAROUND_SHIFT;
++static int spi_cmd_len = 4;
++static int spi_ksz_mode = KSZ9897_MODE;
++
++static int ksz9897_spi_cmd(uint addr, int len, int read)
++{
++	int j;
++	uint op = KS_SPIOP_WR;
++
++	if (read)
++		op = KS_SPIOP_RD;
++	addr &= spi_addr_mask;
++	addr |= op << spi_addr_shift;
++	addr <<= spi_turnaround;
++	for (j = 0; j < spi_cmd_len; j++) {
++		dout[spi_cmd_len - 1 - j] = (uchar) addr;
++		addr >>= 8;
++	}
++	return j;
++}
++
++#define SPI_BYTE_ENABLE_SHIFT		4
++#define SPI_ADDR_ENABLE_SHIFT		2
++
++static int ksz8463_spi_cmd(uint addr, int len, int read)
++{
++	int bit;
++
++	switch (len) {
++	case 1:
++		bit = 1 << (addr & 3);
++		break;
++	case 4:
++		bit = 0xf;
++		break;
++	default:
++		bit = addr & 2 ? 0xc : 0x3;
++	}
++	if (!read)
++		addr |= (1 << spi_addr_shift);
++	addr >>= SPI_ADDR_ENABLE_SHIFT;
++	addr <<= SPI_BYTE_ENABLE_SHIFT;
++	addr |= bit;
++	addr <<= spi_turnaround;
++	dout[1] = (uchar) addr;
++	addr >>= 8;
++	dout[0] = (uchar) addr;
++	return 2;
++}
++
++static int spi_cmd(uint addr, int len, int read)
++{
++	int ret;
++
++	switch (spi_ksz_mode) {
++	case KSZ8463_MODE:
++		ret = ksz8463_spi_cmd(addr, len, read);
++		break;
++	default:
++		ret = ksz9897_spi_cmd(addr, len, read);
++		break;
++	}
++	return ret;
++}
++
++static void spi_set_cmd(int mode)
++{
++	spi_ksz_mode = KSZ9897_MODE;
++	switch (mode) {
++	case 1:
++		/* KSZ8795 */
++		spi_addr_shift = 12;
++		spi_addr_mask = ((1 << 12) - 1);
++		spi_turnaround = 1;
++		spi_cmd_len = 2;
++		break;
++	case 2:
++		/* KSZ8863/KSZ8895 */
++		spi_addr_shift = 8;
++		spi_addr_mask = ((1 << 8) - 1);
++		spi_turnaround = 0;
++		spi_cmd_len = 2;
++		break;
++	case 3:
++		/* KSZ8463 */
++		spi_ksz_mode = KSZ8463_MODE;
++		spi_addr_shift = 11;
++		spi_addr_mask = ((1 << 11) - 1);
++		spi_turnaround = 2;
++		spi_cmd_len = 2;
++		break;
++	default:
++		/* KSZ9897 */
++		spi_addr_shift = SPI_ADDR_SHIFT;
++		spi_addr_mask = SPI_ADDR_MASK;
++		spi_turnaround = SPI_TURNAROUND_SHIFT;
++		spi_cmd_len = 4;
++		break;
++	}
++}
++
++static int spi_def_size(void)
++{
++	int ret;
++
++	switch (spi_ksz_mode) {
++	case KSZ8463_MODE:
++		ret = 2;
++		break;
++	default:
++		ret = 1;
++		break;
++	}
++	return ret;
++}
++
++static int spi_little(void)
++{
++	int ret;
++
++	switch (spi_ksz_mode) {
++	case KSZ8463_MODE:
++		ret = 1;
++		break;
++	default:
++		ret = 0;
++		break;
++	}
++	return ret;
++}
++
++static int spi_burst(void)
++{
++	int ret;
++
++	switch (spi_ksz_mode) {
++	case KSZ8463_MODE:
++		ret = 0;
++		break;
++	default:
++		ret = 1;
++		break;
++	}
++	return ret;
++}
++
++static int spi_data(char *param, uchar *val, int max, int cap, int size,
++	int num)
++{
++	char pad[8];
++	char hex[4];
++	int diff;
++	int i = 0;
++	int len = 0;
++	char *buf = param;
++
++	while (*buf++ && len < max) {
++		i++;
++		if (!(i & 1))
++			len++;
++	}
++	len = size * 2;
++	i %= len;
++	diff = (len - i) % len;
++	memset(pad, '0', 8);
++	pad[diff] = '\0';
++	hex[2] = '\0';
++	hex[1] = '\0';
++	i = 0;
++	len = 0;
++	buf = pad;
++	while (*buf) {
++		hex[i++] = *buf++;
++		if (2 == i) {
++			val[len++] = (uchar) simple_strtoul(hex, NULL, 16);
++			i = 0;
++		}
++	}
++	while (*param && len < max) {
++		hex[i++] = *param++;
++		if (2 == i) {
++			val[len++] = (uchar) simple_strtoul(hex, NULL, 16);
++			i = 0;
++		}
++	}
++	size *= num;
++	if (cap && len > size) {
++		diff = len - size;
++		len = size;
++		for (i = 0; i < len; i++)
++			val[i] = val[i + diff];
++	}
++	if (len < size) {
++		diff = size - len;
++		for (i = 0; i < len; i++)
++			val[i + diff] = val[i];
++		for (i = 0; i < diff; i++)
++			val[i] = 0;
++		len = size;
++	}
++	return len;
++}
++
++static int do_spi_xfer(int bus, int cs, int read, int start)
++{
++	struct spi_slave *slave;
++	int ret = 0;
++
++#ifdef CONFIG_DM_SPI
++	char name[30], *str;
++	struct udevice *dev;
++
++	snprintf(name, sizeof(name), "generic_%d:%d", bus, cs);
++	str = strdup(name);
++	if (!str)
++		return -ENOMEM;
++	ret = _spi_get_bus_and_cs(bus, cs, freq, mode, "spi_generic_drv",
++				  str, &dev, &slave);
++	if (ret)
++		return ret;
++#else
++	slave = spi_setup_slave(bus, cs, freq, mode);
++	if (!slave) {
++		printf("Invalid device %d:%d\n", bus, cs);
++		return -EINVAL;
++	}
++#endif
++
++	ret = spi_claim_bus(slave);
++	if (ret)
++		goto done;
++	ret = spi_xfer(slave, bitlen, dout, din,
++		       SPI_XFER_BEGIN | SPI_XFER_END);
++#ifndef CONFIG_DM_SPI
++	/* We don't get an error code in this case */
++	if (ret)
++		ret = -EIO;
++#endif
++	if (ret) {
++		printf("Error %d during SPI transaction\n", ret);
++	}
++	if (!ret && read) {
++		int j;
++		int len;
++		int tmp;
++		int newline = 0;
++
++		tmp = 0;
++		len = bitlen / 8;
++		for (j = start; j < len; j += size) {
++			++tmp;
++			if (2 == size) {
++				if (spi_little()) {
++					ushort *tmp = (ushort *) &din[j];
++
++					*tmp = htons(*tmp);
++				}
++				printf("%02X%02X", din[j], din[j + 1]);
++				if (8 == tmp)
++					newline = 1;
++			} else if (4 == size) {
++				if (spi_little()) {
++					uint *tmp = (uint *) &din[j];
++					uint val;
++
++					memcpy(&val, tmp, 4);
++					val = htonl(val);
++					memcpy(tmp, &val, 4);
++				}
++				printf("%02X%02X%02X%02X",
++					din[j], din[j + 1],
++					din[j + 2], din[j + 3]);
++				if (8 == tmp)
++					newline = 1;
++			} else {
++				printf("%02X", din[j]);
++				if (16 == tmp)
++					newline = 1;
++			}
++			if (newline) {
++				printf("\n");
++				tmp = 0;
++				newline = 0;
++			} else
++				printf(" ");
++		}
++		if (tmp)
++			printf("\n");
++	}
++
++done:
++	spi_release_bus(slave);
++#ifndef CONFIG_DM_SPI
++	spi_free_slave(slave);
++#endif
++
++	return ret;
++}
++
++/*
++ * SPI read/write
++ *
++ * Syntax:
++ *   kr {addr} {num}
++ *   kw {addr} {val} {num}
++ *     {addr} is the hexadecimal address
++ *     {num} is the number of addresses to access
++ *     {val} is a hexadecimal string of data to send
++ * The command prints out the hexadecimal string received via SPI.
++ */
++
++int do_ksz_spi(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
++{
++	int   j;
++	int   len;
++	int   read = 0;
++	static int start = 0;
++
++	if ('r' == argv[0][1])
++		read = 1;
++
++	/*
++	 * We use the last specified parameters, unless new ones are
++	 * entered.
++	 */
++
++	if ((flag & CMD_FLAG_REPEAT) == 0)
++	{
++		uchar val[MAX_SPI_DATA_BYTES];
++		uint  addr;
++		int   cap = 0;
++		int   num = 1;
++		int   need = 3;
++
++		if (read)
++			need--;
++
++		if (argc < need)
++			return CMD_RET_USAGE;
++
++		/* Check for size specification.
++		*/
++		if ((size = cmd_get_data_size(argv[0], 1)) < 0)
++			return 1;
++		if ('.' != argv[0][2])
++			size = spi_def_size();
++		addr = simple_strtoul(argv[1], NULL, 16);
++
++		if (argc > need && spi_burst()) {
++			cap = simple_strtoul(argv[need], NULL, 16);
++			if (cap) {
++				len = cap * size;
++				if (len > MAX_SPI_DATA_BYTES)
++					cap = MAX_SPI_DATA_BYTES / size;
++				num = cap;
++			}
++		}
++		if (!read)
++			len = spi_data(argv[2], val, MAX_SPI_DATA_BYTES, cap,
++				size, num);
++		else {
++			len = num * size;
++			memset(val, 0, len);
++		}
++
++		start = spi_cmd(addr, size, read);
++		num = size;
++		for (j = 0; j < len; j++) {
++			dout[j + start] = val[j];
++			if (size > 1 && spi_little()) {
++				--num;
++				if (!num) {
++					if (2 == size) {
++						ushort *tmp = (ushort *)
++							&dout[(j & ~1) + start];
++
++						*tmp = htons(*tmp);
++					} else if (4 == size) {
++						uint *tmp = (uint *)
++							&dout[(j & ~3) + start];
++						uint val;
++
++						memcpy(&val, tmp, 4);
++						val = htonl(val);
++						memcpy(tmp, &val, 4);
++					}
++					num = size;
++				}
++			}
++		}
++		len += start;
++		bitlen = len * 8;
++	}
++
++	if (do_spi_xfer(bus, cs, read, start))
++		return 1;
++
++	return 0;
++}
++
++/*
++ * SPI config
++ *
++ * Syntax:
++ *   spi {dev}
++ *     {dev} is the device number for controlling chip select (see TBD)
++ */
++
++int do_cfg_spi(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
++{
++	char  *cp = 0;
++
++	/*
++	 * We use the last specified parameters, unless new ones are
++	 * entered.
++	 */
++
++	if ((flag & CMD_FLAG_REPEAT) == 0)
++	{
++		if (argc >= 2) {
++			cs = dectoul(argv[1], &cp);
++			if (*cp == ':') {
++				bus = cs;
++				cs = dectoul(cp + 1, &cp);
++			}
++			if (*cp == '.')
++				mode = dectoul(cp + 1, &cp);
++			if (*cp == '@')
++				freq = dectoul(cp + 1, &cp);
++		}
++		if (argc >= 3) {
++			int mode = dectoul(argv[2], &cp);
++
++			spi_set_cmd(mode);
++		}
++	}
++
++	return 0;
++}
++
++/***************************************************/
++
++U_BOOT_CMD(
++	kr,	3,	1,	do_ksz_spi,
++	"KSZ SPI read command",
++	"[.b, .w, .l] <addr> [num] - Read from KSZ switch register"
++);
++
++U_BOOT_CMD(
++	kw,	4,	1,	do_ksz_spi,
++	"KSZ SPI write command",
++	"[.b, .w, .l] <addr> <val> [num] - Write to KSZ switch register"
++);
++
++U_BOOT_CMD(
++	ks,	3,	1,	do_cfg_spi,
++	"SPI config command",
++	"[<bus>:]<cs>[.<mode>][@<freq>] [<ksz>] - Configure bus, cs, and mode\n"
++	"<bus>     - Identifies the SPI bus\n"
++	"<cs>      - Identifies the chip select\n"
++	"<mode>    - Identifies the SPI mode to use\n"
++	"<freq>    - Identifies the SPI bus frequency in Hz\n"
++	"<ksz>     - Identifies the KSZ switch:\n"
++	"            0=9897 1=8795 2=8895/8863 3=8463"
++);
