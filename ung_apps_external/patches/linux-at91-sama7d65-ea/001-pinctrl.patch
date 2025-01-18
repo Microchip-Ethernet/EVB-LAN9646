@@ -1,0 +1,32 @@
+diff -Napur linux-at91-orig/drivers/pinctrl/pinctrl-at91.c linux-at91/drivers/pinctrl/pinctrl-at91.c
+--- linux-at91-orig/drivers/pinctrl/pinctrl-at91.c	2024-12-02 18:10:44.203914941 -0800
++++ linux-at91/drivers/pinctrl/pinctrl-at91.c	2025-01-15 16:58:02.350726120 -0800
+@@ -1570,7 +1570,12 @@ static void gpio_irq_unmask(struct irq_d
+ 	void __iomem	*pio = at91_gpio->regbase;
+ 	unsigned	mask = 1 << d->hwirq;
+ 	unsigned        gpio = irqd_to_hwirq(d);
++#if defined(CONFIG_KSZ_SWITCH) || defined(CONFIG_NET_DSA_TAG_KSZ) || defined(CONFIG_NET_DSA_TAG_KSZ_MODULE)
++	unsigned long	isr;
+ 
++	if (pio)
++		isr = readl_relaxed(pio + PIO_ISR);
++#endif
+ 	gpiochip_enable_irq(&at91_gpio->chip, gpio);
+ 
+ 	if (pio)
+diff -Napur linux-at91-orig/drivers/pinctrl/pinctrl-at91-pio4.c linux-at91/drivers/pinctrl/pinctrl-at91-pio4.c
+--- linux-at91-orig/drivers/pinctrl/pinctrl-at91-pio4.c	2024-12-02 18:10:44.203914941 -0800
++++ linux-at91/drivers/pinctrl/pinctrl-at91-pio4.c	2025-01-15 17:12:14.606491697 -0800
+@@ -239,7 +239,12 @@ static void atmel_gpio_irq_unmask(struct
+ {
+ 	struct atmel_pioctrl *atmel_pioctrl = irq_data_get_irq_chip_data(d);
+ 	struct atmel_pin *pin = atmel_pioctrl->pins[d->hwirq];
++#if defined(CONFIG_KSZ_SWITCH) || defined(CONFIG_NET_DSA_TAG_KSZ) || defined(CONFIG_NET_DSA_TAG_KSZ_MODULE)
++	unsigned long isr;
+ 
++	isr = (unsigned long)atmel_gpio_read(atmel_pioctrl, pin->bank,
++					     ATMEL_PIO_ISR);
++#endif
+ 	atmel_gpio_write(atmel_pioctrl, pin->bank, ATMEL_PIO_IER,
+ 			 BIT(pin->line));
+ }

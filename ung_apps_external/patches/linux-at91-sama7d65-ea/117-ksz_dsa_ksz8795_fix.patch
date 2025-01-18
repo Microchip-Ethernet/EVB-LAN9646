@@ -1,0 +1,110 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c	2024-10-09 17:21:24.853416102 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c	2024-10-09 17:33:58.388332295 -0700
+@@ -1460,6 +1460,10 @@ void ksz8_get_caps(struct ksz_device *de
+ {
+ 	config->mac_capabilities = MAC_10 | MAC_100;
+ 
++	/* KSZ8795 has RGMII interface in the host port. */
++	if (ksz_is_ksz87xx(dev) && port == dev->cpu_port)
++		config->mac_capabilities |= MAC_1000FD;
++
+ 	/* Silicon Errata Sheet (DS80000830A):
+ 	 * "Port 1 does not respond to received flow control PAUSE frames"
+ 	 * So, disable Pause support on "Port 1" (port == 0) for all ksz88x3
+@@ -1468,8 +1472,10 @@ void ksz8_get_caps(struct ksz_device *de
+ 	if (!ksz_is_ksz88x3(dev) || port)
+ 		config->mac_capabilities |= MAC_SYM_PAUSE;
+ 
+-	/* Asym pause is not supported on KSZ8863 and KSZ8873 */
+-	if (!ksz_is_ksz88x3(dev))
++	/* Asym pause is not supported on KSZ8863 and KSZ8873 and KSZ8895 and
++	 * the host port of KSZ8795.
++	 */
++	if (!is_ksz88xx(dev) && port != dev->cpu_port)
+ 		config->mac_capabilities |= MAC_ASYM_PAUSE;
+ }
+ 
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-10-09 17:22:52.167757981 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-10-09 17:34:44.273834855 -0700
+@@ -186,6 +186,13 @@ static const struct ksz_mib_names ksz947
+ 	{ 0x83, "tx_discards" },
+ };
+ 
++static void ksz9477_phylink_mac_link_up(struct ksz_device *dev, int port,
++					unsigned int mode,
++					phy_interface_t interface,
++					struct phy_device *phydev, int speed,
++					int duplex, bool tx_pause,
++					bool rx_pause);
++
+ static const struct ksz_dev_ops ksz8_dev_ops = {
+ 	.setup = ksz8_setup,
+ 	.get_port_addr = ksz8_get_port_addr,
+@@ -216,15 +223,9 @@ static const struct ksz_dev_ops ksz8_dev
+ 	.init = ksz8_switch_init,
+ 	.exit = ksz8_switch_exit,
+ 	.change_mtu = ksz8_change_mtu,
++	.phylink_mac_link_up = ksz9477_phylink_mac_link_up,
+ };
+ 
+-static void ksz9477_phylink_mac_link_up(struct ksz_device *dev, int port,
+-					unsigned int mode,
+-					phy_interface_t interface,
+-					struct phy_device *phydev, int speed,
+-					int duplex, bool tx_pause,
+-					bool rx_pause);
+-
+ static const struct ksz_dev_ops ksz9477_dev_ops = {
+ 	.setup = ksz9477_setup,
+ 	.get_port_addr = ksz9477_get_port_addr,
+@@ -3235,7 +3236,11 @@ static void ksz_set_100_10mbit(struct ks
+ 	const u16 *regs = dev->info->regs;
+ 	u8 data8;
+ 
+-	ksz_pread8(dev, port, regs[P_XMII_CTRL_0], &data8);
++	/* KSZ8795 XMII_CTRL_0 register is in global space. */
++	if (ksz_is_ksz87xx(dev))
++		ksz_read8(dev, regs[P_XMII_CTRL_0], &data8);
++	else
++		ksz_pread8(dev, port, regs[P_XMII_CTRL_0], &data8);
+ 
+ 	data8 &= ~P_MII_100MBIT_M;
+ 
+@@ -3245,7 +3250,10 @@ static void ksz_set_100_10mbit(struct ks
+ 		data8 |= FIELD_PREP(P_MII_100MBIT_M, bitval[P_MII_10MBIT]);
+ 
+ 	/* Write the updated value */
+-	ksz_pwrite8(dev, port, regs[P_XMII_CTRL_0], data8);
++	if (ksz_is_ksz87xx(dev))
++		ksz_write8(dev, regs[P_XMII_CTRL_0], data8);
++	else
++		ksz_pwrite8(dev, port, regs[P_XMII_CTRL_0], data8);
+ }
+ 
+ static void ksz_port_set_xmii_speed(struct ksz_device *dev, int port, int speed)
+@@ -3282,7 +3290,11 @@ static void ksz_duplex_flowctrl(struct k
+ 	if (rx_pause)
+ 		val |= masks[P_MII_RX_FLOW_CTRL];
+ 
+-	ksz_prmw8(dev, port, regs[P_XMII_CTRL_0], mask, val);
++	/* KSZ8795 XMII_CTRL_0 register is in global space. */
++	if (ksz_is_ksz87xx(dev))
++		ksz_rmw8(dev, regs[P_XMII_CTRL_0], mask, val);
++	else
++		ksz_prmw8(dev, port, regs[P_XMII_CTRL_0], mask, val);
+ }
+ 
+ static void ksz9477_phylink_mac_link_up(struct ksz_device *dev, int port,
+@@ -3294,6 +3306,10 @@ static void ksz9477_phylink_mac_link_up(
+ {
+ 	struct ksz_port *p;
+ 
++	/* KSZ8863/KSZ8895 switch families do not have XMII control. */
++	if (is_ksz88xx(dev))
++		return;
++
+ 	p = &dev->ports[port];
+ 
+ 	/* Internal PHYs */
