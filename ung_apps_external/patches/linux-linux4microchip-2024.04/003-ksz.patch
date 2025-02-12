@@ -19207,8 +19207,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_d
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_hsr_6_1.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_hsr_6_1.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	2024-11-25 18:39:13.174601618 -0800
-@@ -0,0 +1,3960 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	2025-01-15 15:58:34.976909726 -0800
+@@ -0,0 +1,3969 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright 2011-2014 Autronica Fire and Security AS
 + *
@@ -22733,8 +22733,10 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_h
 +{
 +	struct vlan_ethhdr *vlan = (struct vlan_ethhdr *)
 +		info->master_sup_frame;
++	struct hsr_priv *hsr = &info->hsr;
 +	struct hsr_sup_tlv *hsr_stype;
 +	struct hsr_sup_payload *hsr_sp;
++	struct hsr_node *node;
 +
 +	memcpy(info->src_addr, src, ETH_ALEN);
 +
@@ -22742,6 +22744,13 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_h
 +	hsr_stype = &info->master_hsr_stag->tlv;
 +	hsr_sp = (struct hsr_sup_payload *)(hsr_stype + 1);
 +	ether_addr_copy(hsr_sp->macaddress_A, info->src_addr);
++
++	node = list_first_or_null_rcu(&hsr->self_node_db, struct hsr_node,
++				      mac_list);
++	if (node) {
++		ether_addr_copy(node->macaddress_A, info->src_addr);
++		ether_addr_copy(node->macaddress_B, info->src_addr);
++	}
 +}  /* prep_hsr_addr */
 +
 +static void prep_hsr_redbox_addr(struct ksz_hsr_info *info)
@@ -94118,8 +94127,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2024-11-26 14:22:47.127771064 -0800
-@@ -0,0 +1,19766 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-01-16 17:11:31.011932050 -0800
+@@ -0,0 +1,19768 @@
 +/**
 + * Microchip gigabit switch common code
 + *
@@ -111965,7 +111974,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +					break;
 +				}
 +			}
-+dbg_msg(" %d f:%d l:%d"NL, phy_id, first, last);
++#if 0
++dbg_msg(" %d f:%d l:%d; %x %04x"NL, phy_id, first, last, regnum, val);
++#endif
 +		}
 +
 +		/* PHY device driver resets or powers down the PHY. */
