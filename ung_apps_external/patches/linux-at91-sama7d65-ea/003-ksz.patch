@@ -2307,8 +2307,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz84
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz8462_h.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz8462_h.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz8462_h.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz8462_h.c	2025-04-15 00:55:48.159790011 -0700
-@@ -0,0 +1,3962 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz8462_h.c	2025-04-16 00:25:28.935935017 -0700
+@@ -0,0 +1,3963 @@
 +/**
 + * Microchip KSZ8462 HLI Ethernet driver
 + *
@@ -2386,6 +2386,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz84
 +#undef CONFIG_KSZ_DLR
 +#undef CONFIG_KSZ_HSR
 +#undef CONFIG_KSZ_IBA
++#undef CONFIG_KSZ_SWITCH_EMBEDDED
 +
 +#include "ksz_common.h"
 +#include "ksz_req.h"
@@ -70583,8 +70584,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-04-15 12:25:21.143913071 -0700
-@@ -0,0 +1,12383 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-04-16 16:13:49.052293342 -0700
+@@ -0,0 +1,12389 @@
 +/**
 + * Microchip KSZ8795 switch common code
 + *
@@ -79432,6 +79433,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!skb)
 +			return NULL;
 +		consume_skb(org_skb);
++	} else {
++		/* Make sure socket buffer does not have fragments. */
++		skb_linearize(skb);
 +	}
 +
 +	/* skb_put requires tail pointer set first. */
@@ -79465,7 +79469,10 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!*csum_loc) {
 +			__sum16 new_csum;
 +
-+			new_csum = dest << 8;
++			if (skb->len & 1)
++				new_csum = dest << 8;
++			else
++				new_csum = dest;
 +			*csum_loc = ~htons(new_csum);
 +		}
 +	}
@@ -79484,9 +79491,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_final_skb(struct ksz_sw *sw, struct sk_buff *skb,
 +	struct net_device *dev, struct ksz_port *port)
 +{
-+	spin_lock_bh(&sw->tx_lock);
++	sw_lock_tx(sw);
 +	skb = sw->net_ops->check_tx(sw, dev, skb, port);
-+	spin_unlock_bh(&sw->tx_lock);
++	sw_unlock_tx(sw);
 +	if (!skb)
 +		return NULL;
 +	return skb;
@@ -82564,6 +82571,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw = &ks->sw;
 +	mutex_init(&sw->lock);
 +	mutex_init(&sw->acllock);
++	spin_lock_init(&sw->rx_lock);
++	spin_lock_init(&sw->tx_lock);
 +	sw->hwlock = &ks->hwlock;
 +	sw->reglock = &ks->lock;
 +	sw->dev = ks;
@@ -82571,8 +82580,6 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->net_ops = &sw_net_ops;
 +	sw->ops = &sw_ops;
 +	init_waitqueue_head(&sw->queue);
-+	spin_lock_init(&sw->rx_lock);
-+	spin_lock_init(&sw->tx_lock);
 +
 +	/* simple check for a valid chip being connected to the bus */
 +	mutex_lock(&ks->lock);
@@ -82970,8 +82977,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.h	2025-04-15 01:27:54.867205701 -0700
-@@ -0,0 +1,999 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.h	2025-04-16 16:07:24.370874910 -0700
+@@ -0,0 +1,1017 @@
 +/**
 + * Microchip KSZ8795 switch common header
 + *
@@ -83531,6 +83538,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define FAST_AGING			(1 << 1)
 +#define UPDATE_CSUM			(1 << 2)
 +#define HAVE_MORE_THAN_2_PORTS		(1 << 3)
++#define NO_TX_LOCK			(1 << 8)
 +
 +#define ACL_INTR_MONITOR		(1 << 17)
 +#define SYSFS_PHY_PORT			(1 << 18)
@@ -83734,6 +83742,23 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +static inline void sw_update_csum(struct ksz_sw *sw)
 +{
 +	sw->overrides |= UPDATE_CSUM;
++}
++
++static inline void sw_no_tx_lock(struct ksz_sw *sw)
++{
++	sw->overrides |= NO_TX_LOCK;
++}
++
++static inline void sw_lock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_lock_bh(&sw->tx_lock);
++}
++
++static inline void sw_unlock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_unlock_bh(&sw->tx_lock);
 +}
 +
 +#ifdef CONFIG_KSZ_HSR
@@ -83973,8 +83998,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-04-15 12:25:50.114774955 -0700
-@@ -0,0 +1,10167 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-04-16 16:13:34.236854932 -0700
+@@ -0,0 +1,10173 @@
 +/**
 + * Microchip KSZ8895 switch common code
 + *
@@ -90874,6 +90899,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!skb)
 +			return NULL;
 +		consume_skb(org_skb);
++	} else {
++		/* Make sure socket buffer does not have fragments. */
++		skb_linearize(skb);
 +	}
 +
 +	/* skb_put requires tail pointer set first. */
@@ -90907,7 +90935,10 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!*csum_loc) {
 +			__sum16 new_csum;
 +
-+			new_csum = dest << 8;
++			if (skb->len & 1)
++				new_csum = dest << 8;
++			else
++				new_csum = dest;
 +			*csum_loc = ~htons(new_csum);
 +		}
 +	}
@@ -90926,9 +90957,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_final_skb(struct ksz_sw *sw, struct sk_buff *skb,
 +	struct net_device *dev, struct ksz_port *port)
 +{
-+	spin_lock_bh(&sw->tx_lock);
++	sw_lock_tx(sw);
 +	skb = sw->net_ops->check_tx(sw, dev, skb, port);
-+	spin_unlock_bh(&sw->tx_lock);
++	sw_unlock_tx(sw);
 +	if (!skb)
 +		return NULL;
 +	return skb;
@@ -93851,6 +93882,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	sw = &ks->sw;
 +	mutex_init(&sw->lock);
++	spin_lock_init(&sw->rx_lock);
++	spin_lock_init(&sw->tx_lock);
 +	sw->hwlock = &ks->hwlock;
 +	sw->reglock = &ks->lock;
 +	sw->dev = ks;
@@ -93858,8 +93891,6 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->net_ops = &sw_net_ops;
 +	sw->ops = &sw_ops;
 +	init_waitqueue_head(&sw->queue);
-+	spin_lock_init(&sw->rx_lock);
-+	spin_lock_init(&sw->tx_lock);
 +
 +	/* simple check for a valid chip being connected to the bus */
 +	mutex_lock(&ks->lock);
@@ -94144,8 +94175,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.h	2025-04-15 01:27:42.271706369 -0700
-@@ -0,0 +1,887 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.h	2025-04-16 16:07:40.026281480 -0700
+@@ -0,0 +1,905 @@
 +/**
 + * Microchip KSZ8895 switch common header
 + *
@@ -94640,6 +94671,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define FAST_AGING			(1 << 1)
 +#define UPDATE_CSUM			(1 << 2)
 +#define HAVE_MORE_THAN_2_PORTS		(1 << 3)
++#define NO_TX_LOCK			(1 << 8)
 +
 +#define SYSFS_PHY_PORT			(1 << 18)
 +
@@ -94842,6 +94874,23 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->overrides |= UPDATE_CSUM;
 +}
 +
++static inline void sw_no_tx_lock(struct ksz_sw *sw)
++{
++	sw->overrides |= NO_TX_LOCK;
++}
++
++static inline void sw_lock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_lock_bh(&sw->tx_lock);
++}
++
++static inline void sw_unlock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_unlock_bh(&sw->tx_lock);
++}
++
 +#ifdef CONFIG_KSZ_HSR
 +static inline bool using_hsr(struct ksz_sw *sw)
 +{
@@ -95035,8 +95084,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-04-15 12:24:43.685384605 -0700
-@@ -0,0 +1,19911 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-04-16 16:12:41.782843242 -0700
+@@ -0,0 +1,19927 @@
 +/**
 + * Microchip gigabit switch common code
 + *
@@ -109556,6 +109605,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!skb)
 +			return NULL;
 +		consume_skb(org_skb);
++	} else {
++		/* Make sure socket buffer does not have fragments. */
++		skb_linearize(skb);
 +	}
 +
 +	/* skb_put requires tail pointer set first. */
@@ -109675,18 +109727,26 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +		/* Checksum is cleared by driver to be filled by hardware. */
 +		if (!*csum_loc) {
-+			u16 *tag_csum = (u16 *) &tag_data;
 +			__sum16 new_csum;
-+			int csum = 0;
-+			int i;
 +
-+			/* Length may be odd. */
-+			tag_start++;
-+			for (i = 0; i < tag_start / 2; i++)
-+				csum += ntohs(tag_csum[i]);
-+			csum = (csum >> 16) + (csum & 0xffff);
-+			csum += (csum >> 16);
-+			new_csum = (__sum16) csum;
++			if (tag_len == 1) {
++				if (skb->len & 1)
++					new_csum = tag_data[0] << 8;
++				else
++					new_csum = tag_data[1];
++			} else {
++				u16 *tag_csum = (u16 *) &tag_data;
++				int csum = 0;
++				int i;
++
++				/* Length may be odd. */
++				tag_start++;
++				for (i = 0; i < tag_start / 2; i++)
++					csum += ntohs(tag_csum[i]);
++				csum = (csum >> 16) + (csum & 0xffff);
++				csum += (csum >> 16);
++				new_csum = (__sum16) csum;
++			}
 +			*csum_loc = ~htons(new_csum);
 +		}
 +	}
@@ -109713,7 +109773,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_final_skb(struct ksz_sw *sw, struct sk_buff *skb,
 +	struct net_device *dev, struct ksz_port *port)
 +{
-+	spin_lock_bh(&sw->tx_lock);
++	sw_lock_tx(sw);
 +	skb = sw->net_ops->check_tx(sw, dev, skb, port);
 +	if (!skb)
 +		goto done;
@@ -109728,7 +109788,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +
 +done:
-+	spin_unlock_bh(&sw->tx_lock);
++	sw_unlock_tx(sw);
 +	return skb;
 +}  /* sw_final_skb */
 +
@@ -110101,9 +110161,6 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	info = get_port_info(sw, get_phy_port(sw, index));
 +	config->mac_capabilities = MAC_SYM_PAUSE | MAC_10 | MAC_100;
 +	config->mac_capabilities |= MAC_1000FD;
-+#if 0
-+	config->mac_capabilities |= MAC_ASYM_PAUSE;
-+#endif
 +	__set_bit(PHY_INTERFACE_MODE_MII,
 +		  config->supported_interfaces);
 +	__set_bit(PHY_INTERFACE_MODE_RMII,
@@ -111765,10 +111822,18 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#if defined(USE_HSR_REDBOX) || defined(USE_DLR_FORWARD)
 +static int multi_dev = 1;
 +#else
++#ifdef CONFIG_KSZ_IBA_ONLY
++static int multi_dev = 0;
++#else
 +static int multi_dev = -1;
 +#endif
++#endif
 +
++#ifdef CONFIG_KSZ_IBA_ONLY
++static int stp = 0;
++#else
 +static int stp = -1;
++#endif
 +
 +/*
 + * This enables fast aging in the switch.  Not sure what situation requires
@@ -113470,6 +113535,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	mutex_init(&sw->alulock);
 +	mutex_init(&sw->vlanlock);
 +	mutex_init(&sw->hsrlock);
++	spin_lock_init(&sw->rx_lock);
++	spin_lock_init(&sw->tx_lock);
 +	sw->hwlock = &ks->hwlock;
 +	sw->reglock = &ks->lock;
 +	sw->dev = ks;
@@ -114655,8 +114722,6 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	INIT_WORK(&sw->set_addr, sw_delayed_set_addr);
 +	INIT_WORK(&sw->tx_fwd, sw_tx_fwd);
 +	skb_queue_head_init(&sw->txq);
-+	spin_lock_init(&sw->rx_lock);
-+	spin_lock_init(&sw->tx_lock);
 +
 +	INIT_WORK(&ks->mib_read, ksz9897_mib_read_work);
 +
@@ -114950,8 +115015,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.h	2025-04-14 23:17:36.743642764 -0700
-@@ -0,0 +1,1447 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.h	2025-04-16 16:13:02.782047249 -0700
+@@ -0,0 +1,1465 @@
 +/**
 + * Microchip KSZ9897 switch common header
 + *
@@ -115718,6 +115783,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define UNK_MCAST_BLOCK			BIT(5)
 +#define UPDATE_CSUM			BIT(6)
 +#define DELAY_UPDATE_LINK		BIT(7)
++#define NO_TX_LOCK			BIT(8)
 +
 +#define IBA_TEST			BIT(16)
 +#define ACL_INTR_MONITOR		BIT(17)
@@ -115980,6 +116046,23 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +static inline void sw_update_csum(struct ksz_sw *sw)
 +{
 +	sw->overrides |= UPDATE_CSUM;
++}
++
++static inline void sw_no_tx_lock(struct ksz_sw *sw)
++{
++	sw->overrides |= NO_TX_LOCK;
++}
++
++static inline void sw_lock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_lock_bh(&sw->tx_lock);
++}
++
++static inline void sw_unlock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_unlock_bh(&sw->tx_lock);
 +}
 +
 +static inline uint get_rx_tag_ports(struct ksz_sw_tx_tag *tag)
@@ -116479,8 +116562,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c	2025-04-15 12:26:26.749335779 -0700
-@@ -0,0 +1,10526 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c	2025-04-16 16:14:04.627702954 -0700
+@@ -0,0 +1,10529 @@
 +/**
 + * Microchip switch common code
 + *
@@ -123989,7 +124072,10 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!*csum_loc) {
 +			__sum16 new_csum;
 +
-+			new_csum = dest << 8;
++			if (skb->len & 1)
++				new_csum = dest << 8;
++			else
++				new_csum = dest;
 +			*csum_loc = ~htons(new_csum);
 +		}
 +	}
@@ -124017,7 +124103,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_final_skb(struct ksz_sw *sw, struct sk_buff *skb,
 +	struct net_device *dev, struct ksz_port *port)
 +{
-+	spin_lock_bh(&sw->tx_lock);
++	sw_lock_tx(sw);
 +	skb = sw->net_ops->check_tx(sw, dev, skb, port);
 +	if (!skb)
 +		goto done;
@@ -124032,7 +124118,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +
 +done:
-+	spin_unlock_bh(&sw->tx_lock);
++	sw_unlock_tx(sw);
 +	return skb;
 +}  /* sw_final_skb */
 +
@@ -126716,6 +126802,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	sw = &ks->sw;
 +	mutex_init(&sw->lock);
++	spin_lock_init(&sw->rx_lock);
++	spin_lock_init(&sw->tx_lock);
 +	sw->hwlock = &ks->hwlock;
 +	sw->reglock = &ks->lock;
 +	sw->dev = ks;
@@ -126867,8 +126955,6 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw_init_mib(sw);
 +
 +	init_waitqueue_head(&sw->queue);
-+	spin_lock_init(&sw->rx_lock);
-+	spin_lock_init(&sw->tx_lock);
 +	for (i = 0; i < TOTAL_PORT_NUM; i++)
 +		init_waitqueue_head(&ks->counter[i].counter);
 +
@@ -127009,8 +127095,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.h	2025-04-15 01:22:51.995244497 -0700
-@@ -0,0 +1,878 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.h	2025-04-16 16:08:41.671944763 -0700
+@@ -0,0 +1,896 @@
 +/**
 + * Microchip switch common header
 + *
@@ -127518,6 +127604,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define FAST_AGING			(1 << 1)
 +#define UPDATE_CSUM			(1 << 2)
 +#define HAVE_MORE_THAN_2_PORTS		(1 << 3)
++#define NO_TX_LOCK			(1 << 8)
 +
 +#define TAIL_PRP_0			(1 << 24)
 +#define TAIL_PRP_1			(1 << 25)
@@ -127719,6 +127806,23 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +static inline void sw_update_csum(struct ksz_sw *sw)
 +{
 +	sw->overrides |= UPDATE_CSUM;
++}
++
++static inline void sw_no_tx_lock(struct ksz_sw *sw)
++{
++	sw->overrides |= NO_TX_LOCK;
++}
++
++static inline void sw_lock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_lock_bh(&sw->tx_lock);
++}
++
++static inline void sw_unlock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_unlock_bh(&sw->tx_lock);
 +}
 +
 +#ifdef CONFIG_KSZ_HSR
