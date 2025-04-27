@@ -24,7 +24,8 @@ define THTTPD_INSTALL_TARGET_CMDS
 	$(INSTALL) -d $(TARGET_DIR)/var/www/data
 	$(INSTALL) -d $(TARGET_DIR)/var/www/logs
 	echo "dir=/var/www/data" > $(TARGET_DIR)/etc/thttpd.conf
-	echo 'cgipat=**.cgi' >> $(TARGET_DIR)/etc/thttpd.conf
+	echo 'cgipat=**.cgi|**.py' >> $(TARGET_DIR)/etc/thttpd.conf
+	echo 'user=root' >> $(TARGET_DIR)/etc/thttpd.conf
 	echo "logfile=/var/www/logs/thttpd_log" >> $(TARGET_DIR)/etc/thttpd.conf
 	echo "pidfile=/var/run/thttpd.pid" >> $(TARGET_DIR)/etc/thttpd.conf
 endef
