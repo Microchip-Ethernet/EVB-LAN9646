@@ -544,7 +544,7 @@
 				params.append('VlanMembers',MemberPorts);
 				params.append('VlanAction',Action);
 */
-				PostRequest.open("POST", "/cgi-bin/config.py?CMD=VlanCfg", true);
+				PostRequest.open("POST", "/cgi-bin/config.py?CMD=VlanCfg;", true);
 				PostRequest.send(new FormData(document.getElementById('VIDCfgForm')));
 				
 				PostRequest.onload = function () {
@@ -609,7 +609,7 @@
 				document.getElementById('ALUMembers').value = MemberPorts;
 				document.getElementById('ALUAction').value = ActionId;
 
-				PostRequest.open("POST", "/cgi-bin/config.py?CMD=StaticMacCfg", true);
+				PostRequest.open("POST", "/cgi-bin/config.py?CMD=StaticMacCfg;", true);
 				PostRequest.send(new FormData(document.getElementById('StaticMACForm')));
 				
 				PostRequest.onload = function () {

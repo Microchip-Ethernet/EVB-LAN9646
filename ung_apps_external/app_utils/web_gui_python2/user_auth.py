@@ -20,10 +20,10 @@ def validate_credential(user,psswd) :
 
 if len(sys.argv) != 3 :
 	if str(sys.argv[1]) == "root" :
-		print("Success")
+		print "Success"
 		exit()
-	print("Invalid Input")
+	print "Invalid Input"
 	exit()
 
 response = validate_credential(sys.argv[1],sys.argv[2])
-print(response)
+print response

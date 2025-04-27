@@ -6,24 +6,24 @@ import subprocess
 
 ####################### Function to display HELP Menu ##################################
 def	usage():
-	print("############################################# Command Help###################################################################")
-	print("config.py [GlobalCfg | PortCfg | PhyCfg | SwitchCfg | SystemCfg] [get | set | (cmd)] {(Port)} {[(Reg) | (Entry)]} {(value)}")
-	print("To Set/Get Switch Global Configurations")
-	print("config.py GlobalCfg set vlan_table <val>")
-	print("config.py GlobalCfg get vlan_table")
-	print("To Set/Get Switch Port Configurations")
-	print("config.py PortCfg set <PortNum> vid <val>")
-	print("config.py PortCfg get <PortNum> vid")
-	print("To Set/Get PHY Port Configurations")
-	print("config.py PhyCfg set <PortNum> <RegAddr> <val>")
-	print("config.py PhyCfg get <PortNum> <RegAddr>")
-	print("To Set/Get Switch Register")
-	print("config.py SwitchCfg set <RegAddr> <val>")
-	print("config.py SwitchCfg get <RegAddr>")
-	print("To Set/Get System configurations")
-	print("config.py SystemCfg \"ifconfig eth0 up\"")
-	print("config.py SystemCfg \"ifconfig eth0\"")
-	print("#############################################################################################################################")
+	print "############################################# Command Help###################################################################"
+	print "config.py [GlobalCfg | PortCfg | PhyCfg | SwitchCfg | SystemCfg] [get | set | (cmd)] {(Port)} {[(Reg) | (Entry)]} {(value)}"
+	print "To Set/Get Switch Global Configurations"
+	print "config.py GlobalCfg set vlan_table <val>"
+	print "config.py GlobalCfg get vlan_table"
+	print "To Set/Get Switch Port Configurations"
+	print "config.py PortCfg set <PortNum> vid <val>"
+	print "config.py PortCfg get <PortNum> vid"
+	print "To Set/Get PHY Port Configurations"
+	print "config.py PhyCfg set <PortNum> <RegAddr> <val>"
+	print "config.py PhyCfg get <PortNum> <RegAddr>"
+	print "To Set/Get Switch Register"
+	print "config.py SwitchCfg set <RegAddr> <val>"
+	print "config.py SwitchCfg get <RegAddr>"
+	print "To Set/Get System configurations"
+	print "config.py SystemCfg \"ifconfig eth0 up\""
+	print "config.py SystemCfg \"ifconfig eth0\""
+	print "#############################################################################################################################"
 	return;
 
 ################# Function to execute Shell Commands ###########################
@@ -60,7 +60,7 @@ if len(sys.argv) == 1:
 interface = "eth0"
 
 if isinstance(interface, int):
-	print("No Device Found!")
+	print "No Device Found!"
 	exit()
 
 sysfs	= "/sys/class/net/"+ interface
@@ -124,37 +124,27 @@ def	mdio_access(GetSet, phy_id, reg):
 def	ksz_access(GetSet, reg):
 	proc = subprocess.Popen("/usr/sbin/regs_bin spi1.0 ", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, shell=True)
 	if GetSet == "get":
-		proc.stdin.write(bytes("r " + reg, "ascii"))
+		proc.stdin.write("r " + reg)
 		(out, err) = proc.communicate()
 		return (out.split()[2]);
 	elif GetSet == "set":
-		proc.stdin.write(bytes("w " + reg + " " + sys.argv[4], "ascii"))
+		proc.stdin.write("w " + reg + " " + sys.argv[4])
 		return "";
 	else:
 		usage()
 		exit()
 
 if sys.argv[1] == "GlobalCfg" :
-	bytes = sysfs_sw_entry(sys.argv[2], sys.argv[3])
-	string = str(bytes, 'utf-8')
-	print(string)
+	print sysfs_sw_entry(sys.argv[2], sys.argv[3])
 elif sys.argv[1] == "PortCfg" :
-	bytes = sysfs_swx_entry(sys.argv[2], sys.argv[4], sys.argv[3])
-	string = str(bytes, 'utf-8')
-	print(string)
+	print sysfs_swx_entry(sys.argv[2], sys.argv[4], sys.argv[3])
 elif sys.argv[1] == "PhyCfg" :
-	bytes = mdio_access(sys.argv[2], sys.argv[3], sys.argv[4])
-	string = str(bytes, 'utf-8')
-	print(string)
+	print mdio_access(sys.argv[2], sys.argv[3], sys.argv[4])
 elif sys.argv[1] == "SwitchCfg" :
-	bytes = ksz_access(sys.argv[2],sys.argv[3])
-	string = str(bytes, 'utf-8')
-	print(string)
+	print ksz_access(sys.argv[2],sys.argv[3])
 elif sys.argv[1] == "SystemCfg" :
-	bytes = exe_shell_cmd(sys.argv[2])
-	string = str(bytes, 'utf-8')
-	print(string)
+	print exe_shell_cmd(sys.argv[2])
 else:
-	print("\n\nInvalid Request\n\n")
+	print "\n\nInvalid Request\n\n"
 	usage()
 	exit ()

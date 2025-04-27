@@ -25,13 +25,11 @@ def	exe_shell_cmd(cmd):
 
 def	get_interface():
 
-	bytes = exe_shell_cmd("dmesg | grep attached| grep KSZ")
-	out = str(bytes, 'utf-8')
+	out = exe_shell_cmd("dmesg | grep attached| grep KSZ")
 	
 	if len(out) != 0:
 		interface = (out.split()[3]).split(":",1)[0]
-		bytes = exe_shell_cmd("ifconfig " + interface + " | grep " + interface)
-		out = str(bytes, 'utf-8')
+		out = exe_shell_cmd("ifconfig " + interface + " | grep " + interface)
 
 		if len(out) and interface == out.split()[0]:
 			return interface;
@@ -45,12 +43,10 @@ def	get_interface():
 ## return: <Ipaddr>:<Netmask>:<Gateway>
 
 def network_info(interface) : 
-	bytes = exe_shell_cmd("/sbin/ifconfig "+ interface + " | grep -sw \"inet\" | tr \":\" \" \" ")
-	cmdout = str(bytes, 'utf-8')
+	cmdout = exe_shell_cmd("/sbin/ifconfig "+ interface + " | grep -sw \"inet\" | tr \":\" \" \" ")
 	if len(cmdout) != 0:
 		response = cmdout.split()[2] + ":" + cmdout.split()[6] + ":"
-		bytes = exe_shell_cmd("/sbin/route -n"+ "| head -n3 | grep " + interface)
-		cmdout = str(bytes, 'utf-8')
+		cmdout = exe_shell_cmd("/sbin/route -n"+ "| head -n3 | grep " + interface)
 		if len(cmdout) != 0:
 			response += cmdout.split()[1]
 		else:
@@ -248,8 +244,7 @@ def port_info(ports) :
 ## return: <No Of ALU entries>:<AluIndex>:<MAC Addr>::<PortMemberShif[M- -M]>
 def static_mac_tbl_info(maxports) :
 	response = "Hai"
-	bytes = exe_shell_cmd("swcfg GlobalCfg get static_table")
-	cmdout = str(bytes, 'utf-8')
+	cmdout = exe_shell_cmd("swcfg GlobalCfg get static_table")
 	alu = 0
 	alus = len(cmdout.splitlines()) - 1
 	
@@ -288,8 +283,7 @@ def static_mac_tbl_info(maxports) :
 ## return: <No Of Vlans>:<String>:<VlanID>:<FID>:<PortMemberShif[T-U-N]>
 
 def vlan_info() :
-	bytes = exe_shell_cmd("swcfg GlobalCfg get vlan_table")
-	cmdout = str(bytes, 'utf-8')
+	cmdout = exe_shell_cmd("swcfg GlobalCfg get vlan_table")
 	vid = 0
 	vids = len(cmdout.splitlines()) - 1
 	
@@ -327,8 +321,8 @@ def vlan_info() :
 interface = "eth0"
 
 if isinstance(interface, int):
-	print(interface)
-	print("No Device Found!")
+	print interface
+	print "No Device Found!"
 	exit()
 
 sysfs	= "/sys/class/net/"+ interface
@@ -339,51 +333,42 @@ sw	= sysfs + "/sw"
 
 def	exe_py_cgi():
 	#### ******************** ####
-	print("Content-type: text/html")
-	print("")
+	print "Content-type: text/html"
+	print ""
 	#### ******************** ####
 	if CfgType == "DevInfo" :
-		bytes = exe_shell_cmd("swcfg SwitchCfg get 0x0")
-		string = str(bytes, 'utf-8')
-		response = string.strip("\n")
+		response = exe_shell_cmd("swcfg SwitchCfg get 0x0")
 		response += ":" + "FutureUse:"
-		bytes = exe_shell_cmd("swcfg GlobalCfg get ports")
-		string = str(bytes, 'utf-8')
-		response += string.strip("\n")
+		response += exe_shell_cmd("swcfg GlobalCfg get ports")
 		response += ":"
 		response += "EVB-KSZ9477 Rev.A (UNG_8071)"
-		#print("DevID:DevCap:DevPort:DisplayString:")
+		#print "DevID:DevCap:DevPort:DisplayString:"
 	elif CfgType == "SysAuth" :
 		user    = form.getvalue('UserName')
 		passwd  = form.getvalue('UserPasswd')
-		bytes = exe_shell_cmd("python user_auth.py "+ user + " " +passwd + "2> /dev/null")
-		response = str(bytes, 'utf-8').strip("\n")
+		response = exe_shell_cmd("python user_auth.py "+ user + " " +passwd)
+		response = response.strip("\n")
 		# FIXME
 		response += ":NewlineHack"
 	elif CfgType == "HostInfo" :
 		response = "Host Details:\n"
-		bytes = exe_shell_cmd("uname -a")
-		response += str(bytes, 'utf-8').strip("\n")
+		response += exe_shell_cmd("uname -a")
 		#response += "\nOS Release:\n"
 		#response += exe_shell_cmd("lsb_release -a")
 
 	elif CfgType == "DrvInfo" :
-		response = "Driver Info:\n"
-		bytes = exe_shell_cmd("/usr/sbin/ethtool --driver "+ interface)
-		response += str(bytes, 'utf-8')
+		response = "lan78xx Info:\n"
+		response += exe_shell_cmd("/usr/sbin/ethtool --driver "+ interface)
 		response += "\nKSZ Info:\n"
-		bytes = exe_shell_cmd("swcfg GlobalCfg get version")
-		response += str(bytes, 'utf-8')
+		response += exe_shell_cmd("swcfg GlobalCfg get version")
 		response += "GUI Version:\n"
 		response += version
 
 	elif CfgType == "TgtInfo" :
 		response = "Target Chip Id:\n"
-		bytes = exe_shell_cmd("swcfg SwitchCfg get 0x00")
-		response += str(bytes, 'utf-8')
+		response += exe_shell_cmd("swcfg SwitchCfg get 0x00")
 		response += "\nNo Of Ports:\n"
-		bytes = exe_shell_cmd("swcfg GlobalCfg get ports")
-		response += str(bytes, 'utf-8')
+		response += exe_shell_cmd("swcfg GlobalCfg get ports")
 
 	elif CfgType == "SWDebug" :
 		access  = form.getvalue('access')
@@ -391,25 +376,22 @@ def	exe_py_cgi():
 		regval  = form.getvalue('RegVal')
 		if regval == None :
 			regval = "NULL"
-		bytes = exe_shell_cmd("swcfg SwitchCfg "+ access + " " + swreg + " " + regval)
-		response = str(bytes, 'utf-8')
+		response = exe_shell_cmd("swcfg SwitchCfg "+ access + " " + swreg + " " + regval)
 
 	elif CfgType == "PHYDebug" :
 		access  = form.getvalue('access')
-		phyid   = form.getvalue('PhyId')
-		phyreg  = form.getvalue('PhyReg')
+		phyid   =  form.getvalue('PhyId')
+		phyreg     =  form.getvalue('PhyReg')
 		regval  = form.getvalue('RegVal')
 
 		if regval == None :
 			regval = "NULL"
 
-		bytes = exe_shell_cmd("swcfg PhyCfg "+ access + " " + phyid + " " + phyreg + " " + regval)
-		response = str(bytes, 'utf-8')
+		response = exe_shell_cmd("swcfg PhyCfg "+ access + " " + phyid + " " + phyreg + " " + regval)
 
 	elif CfgType == "SystemDebug" :
 		cmd = form.getvalue('ShellCmd')
-		bytes = exe_shell_cmd(cmd)
-		response = str(bytes, 'utf-8')
+		response = exe_shell_cmd(cmd)
 
 	elif CfgType == "IPSettings" :
 		SetType = form.getvalue('IpSetType')
@@ -433,8 +415,7 @@ def	exe_py_cgi():
 		if GVlanCfg != "x":
 			exe_shell_cmd("swcfg GlobalCfg set vlan "+ GVlanCfg)
 		
-		bytes = exe_shell_cmd("swcfg GlobalCfg get vlan")
-		cmdout = str(bytes, 'utf-8')
+		cmdout = exe_shell_cmd("swcfg GlobalCfg get vlan")
 		response = cmdout.split('\n')[0]
 		if cmdout.split('\n')[0] == "1":
 			response = "1:1"
@@ -444,11 +425,9 @@ def	exe_py_cgi():
 	elif CfgType == "GMTUInfo" :
 		mtu_size = form.getvalue('MTUSize')
 		if mtu_size == None :
-			bytes = exe_shell_cmd("swcfg GlobalCfg get mtu")
-			return str(bytes, 'utf-8')
+			return exe_shell_cmd("swcfg GlobalCfg get mtu")
 		exe_shell_cmd("swcfg GlobalCfg set mtu "+ mtu_size)
-		bytes = exe_shell_cmd("swcfg GlobalCfg get mtu")
-		response = str(bytes, 'utf-8')
+		response = exe_shell_cmd("swcfg GlobalCfg get mtu")
 
 	elif CfgType == "GJumboSupport" :
 		jumbo_support = form.getvalue('JumboFrame')
@@ -456,8 +435,7 @@ def	exe_py_cgi():
 		if jumbo_support != "x":
 			exe_shell_cmd("swcfg GlobalCfg set jumbo_packet "+ jumbo_support)
 
-		bytes = exe_shell_cmd("swcfg GlobalCfg get jumbo_packet")
-		cmdout = str(bytes, 'utf-8')
+		cmdout = exe_shell_cmd("swcfg GlobalCfg get jumbo_packet")
 		if cmdout.split('\n')[0] == "1":
 			response = "1:1"
 		else:
@@ -514,8 +492,7 @@ def	exe_py_cgi():
 		TblType = form.getvalue('TblType')
 		if TblClear == "Clear" :
 			exe_shell_cmd("swcfg GlobalCfg set "+TblType+" 0")
-		bytes = exe_shell_cmd("swcfg GlobalCfg get "+TblType)
-		response = str(bytes, 'utf-8')
+		response = exe_shell_cmd("swcfg GlobalCfg get "+TblType)
 
 	elif CfgType == "StaticMacCfg" :
 		alu_index		= form.getvalue('ALUIndex')
@@ -541,8 +518,7 @@ def	exe_py_cgi():
 		MIBClear = form.getvalue('FormCmd')
 		if MIBClear == "Clear" :
 			exe_shell_cmd("swcfg GlobalCfg set mib 0")
-		bytes = exe_shell_cmd("swcfg GlobalCfg get mib")
-		response = str(bytes, 'utf-8')
+		response = exe_shell_cmd("swcfg GlobalCfg get mib")
 
 	elif CfgType == "PortStats" :
 		MIBClear = form.getvalue('FormCmd')
@@ -550,13 +526,12 @@ def	exe_py_cgi():
 		if Port != None :
 			if MIBClear != None and MIBClear == "Clear" :
 				response = exe_shell_cmd("swcfg PortCfg set "+ str(Port) + " mib 0")
-			bytes = exe_shell_cmd("swcfg PortCfg get "+ str(Port) + " mib")
-			response = str(bytes, 'utf-8')
+			response = exe_shell_cmd("swcfg PortCfg get "+ str(Port) + " mib")
 		else:
 			response = "Port Not Selected!"
 
 	else:
-		print("Invalid Request!")
+		print "Invalid Request!"
 		exit()
 	#cgi.escape(exe_shell_cmd("ifconfig"))
 
@@ -567,8 +542,7 @@ def	exe_py_cgi():
 form = cgi.FieldStorage()
 CfgType	= form.getvalue("CMD") ## CMD is PostMethod argument to differentiate the request type.
 
-string = exe_py_cgi() ## Backend request / response Processing
-print(string)
+print exe_py_cgi() ## Backend request / response Processing
 
 exit()
 
