@@ -345,7 +345,7 @@ diff -Napur linux-at91-orig/arch/arm/boot/dts/microchip/at91-sama7d65_curiosity_
 +		     &pinctrl_gmac0_txck_default
 +		     &pinctrl_gmac0_phy_irq>;
 +	phy-mode = "rgmii-id";
-+	status = "disabled";
++	status = "okay";
 +
 +	nvmem-cells = <&eeprom0_eui48>;
 +	nvmem-cell-names = "mac-address";
@@ -1062,7 +1062,7 @@ diff -Napur linux-at91-orig/arch/arm/boot/dts/microchip/at91-sama7d65_curiosity_
 +		     &pinctrl_gmac0_txck_default
 +		     &pinctrl_gmac0_phy_irq>;
 +	phy-mode = "rgmii-id";
-+	status = "disabled";
++	status = "okay";
 +
 +	nvmem-cells = <&eeprom0_eui48>;
 +	nvmem-cell-names = "mac-address";
@@ -1779,7 +1779,7 @@ diff -Napur linux-at91-orig/arch/arm/boot/dts/microchip/at91-sama7d65_curiosity_
 +		     &pinctrl_gmac0_txck_default
 +		     &pinctrl_gmac0_phy_irq>;
 +	phy-mode = "rgmii-id";
-+	status = "disabled";
++	status = "okay";
 +
 +	nvmem-cells = <&eeprom0_eui48>;
 +	nvmem-cell-names = "mac-address";
@@ -2494,7 +2494,7 @@ diff -Napur linux-at91-orig/arch/arm/boot/dts/microchip/at91-sama7d65_curiosity_
 +		     &pinctrl_gmac0_txck_default
 +		     &pinctrl_gmac0_phy_irq>;
 +	phy-mode = "rgmii-id";
-+	status = "disabled";
++	status = "okay";
 +
 +	nvmem-cells = <&eeprom0_eui48>;
 +	nvmem-cell-names = "mac-address";
@@ -3236,7 +3236,7 @@ diff -Napur linux-at91-orig/arch/arm/boot/dts/microchip/at91-sama7d65_curiosity_
 +		     &pinctrl_gmac0_txck_default
 +		     &pinctrl_gmac0_phy_irq>;
 +	phy-mode = "rgmii-id";
-+	status = "disabled";
++	status = "okay";
 +
 +	nvmem-cells = <&eeprom0_eui48>;
 +	nvmem-cell-names = "mac-address";
@@ -3960,7 +3960,7 @@ diff -Napur linux-at91-orig/arch/arm/boot/dts/microchip/at91-sama7d65_curiosity_
 +		     &pinctrl_gmac0_txck_default
 +		     &pinctrl_gmac0_phy_irq>;
 +	phy-mode = "rgmii-id";
-+	status = "disabled";
++	status = "okay";
 +
 +	nvmem-cells = <&eeprom0_eui48>;
 +	nvmem-cell-names = "mac-address";
@@ -4690,7 +4690,7 @@ diff -Napur linux-at91-orig/arch/arm/boot/dts/microchip/at91-sama7d65_curiosity_
 +		     &pinctrl_gmac0_txck_default
 +		     &pinctrl_gmac0_phy_irq>;
 +	phy-mode = "rgmii-id";
-+	status = "disabled";
++	status = "okay";
 +
 +	nvmem-cells = <&eeprom0_eui48>;
 +	nvmem-cell-names = "mac-address";
@@ -5414,7 +5414,7 @@ diff -Napur linux-at91-orig/arch/arm/boot/dts/microchip/at91-sama7d65_curiosity_
 +		     &pinctrl_gmac0_txck_default
 +		     &pinctrl_gmac0_phy_irq>;
 +	phy-mode = "rgmii-id";
-+	status = "disabled";
++	status = "okay";
 +
 +	nvmem-cells = <&eeprom0_eui48>;
 +	nvmem-cell-names = "mac-address";
