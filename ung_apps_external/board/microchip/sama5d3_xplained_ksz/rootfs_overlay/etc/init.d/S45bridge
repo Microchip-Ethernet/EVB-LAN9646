@@ -9,6 +9,15 @@ create_br_dev() {
 
     if [ ! -z "$1" ]; then
         ETH=$1
+    elif [ ! -d /sys/class/net/eth$ETH/sw ]; then
+        IP=$(ifconfig eth$ETH | grep "inet addr" | cut -d":" -f2 | cut -d" " -f1)
+        SUBNET1=$(echo "$IP" | cut -d"." -f1)
+        SUBNET2=$(echo "$IP" | cut -d"." -f2)
+        SUBNET3=$(echo "$IP" | cut -d"." -f3)
+        SUBNET4=$(echo "$IP" | cut -d"." -f4)
+        ifconfig eth$ETH 0.0.0.0
+        ETH=1
+        ifconfig eth$ETH $SUBNET1.$SUBNET2.$SUBNET3.$SUBNET4
     fi
 
     ETHDEV=eth
@@ -19,7 +28,8 @@ create_br_dev() {
     if [ -e "/sys/class/net/eth$ETH/sw/two_dev" ]; then
         VLAN=$(cat /sys/class/net/eth$ETH/sw/two_dev)
         if [ $VLAN -eq 2 ]; then
-            ifconfig eth1 0.0.0.0
+            let p=$START+1
+            ifconfig eth$p 0.0.0.0
             VLAN=0
         fi
     fi

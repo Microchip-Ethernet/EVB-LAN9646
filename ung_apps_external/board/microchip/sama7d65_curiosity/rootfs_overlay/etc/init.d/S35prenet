@@ -12,6 +12,13 @@ update_interfaces() {
 
     [ -d /sys/class/net/eth0 ] || exit 1
 
+    # First MAC can use a real PHY
+    ETH=0
+    if [ ! -d /sys/class/net/eth$ETH/sw ]; then
+        ETH=1
+        [ -d /sys/class/net/eth$ETH ] || exit 1
+    fi
+
     MMC=$(grep "root=/dev/mmcblk0p2" /proc/cmdline)
     if [ ! -z "$MMC" ]; then
         if [ ! -d /boot ]; then
@@ -26,10 +33,10 @@ update_interfaces() {
     IPADDR=$(fw_printenv -n ipaddr 2> /dev/null)
     NETMASK=$(fw_printenv -n netmask 2> /dev/null)
 
-    MAC=$(ifconfig eth0 | grep HWaddr | cut -d"r" -f3 | cut -d" " -f2)
+    MAC=$(ifconfig eth$ETH | grep HWaddr | cut -d"r" -f3 | cut -d" " -f2)
     ETHADDR=$(echo $ETHADDR | tr 'a-f' 'A-F')
     if [ ! -z "$ETHADDR" ] && [ "$MAC" != "$ETHADDR" ]; then
-        ifconfig eth0 hw ether $ETHADDR
+        ifconfig eth$ETH hw ether $ETHADDR
     fi
 
     CUR=$(grep address $FILE | cut -d" " -f2)
