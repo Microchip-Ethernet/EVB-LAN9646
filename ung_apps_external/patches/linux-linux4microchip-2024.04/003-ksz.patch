@@ -70584,8 +70584,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-04-16 16:13:49.052293342 -0700
-@@ -0,0 +1,12389 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-04-30 19:23:08.052102804 -0700
+@@ -0,0 +1,12392 @@
 +/**
 + * Microchip KSZ8795 switch common code
 + *
@@ -79613,6 +79613,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct sw_priv *ks = sw->dev;
 +		int ret;
 +
++		/* Interrupt is already started. */
++		if (ks->irq_work.func)
++			break;
 +		ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +		if (ret < 0) {
 +			printk(KERN_WARNING "No switch interrupt"NL);
@@ -83998,8 +84001,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-04-16 16:13:34.236854932 -0700
-@@ -0,0 +1,10173 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-04-30 19:23:03.160291256 -0700
+@@ -0,0 +1,10176 @@
 +/**
 + * Microchip KSZ8895 switch common code
 + *
@@ -91069,6 +91072,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct sw_priv *ks = sw->dev;
 +		int ret;
 +
++		/* Interrupt is already started. */
++		if (ks->irq_work.func)
++			break;
 +		ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +		if (ret < 0) {
 +			printk(KERN_WARNING "No switch interrupt"NL);
@@ -95084,8 +95090,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-04-16 16:12:41.782843242 -0700
-@@ -0,0 +1,19927 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-04-30 19:26:18.884750937 -0700
+@@ -0,0 +1,19935 @@
 +/**
 + * Microchip gigabit switch common code
 + *
@@ -101430,7 +101436,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		phydev->speed = SPEED_10;
 +		phydev->dev_flags |= 1;
 +#endif
++#ifdef USE_GMII_100_MODE
++		phydev->speed = SPEED_100;
++		phydev->dev_flags |= 1;
++#endif
 +#ifdef USE_HALF_DUPLEX
++		duplex = 0;
 +		phydev->duplex = DUPLEX_HALF;
 +		phydev->dev_flags |= 1;
 +#endif
@@ -101543,7 +101554,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		info->tx_rate = speed * TX_RATE_UNIT;
 +		info->duplex = duplex + 1;
 +		phydev->speed = speed;
-+		phydev->duplex = duplex - 1;
++		phydev->duplex = duplex;
 +#ifdef USE_RGMII_PHY
 +		data |= PORT_RGMII_ID_EG_ENABLE;
 +		mode = 3;
@@ -109923,6 +109934,9 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct sw_priv *ks = sw->dev;
 +		int ret;
 +
++		/* Interrupt is already started. */
++		if (ks->irq_work.func)
++			break;
 +		ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +		if (ret < 0) {
 +			printk(KERN_WARNING "No switch interrupt"NL);
@@ -110183,7 +110197,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	info = get_port_info(sw, sw->HOST_PORT);
 +	s->interface = sw->interface;
 +	s->speed = info->tx_rate / TX_RATE_UNIT;
-+	s->duplex = 1;
++	s->duplex = (info->duplex == 2);
 +	s->pause = 3;
 +	s->link = 1;
 +	s->an_complete = 0;
@@ -116562,8 +116576,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c	2025-04-16 16:14:04.627702954 -0700
-@@ -0,0 +1,10529 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw.c	2025-04-30 19:22:58.316477862 -0700
+@@ -0,0 +1,10531 @@
 +/**
 + * Microchip switch common code
 + *
@@ -124222,6 +124236,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct sw_priv *ks = sw->dev;
 +		int ret;
 +
++		if (ks->irq_work.func)
++			break;
 +		ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +		if (ret < 0) {
 +			printk(KERN_WARNING "No switch interrupt"NL);
