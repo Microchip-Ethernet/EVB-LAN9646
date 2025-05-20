@@ -73,7 +73,7 @@ diff -Napur linux-linux4microchip-2022.10-orig/drivers/net/ethernet/stmicro/stmm
  enum stmmac_state {
 diff -Napur linux-linux4microchip-2022.10-orig/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c linux-linux4microchip-2022.10/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 --- linux-linux4microchip-2022.10-orig/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c	2022-11-09 04:48:42.000000000 -0800
-+++ linux-linux4microchip-2022.10/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c	2024-02-21 17:10:49.729719377 -0800
++++ linux-linux4microchip-2022.10/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c	2025-05-19 16:50:27.900441793 -0700
 @@ -44,6 +44,59 @@
  #include "stmmac_ptp.h"
  #include "stmmac.h"

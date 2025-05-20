@@ -73,7 +73,7 @@ diff -Napur linux-at91-linux4sam-2021.04-orig/drivers/net/ethernet/stmicro/stmma
  enum stmmac_state {
 diff -Napur linux-at91-linux4sam-2021.04-orig/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c linux-at91-linux4sam-2021.04/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 --- linux-at91-linux4sam-2021.04-orig/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c	2021-07-29 07:58:03.000000000 -0700
-+++ linux-at91-linux4sam-2021.04/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c	2024-02-14 14:29:02.759438629 -0800
++++ linux-at91-linux4sam-2021.04/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c	2025-05-19 16:53:28.643645545 -0700
 @@ -40,6 +40,59 @@
  #include <net/pkt_cls.h>
  #include "stmmac_ptp.h"
