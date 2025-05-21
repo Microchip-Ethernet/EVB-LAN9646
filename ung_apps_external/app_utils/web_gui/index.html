@@ -235,17 +235,17 @@
 		</div>
 
 		<div id="TgtInfo" class="vtabcontent">
-			<form id="TgtInfoForm" method="post" action="/cgi-bin/config.py?CMD=TgtInfo" onclick="return ResponseFill(this,'ResTgtInfoOut')">
+			<form id="TgtInfoForm" method="post" action="/cgi-bin/web.cgi?CMD=TgtInfo" onclick="return ResponseFill(this,'ResTgtInfoOut')">
 				Target Information : <br><br>
 				<textarea id="ResTgtInfoOut" rows="15" cols="50" readonly></textarea>
 			</form>
 		</div>
 
 		<div id="GVLANCfg" class="vtabcontent">
-			<form id="GVLANCfgForm" method="post" action="/cgi-bin/config.py?CMD=GVLANCfg" onsubmit="return ResponseFillMultiple(this,'ResVlanState',0)">
+			<form id="GVLANCfgForm" method="post" action="/cgi-bin/web.cgi?CMD=GVLANCfg" onsubmit="return ResponseFillMultiple(this,'ResVlanState',0)">
 				<br>
 			<select name="VlanState" class="ResVlanState">
-				<option selected hidden value="x">None</option>
+				<option value="x">Refresh</option>
 				<option value="1">Enable</option>
 				<option value="0">Disable</option>
 			</select>
@@ -255,7 +255,7 @@
 		</div>
 
 		<div id="GMTUCfg" class="vtabcontent">
-			<form id="GMTUCfgForm" method="post" action="/cgi-bin/config.py?CMD=GMTUInfo" onsubmit="return ResponseFill(this,'ResMtuSize')">
+			<form id="GMTUCfgForm" method="post" action="/cgi-bin/web.cgi?CMD=GMTUInfo" onsubmit="return ResponseFill(this,'ResMtuSize')">
 				<br><br>
 				MTU Size : <br><br>
 				<input id="ResMtuSize" type="text" name="MTUSize">
@@ -265,10 +265,10 @@
 		</div>
 
 		<div id="GJUMBOCfg" class="vtabcontent">
-			<form id="GJUMBOCfgForm" method="post" action="/cgi-bin/config.py?CMD=GJumboSupport" onsubmit="return ResponseFillMultiple(this,'JumboFrameSupport',0)">
+			<form id="GJUMBOCfgForm" method="post" action="/cgi-bin/web.cgi?CMD=GJumboSupport" onsubmit="return ResponseFillMultiple(this,'JumboFrameSupport',0)">
 				<br>
 			<select name="JumboFrame" class="JumboFrameSupport">
-				<option selected hidden value="x">None</option>
+				<option value="x">Refresh</option>
 				<option value="1">Enable</option>
 				<option value="0">Disable</option>
 			</select>
@@ -278,7 +278,7 @@
 		</div>
 
 		<div id="PortCfg" class="vtabcontent">
-			<form id="PortCfgForm" method="post" action="/cgi-bin/config.py?CMD=PortCfg" onsubmit="return ResponseFillMultiple(this,'SetGetPort',0)">
+			<form id="PortCfgForm" method="post" action="/cgi-bin/web.cgi?CMD=PortCfg" onsubmit="return ResponseFillMultiple(this,'SetGetPort',0)">
 				<!-- Will be populated on load Based on Number of Ports -->
 				<!-- Port Link Speed Status -->
 				<table cellspacing="20">
@@ -295,7 +295,7 @@
 		</div>
 
 		<div id="VIDCfg" class="vtabcontent">
-			<form id="VIDCfgForm" method="post" action="/cgi-bin/config.py?CMD=VlanInfo" onsubmit="return PopulateVlanTable('VIDCfgFormInner')">
+			<form id="VIDCfgForm" method="post" action="/cgi-bin/web.cgi?CMD=VlanInfo" onsubmit="return PopulateVlanTable('VIDCfgFormInner')">
 				<!-- Will be populated on load -->
 				<!-- VID FID Port MemberShip Add/Delete -->
 				<!-- <div id="VIDCfgFormInner"> -->
@@ -305,7 +305,7 @@
 		</div>
 
 		<div id="PVIDCfg" class="vtabcontent">
-			<form id="PVIDCfgForm" method="post" action="/cgi-bin/config.py?CMD=PVIDCfg" onsubmit="return ResponseFillMultiple(this,'SetGetPVID',0)">
+			<form id="PVIDCfgForm" method="post" action="/cgi-bin/web.cgi?CMD=PVIDCfg" onsubmit="return ResponseFillMultiple(this,'SetGetPVID',0)">
 				<!-- Will be populated on load based on Number of Ports -->
 				<!-- Port PVID IngressFilter IngressFrameAccType Priority   -->
 				<p style="font-size:14px font-weight:bold"><tab0><b>Port<tab0>PVID<tab0>Ingress Filter<tab0>Ingress Frame Action<tab1>Pritority</b></p>
@@ -322,7 +322,7 @@
 		</div>
 -->
 		<div id="MACTable" class="vtabcontent">
-			<form id="MACTableForm" method="post" action="/cgi-bin/config.py?CMD=DynamicMACInfo" onsubmit="return ResponseFill(this,'ResMacTable')">
+			<form id="MACTableForm" method="post" action="/cgi-bin/web.cgi?CMD=DynamicMACInfo" onsubmit="return ResponseFill(this,'ResMacTable')">
 				<input type="radio" name="TblType" value="dynamic_table" checked onchange="return submitFormInput('MACTableForm','MACTableHiddenInput','Refresh','ResMacTable')">Dynamic
 				<input type="radio" name="TblType" value="static_table" onchange="return submitFormInput('MACTableForm','MACTableHiddenInput','Refresh','ResMacTable')">Static
 				<button name="Refresh" value="Refresh" onclick="return submitFormInput('MACTableForm','MACTableHiddenInput','Refresh','ResMacTable')">Refresh</button>
@@ -334,7 +334,7 @@
 		</div>
 
 		<div id="StaticMAC" class="vtabcontent">
-			<form id="StaticMACForm" method="post" action="/cgi-bin/config.py?CMD=StaticMacInfo" onsubmit="return PopulateStaticMacTable(this,'StaticMACFormInner')">
+			<form id="StaticMACForm" method="post" action="/cgi-bin/web.cgi?CMD=StaticMacInfo" onsubmit="return PopulateStaticMacTable(this,'StaticMACFormInner')">
 
 				<!-- Will be populated on load -->
 				<!-- Index MAC Port MemberShip Add/Delete -->
@@ -364,7 +364,7 @@
 		</div>
 
 		<div id="SWStats" class="vtabcontent">
-			<form id="SWStatsForm" method="post" action="/cgi-bin/config.py?CMD=SWStats" onclick="return ResponseFill(this,'ResStatOut')">
+			<form id="SWStatsForm" method="post" action="/cgi-bin/web.cgi?CMD=SWStats" onclick="return ResponseFill(this,'ResStatOut')">
 				Switch MIB Counters : <br><br>
 				<button name="Refresh" value="Refresh" onclick="return submitFormInput('SWStatsForm','SWStatsHiddenInput','Refresh','ResStatOut')">Refresh</button>
 				<button name="Clear" value="Clear" onclick="return submitFormInput('SWStatsForm','SWStatsHiddenInput','Clear','ResStatOut')">Clear</button>
@@ -375,13 +375,13 @@
 		</div>
 
 		<div id="PerPortStats" class="vtabcontent">
-			<form id="PerPortStatsForm" method="post" action="/cgi-bin/config.py?CMD=PortStats" onsubmit="return GetStatsPort('PerPortStatsForm','ResPortStatOut')">
+			<form id="PerPortStatsForm" method="post" action="/cgi-bin/web.cgi?CMD=PortStats" onsubmit="return GetStatsPort('PerPortStatsForm','ResPortStatOut')">
 				Port MIB Counters : <br>
 			</form>
 		</div>
 
 		<div id="SWDebug" class="vtabcontent">
-			<form method = "post" action="/cgi-bin/config.py?CMD=SWDebug" onsubmit="return ResponseFill(this,'ResRegValOut')">
+			<form method = "post" action="/cgi-bin/web.cgi?CMD=SWDebug" onsubmit="return ResponseFill(this,'ResRegValOut')">
 				Switch Register:
 				<input type="text" name="swReg" size="10">
 				Value  :
@@ -424,7 +424,7 @@
 				var UserName = decodeURIComponent(document.cookie);
 				var uname = UserName.split("=")[1];;
 
-				PostRequest.open("POST", "/cgi-bin/config.py?CMD=DevInfo", true);
+				PostRequest.open("POST", "/cgi-bin/web.cgi?CMD=DevInfo", true);
 				PostRequest.send();
 				PostRequest.onload = function () {
 					DevId	= PostRequest.responseText.split(":")[0];
@@ -544,7 +544,7 @@
 				params.append('VlanMembers',MemberPorts);
 				params.append('VlanAction',Action);
 */
-				PostRequest.open("POST", "/cgi-bin/config.py?CMD=VlanCfg", true);
+				PostRequest.open("POST", "/cgi-bin/web.cgi?CMD=VlanCfg", true);
 				PostRequest.send(new FormData(document.getElementById('VIDCfgForm')));
 				
 				PostRequest.onload = function () {
@@ -609,7 +609,7 @@
 				document.getElementById('ALUMembers').value = MemberPorts;
 				document.getElementById('ALUAction').value = ActionId;
 
-				PostRequest.open("POST", "/cgi-bin/config.py?CMD=StaticMacCfg", true);
+				PostRequest.open("POST", "/cgi-bin/web.cgi?CMD=StaticMacCfg", true);
 				PostRequest.send(new FormData(document.getElementById('StaticMACForm')));
 				
 				PostRequest.onload = function () {
@@ -662,7 +662,7 @@
 				var PopulateRequest = document.getElementById(StaticMacTableDivId);
 				var alu,alus,ResIndex;
 
-				PostRequest.open("POST", "/cgi-bin/config.py?CMD=StaticMacInfo", true);
+				PostRequest.open("POST", "/cgi-bin/web.cgi?CMD=StaticMacInfo", true);
 				PostRequest.send();
 
 				PostRequest.onload = function () {
@@ -693,7 +693,7 @@
 				var PopulateRequest = document.getElementById(VidTableDivId);
 				var vid,vids,ResIndex;
 
-				PostRequest.open("POST", "/cgi-bin/config.py?CMD=VlanInfo", true);
+				PostRequest.open("POST", "/cgi-bin/web.cgi?CMD=VlanInfo", true);
 				PostRequest.send();
 
 				PostRequest.onload = function () {

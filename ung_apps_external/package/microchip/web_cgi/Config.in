@@ -1,0 +1,5 @@
+config BR2_PACKAGE_WEB_CGI
+	bool "Microchip WEB CGI"
+	help
+	  Microchip Web CGI utility.
+
