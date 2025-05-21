@@ -1005,12 +1005,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/i2c-k
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/i2c-ksz9897.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/i2c-ksz9897.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/i2c-ksz9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/i2c-ksz9897.c	2024-11-26 14:42:55.006517997 -0800
-@@ -0,0 +1,665 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/i2c-ksz9897.c	2025-04-15 03:08:58.159506414 -0700
+@@ -0,0 +1,653 @@
 +/**
 + * Microchip KSZ9897 I2C driver
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -1072,18 +1072,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/i2c-k
 +#include "ksz_cfg_9897.h"
 +
 +
-+#ifdef CONFIG_KSZ_DLR
-+/* Have ACL to handle beacon timeout. */
-+#define CONFIG_HAVE_ACL_HW
-+
-+/* Have DLR to transmit beacons. */
-+#define CONFIG_HAVE_DLR_HW
-+#endif
-+
-+#ifdef CONFIG_KSZ_HSR
-+#define CONFIG_HAVE_HSR_HW
-+#endif
-+
 +#if 0
 +#define USE_MII_PHY
 +#endif
@@ -1116,8 +1104,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/i2c-k
 +#endif
 +
 +
-+#define SW_DRV_RELDATE			"Nov 26, 2024"
-+#define SW_DRV_VERSION			"1.2.9"
++#define SW_DRV_RELDATE			"Apr 15, 2025"
++#define SW_DRV_VERSION			"1.2.10"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -1674,12 +1662,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/i2c-k
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/iba-ksz9897.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/iba-ksz9897.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/iba-ksz9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/iba-ksz9897.c	2024-11-27 17:39:47.008730548 -0800
-@@ -0,0 +1,110 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/iba-ksz9897.c	2025-04-15 03:08:47.915908107 -0700
+@@ -0,0 +1,98 @@
 +/**
 + * Microchip KSZ9897 IBA driver
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + * Copyright (c) 2013-2015 Micrel, Inc.
 + *
 + * Copyright 2009 Simtec Electronics
@@ -1721,18 +1709,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/iba-k
 +#include "ksz_cfg_9897.h"
 +
 +
-+#ifdef CONFIG_KSZ_DLR
-+/* Have ACL to handle beacon timeout. */
-+#define CONFIG_HAVE_ACL_HW
-+
-+/* Have DLR to transmit beacons. */
-+#define CONFIG_HAVE_DLR_HW
-+#endif
-+
-+#ifdef CONFIG_KSZ_HSR
-+#define CONFIG_HAVE_HSR_HW
-+#endif
-+
 +#if 0
 +#define USE_MII_PHY
 +#endif
@@ -1767,8 +1743,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/iba-k
 +
 +#define KS9897MLI_DEV0			"ksz9897"
 +
-+#define SW_DRV_RELDATE			"Nov 26, 2024"
-+#define SW_DRV_VERSION			"1.2.9"
++#define SW_DRV_RELDATE			"Apr 15, 2025"
++#define SW_DRV_VERSION			"1.2.10"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -8322,12 +8298,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz88
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz886x.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz886x.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz886x.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz886x.h	2023-03-19 17:41:55.556012666 -0700
-@@ -0,0 +1,1061 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz886x.h	2025-04-14 15:24:59.959811866 -0700
+@@ -0,0 +1,1064 @@
 +/**
 + * Microchip KSZ8862 Register Definitions.
 + *
-+ * Copyright (C) 2015-2021 Microchip Technology Inc.
++ * Copyright (C) 2015-2025 Microchip Technology Inc.
 + * Copyright (C) 2010-2015 Micrel, Inc.
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -9113,6 +9089,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz88
 +/* select this port as monitored tx pkts */
 +#define   PORT_MIRROR_TX             (1 << 5)
 +/* enable replace 802.1p priority field */
++#if 1
++#define   PORT_DOUBLE_TAG            (1 << 4)
++#endif
 +#define   PORT_802_1P_REMAPPING      (1 << 3)
 +/* Port VLAN membership mask */
 +#define   PORT_VLAN_MEMBERSHIP       (0x07)
@@ -11863,8 +11842,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz98
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_cfg_8463.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_8463.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_cfg_8463.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_8463.h	2023-03-19 17:41:55.556012666 -0700
-@@ -0,0 +1,39 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_8463.h	2025-04-15 02:08:34.586229823 -0700
+@@ -0,0 +1,40 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -11890,6 +11869,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_c
 +/* Can be defined if KSZ9897 driver is included also. */
 +#undef CONFIG_KSZ_DLR
 +#undef CONFIG_KSZ_HSR
++#undef CONFIG_KSZ_IBA
 +
 +/* KSZ8463 and KSZ8863 use same ksz_sw.c code. */
 +#undef CONFIG_HAVE_KSZ8863
@@ -11939,8 +11919,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_c
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_cfg_8863.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_8863.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_cfg_8863.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_8863.h	2023-03-19 17:41:55.556012666 -0700
-@@ -0,0 +1,33 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_8863.h	2025-04-15 02:28:23.247078882 -0700
+@@ -0,0 +1,34 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -11960,6 +11940,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_c
 +/* Can be defined if KSZ9897 driver is included also. */
 +#undef CONFIG_KSZ_DLR
 +#undef CONFIG_KSZ_HSR
++#undef CONFIG_KSZ_IBA
 +
 +/* KSZ8463 and KSZ8863 use same ksz_sw.c code. */
 +#undef CONFIG_HAVE_KSZ8463
@@ -12010,8 +11991,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_c
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_cfg_9897.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_9897.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_cfg_9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_9897.h	2024-04-17 12:51:39.534579339 -0700
-@@ -0,0 +1,32 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_cfg_9897.h	2025-05-20 18:07:26.539340775 -0700
+@@ -0,0 +1,48 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -12033,6 +12014,22 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_c
 +#define CONFIG_DELAY_REQUEST_INTR
 +#endif
 +
++#ifdef CONFIG_KSZ_DLR
++/* Have ACL to handle beacon timeout. */
++#define CONFIG_HAVE_ACL_HW
++
++/* Have DLR to transmit beacons. */
++#define CONFIG_HAVE_DLR_HW
++#endif
++
++#ifdef CONFIG_KSZ_HSR
++#define CONFIG_HAVE_HSR_HW
++#define CONFIG_KSZ_HSR_REDBOX
++#endif
++
++#if 1
++#define CONFIG_USE_WEB
++#endif
 +
 +#include "ksz_common.h"
 +
@@ -12877,12 +12874,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_d
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_dlr.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_dlr.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_dlr.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_dlr.c	2023-10-11 10:57:42.000000000 -0700
-@@ -0,0 +1,5766 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_dlr.c	2025-04-15 01:33:53.040968726 -0700
+@@ -0,0 +1,5771 @@
 +/**
 + * Microchip DLR code
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -13339,8 +13336,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_d
 +			sw->ops->release(sw);
 +		}
 +	}
++#ifdef CONFIG_HAVE_ACL_HW
 +	dlr_setup_acl(dlr, dlr->ports[0]);
 +	dlr_setup_acl(dlr, dlr->ports[1]);
++#endif
 +
 +	/* Do not need to process beacons. */
 +	if (DLR_ANNOUNCE_NODE == sw->info->dlr.node)
@@ -13417,7 +13416,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_d
 +	do {
 +		struct ksz_sw *sw = info->sw_dev;
 +
++		/* Guard against sending during receiving. */
++		spin_lock_bh(&sw->rx_lock);
 +		rc = ops->ndo_start_xmit(skb, skb->dev);
++		spin_unlock_bh(&sw->rx_lock);
 +		if (NETDEV_TX_BUSY == rc) {
 +			rc = wait_event_interruptible_timeout(sw->queue,
 +				!netif_queue_stopped(info->dev),
@@ -19187,8 +19189,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_d
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_hsr_6_1.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr_6_1.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	2024-11-25 18:39:13.174601618 -0800
-@@ -0,0 +1,3960 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	2025-04-15 04:32:47.652368382 -0700
+@@ -0,0 +1,4441 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright 2011-2014 Autronica Fire and Security AS
 + *
@@ -19209,6 +19211,35 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +#include "hsr_main.h"
 +
 +#ifdef CONFIG_KSZ_SWITCH
++
++#ifdef CONFIG_HAVE_HSR_HW
++#if 0
++/* This feature cannot work reliably in all cases. */
++#define CHECK_HSR_RING
++#endif
++#ifdef CHECK_HSR_RING
++#if 0
++#define MONITOR_HSR
++#endif
++#endif
++#endif
++
++#if 0
++#define DBG_FRAME_IN
++#define MONITOR_FLOW
++#define MONITOR_SEQID
++#endif
++
++#ifdef DBG_FRAME_IN
++static u16 last_in;
++#endif
++
++#ifdef MONITOR_SEQID
++static struct hsr_frame_info *monitor_frame;
++static u16 last_nr[2][2];
++static u16 next_nr;
++static int next_nr_chk;
++#endif
 +
 +struct hsr_cfg_work {
 +	struct work_struct work;
@@ -19252,11 +19283,75 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	schedule_work(&cfg_work->work);
 +}  /* proc_hsr_cfg */
 +
++#define TXQ_PAUSE	2000
++#define TXQ_MAX		(TXQ_PAUSE + 100)
++
++static void hsr_set_dev_info(struct ksz_hsr_info *info, struct sk_buff *skb,
++			     u8 forward)
++{
++	struct hsr_dev_info *net = (struct hsr_dev_info *)skb->cb;
++
++	info->dev_info.dev = skb->dev;
++	info->dev_info.forward = forward;
++	memcpy(net, &info->dev_info, sizeof(struct hsr_dev_info));
++}
++
++static netdev_tx_t hsr_dev_xmit(struct ksz_hsr_info *info, struct sk_buff *skb)
++{
++#if 0
++	return dev_queue_xmit(skb);
++#else
++	const struct net_device_ops *ops = skb->dev->netdev_ops;
++	struct ksz_sw *sw = info->sw_dev;
++	netdev_tx_t rc;
++
++	spin_lock_bh(&sw->rx_lock);
++	rc = ops->ndo_start_xmit(skb, skb->dev);
++	spin_unlock_bh(&sw->rx_lock);
++	return rc;
++#endif
++}
++
 +static void proc_hsr_tx(struct ksz_hsr_info *info, struct sk_buff *skb)
 +{
++	u32 cnt = skb_queue_len(&info->txq);
++
++	/* Cannot keep waiting in queue for transmit when receive keeps
++	 * coming.
++	 */
++	if (cnt >= TXQ_PAUSE) {
++		struct ksz_sw *sw = info->sw_dev;
++		int rc;
++
++		rc = sw->net_ops->tx_pause(sw, true);
++		if (rc == NETDEV_TX_BUSY && cnt >= TXQ_MAX) {
++			info->dev->stats.tx_dropped++;
++			dev_kfree_skb_any(skb);
++			return;
++		}
++	}
 +	skb_queue_tail(&info->txq, skb);
 +	schedule_work(&info->tx_proc);
 +}  /* proc_hsr_tx */
++
++static
++void hsr_update_frame_in(struct hsr_port *port, struct hsr_node *node)
++{
++	node->time_in[port->type] = jiffies;
++	node->time_in_stale[port->type] = false;
++}
++
++static
++void hsr_update_frame_out(struct hsr_port *port, struct hsr_node *node,
++			  u16 sequence_nr)
++{
++#ifdef MONITOR_FLOW
++	dbg_msg("O: %x:%d=%x\n", (int)node, port->type, sequence_nr);
++#endif
++	spin_lock_bh(&node->seq_out_lock);
++	node->seq_out[port->type] = sequence_nr;
++	spin_unlock_bh(&node->seq_out_lock);
++}
 +#endif
 +
 +/* hsr_main */
@@ -19476,6 +19571,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		if (not_self)
 +			proc_hsr_cfg(info, addr, info->member);
 +		info->part_cnt++;
++		info->dev_cnt++;
++		info->check_all = 1;
++		new_node->hsr_dev = true;
 +	} else {
 +		new_node->slave = 1;
 +	}
@@ -19542,6 +19640,11 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		 * for filtering duplicate frames.
 +		 */
 +		seq_out = hsr_get_skb_sequence_nr(skb) - 1;
++#ifdef CONFIG_KSZ_SWITCH
++		/* It is a supervision frame sent by host. */
++		if (ethhdr->h_proto != htons(ETH_P_HSR))
++			seq_out = HSR_SEQNR_START - 1;
++#endif
 +	} else {
 +		rct = skb_get_PRP_rct(skb);
 +		if (rct && prp_check_lsdu_size(skb, rct, is_sup)) {
@@ -19583,6 +19686,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	int i;
 +	unsigned int pull_size = 0;
 +	unsigned int total_pull_size = 0;
++#ifdef CONFIG_KSZ_SWITCH
++	struct ksz_hsr_info *info = container_of(hsr, struct ksz_hsr_info, hsr);
++	bool redbox_add = false;
++#endif
 +
 +	/* Here either frame->skb_hsr or frame->skb_prp should be
 +	 * valid as supervision frame always will have protocol
@@ -19623,14 +19730,16 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	node_db = &port_rcv->hsr->node_db;
 +	node_real = find_node_by_addr_A(node_db, hsr_sp->macaddress_A);
 +#ifdef CONFIG_KSZ_SWITCH
-+	if (!node_real)
-+{
-+	u8 *data = (u8 *) eth_hdr(skb)->h_source;
-+	u8 *addr = (u8 *) hsr_sp->macaddress_A;
++	if (!node_real) {
++		u8 *data = (u8 *) eth_hdr(skb)->h_source;
++		u8 *addr = (u8 *) hsr_sp->macaddress_A;
++
++		/* New node added for device under Redbox? */
++		redbox_add = true;
 +dbg_msg("add new: %02x:%02x:%02x; %02x:%02x:%02x\n",
 +data[3], data[4], data[5],
 +addr[3], addr[4], addr[5]);
-+}
++	}
 +#endif
 +	if (!node_real)
 +		/* No frame received from AddrA of this node yet */
@@ -19642,6 +19751,17 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +					 port_rcv->type);
 +	if (!node_real)
 +		goto done; /* No mem */
++
++#ifdef CONFIG_KSZ_SWITCH
++	info->redbox_sup = 0;
++
++#ifdef MONITOR_SEQID
++	/* Kernel HSR driver sends Supervison frame out of sequence probably
++	 * because of queuing in the MAC driver.
++	 */
++#endif
++	node_real->seq_out[0] = frame->sequence_nr;
++#endif
 +	if (node_real == node_curr)
 +		/* Node has already been merged */
 +		goto done;
@@ -19661,6 +19781,18 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		/* Sanity check length */
 +		if (hsr_sup_tlv->HSR_TLV_length != 6)
 +			goto done;
++
++#ifdef CONFIG_KSZ_SWITCH
++		if (redbox_add) {
++			info->dev_cnt--;
++			info->check_all = 0;
++			node_real->hsr_dev = false;
++		}
++		info->redbox_sup = 1;
++
++		/* Update incoming count for node under Redbox. */
++		hsr_update_frame_in(port_rcv, node_real);
++#endif
 +
 +		/* Leave the second HSR sup tlv. */
 +		pull_size = sizeof(struct hsr_sup_tlv);
@@ -19803,6 +19935,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +}
 +#endif
 +
++#if 0
 +#ifdef CONFIG_KSZ_SWITCH
 +static
 +#endif
@@ -19813,24 +19946,37 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	 * ensures entries of restarted nodes gets pruned so that they can
 +	 * re-register and resume communications.
 +	 */
++
++#ifdef MONITOR_FLOW
++	dbg_msg("i: %x:%d=%x %x\n", (int)node, port->type,
++		node->seq_out[port->type], sequence_nr);
++#endif
++#ifdef DBG_FRAME_IN
++	if (seq_nr_before(sequence_nr, node->seq_out[port->type])) {
++		if (!last_in) {
++			dbg_msg("in: %d=%x %x\n", port->type,
++				node->seq_out[port->type], sequence_nr);
++			last_in = sequence_nr;
++			if (!last_in)
++				last_in = 1;
++		}
++	}
++#endif
 +	if (!(port->dev->features & NETIF_F_HW_HSR_TAG_RM) &&
 +	    seq_nr_before(sequence_nr, node->seq_out[port->type]))
 +		return;
 +
++#ifdef DBG_FRAME_IN
++	if (last_in) {
++		dbg_msg("re: %d=%x %x\n", port->type,
++			node->seq_out[port->type], sequence_nr);
++		last_in = 0;
++	}
++#endif
 +	node->time_in[port->type] = jiffies;
 +	node->time_in_stale[port->type] = false;
 +}
-+
-+#ifdef CONFIG_KSZ_SWITCH
-+static
 +#endif
-+void hsr_update_frame_out(struct hsr_port *port, struct hsr_node *node,
-+	u16 sequence_nr)
-+{
-+	spin_lock_bh(&node->seq_out_lock);
-+	node->seq_out[port->type] = sequence_nr;
-+	spin_unlock_bh(&node->seq_out_lock);
-+}
 +
 +/* 'skb' is a HSR Ethernet frame (with a HSR tag inserted), with a valid
 + * ethhdr->h_source address and skb->mac_header set.
@@ -19850,11 +19996,48 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	if (seq_nr_before_or_eq(sequence_nr, node->seq_out[port->type]) &&
 +	    time_is_after_jiffies(node->time_out[port->type] +
 +	    msecs_to_jiffies(HSR_ENTRY_FORGET_TIME))) {
++
++#ifdef MONITOR_SEQID
++		if (next_nr && next_nr == node->seq_out[port->type])
++			dbg_msg("d: %d:%d=%x %x\n",
++				monitor_frame->port_rcv->type, port->type,
++				sequence_nr, node->seq_out[port->type]);
++#endif
 +		spin_unlock_bh(&node->seq_out_lock);
 +		return 1;
 +	}
 +
 +	node->time_out[port->type] = jiffies;
++
++#ifdef MONITOR_SEQID
++#if 1
++	/* Check for drop in receive queue. */
++	if ((u16)(node->seq_out[port->type] + 2) == sequence_nr) {
++		if (monitor_frame->is_local_exclusive ||
++		    monitor_frame->is_hsr_dest) {
++#else
++	/* Check for out of sequence Supervision frame. */
++	if ((u16)(node->seq_out[port->type] + 1) != sequence_nr) {
++		if (monitor_frame->is_local_dest ||
++		    monitor_frame->is_hsr_dest) {
++#endif
++			dbg_msg("o: %d:%d %x [%u] %x %x; %x %x; %x %x; %d:%x\n",
++				monitor_frame->port_rcv->type,
++				port->type, (int)node,
++				(u16)(sequence_nr - node->seq_out[port->type]),
++				node->seq_out[port->type], sequence_nr,
++				last_nr[0][0], last_nr[0][1],
++				last_nr[1][0], last_nr[1][1],
++				monitor_frame->is_supervision,
++				node->seq_out[0]);
++			next_nr = sequence_nr;
++			next_nr_chk = 10;
++		}
++	}
++#endif
++#ifdef MONITOR_FLOW
++	dbg_msg("o: %x:%d=%x\n", (int)node, port->type, sequence_nr);
++#endif
 +	node->seq_out[port->type] = sequence_nr;
 +	spin_unlock_bh(&node->seq_out_lock);
 +	return 0;
@@ -19965,6 +20148,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			if (!node->slave) {
 +				proc_hsr_cfg(info, node->macaddress_A, 0);
 +				info->part_cnt--;
++				if (node->hsr_dev) {
++					info->dev_cnt--;
++					info->check_all = 1;
++				}
 +			}
 +
 +#if 1
@@ -19977,11 +20164,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +node->macaddress_A[5],
 +time_a, time_b, timestamp, jiffies - timestamp);
 +#endif
++#ifdef CHECK_HSR_RING
 +			if (node == info->center) {
 +				info->center = NULL;
-+				info->seq_num = 0;
 +				info->ring = 0;
 +			}
++#endif
 +#endif
 +#ifndef CONFIG_KSZ_SWITCH
 +			hsr_nl_nodedown(hsr, node->macaddress_A);
@@ -20126,7 +20314,110 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	}
 +}  /* hsr_notify_link_lost */
 +
-+#ifdef CONFIG_HAVE_HSR_HW
++#ifdef CHECK_HSR_RING
++static void chk_traffic(struct ksz_hsr_info *info, bool *no_drop_win)
++{
++	/* Once unicast frames are present there is no reliable way to
++	 * determine a link is down as they are not forwarded everywhere.
++	 * Still want a way to tell a link is down while there is traffic.
++	 * One thing that tells the ring is not complete is if receive drops
++	 * are not detected.  However occasionally one side still does not
++	 * has one receive drops.
++	 * The formula for number of Supervision frames received on one side
++	 * is (number of nodes) / 2 + 1.  The number of Supervision frames not
++	 * received is (number of nodes - 1) - number received.  The receive
++	 * drop is always 1.
++	 * 2 nodes: 2 received, none dropped, 1 rx drop
++	 * 3 nodes: 2 received, none dropped, 1 rx drop
++	 * 5 nodes: 3 received, 1 dropped, 1 rx drop
++	 * 7 nodes: 4 received, 2 dropped, 1 rx drop
++	 * 8 nodes: 5 received, 2 dropped, 1 rx drop
++	 * 9 nodes: 5 received, 3 dropped, 1 rx drop
++	 * Anyway this is just a means to determine link lost where a link
++	 * connection is not actually dropped, in which the node nearby can
++	 * determine immediately.  This can be developed into a diagnostic
++	 * tool where a node can send a multicast message asking everybody to
++	 * pause transmission like simulating the network device is down and
++	 * then sends a Supervision frame and asks if somebody detects
++	 * something is wrong.
++	 */
++	if (info->rx_p1[1] || info->rx_p2[1]) {
++		*no_drop_win = true;
++		if (!info->rx_p1[2] || !info->rx_p2[2]) {
++			*no_drop_win = false;
++		}
++	}
++}
++
++static bool chk_broken_ring(struct ksz_hsr_info *info, struct hsr_node *node,
++			    u16 start_seq[], u16 exp_seq[])
++{
++	struct ksz_sw *sw = info->sw_dev;
++	struct ksz_hsr_table entry;
++	bool no_drop_win = false;
++
++	memcpy(entry.src_mac, node->macaddress_A, ETH_ALEN);
++	entry.path_id = 0;
++	sw_r_hsr_table(sw, 0, &entry);
++	if (entry.start_seq[0]) {
++		u16 win[2];
++
++		/* Only work for quiet period when Supervision frames are sent
++		 * every 2 seconds.  Unicast frames sent to one node will
++		 * cause the drop window to increase.
++		 */
++		win[0] = entry.exp_seq[0] - entry.start_seq[0];
++		win[1] = entry.exp_seq[1] - entry.start_seq[1];
++
++#ifdef MONITOR_HSR
++dbg_msg(" %02x:%02x %04x %04x %04x:%04x %04x:%04x\n",
++	node->macaddress_A[4], node->macaddress_A[5],
++	node->seq_out[0], node->seq_num,
++	entry.start_seq[0], entry.start_seq[1],
++	entry.exp_seq[0], entry.exp_seq[1]);
++#endif
++		if (!win[0] && !win[1] &&
++		    node->seq_num != entry.exp_seq[0]) {
++			no_drop_win = true;
++			info->center = node;
++		}
++		if (entry.exp_seq[0] >= entry.exp_seq[1])
++			node->seq_num = entry.exp_seq[0];
++		else
++			node->seq_num = entry.exp_seq[1];
++
++		/* This was determined by previous check. */
++		if (info->center == node) {
++			exp_seq[0] = entry.exp_seq[0];
++			exp_seq[1] = entry.exp_seq[1];
++			start_seq[0] = entry.start_seq[0];
++			start_seq[1] = entry.start_seq[1];
++
++			if (!no_drop_win)
++				chk_traffic(info, &no_drop_win);
++		}
++	}
++	return no_drop_win;
++}
++
++static void get_mib_cnt(struct ksz_hsr_info *info, u8 p, u64 rx[], u64 last[])
++{
++	struct ksz_sw *sw = info->sw_dev;
++	struct ksz_port_mib *mib;
++	u64 mib_cnt[3];
++
++	mib = get_port_mib(sw, info->ports[p]);
++	mib_cnt[0] = mib->counter[MIB_RX_MULTICAST];
++	mib_cnt[1] = mib->counter[MIB_RX_UNICAST];
++	mib_cnt[2] = mib->counter[MIB_RX_DROPS];
++	rx[0] = mib_cnt[0] - last[0];
++	rx[1] = mib_cnt[1] - last[1];
++	rx[2] = mib_cnt[2] - last[2];
++	last[0] = mib_cnt[0];
++	last[1] = mib_cnt[1];
++	last[2] = mib_cnt[2];
++}
++
 +static void hsr_chk_ring(struct work_struct *work)
 +{
 +	struct hsr_node *node;
@@ -20139,47 +20430,56 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	u16 start_seq[2];
 +	u16 exp_seq[2];
 +
++	if (info->center && time_is_after_jiffies(info->last_jiffies +
++	    msecs_to_jiffies(HSR_LIFE_CHECK_INTERVAL - 500))) {
++dbg_msg("too soon: %04x %lu\n", info->center->seq_out[0],
++jiffies - info->last_jiffies);
++		info->check = 0;
++		return;
++	}
++	info->last_jiffies = jiffies;
++
++	get_mib_cnt(info, 0, info->rx_p1, info->last_rx_p1);
++	get_mib_cnt(info, 1, info->rx_p2, info->last_rx_p2);
++
 +	memset(start_seq, 0, sizeof(start_seq));
 +	memset(exp_seq, 0, sizeof(exp_seq));
 +
++#ifdef MONITOR_HSR
++	info->node_check = NULL;
++#endif
 +	list_for_each_entry_rcu(node, &hsr->node_db, mac_list) {
 +		if (!memcmp(node->macaddress_A, info->src_addr, ETH_ALEN))
 +			continue;
-+		if (!node->slave) {
-+			struct ksz_hsr_table entry;
-+			struct ksz_sw *sw = info->sw_dev;
-+
-+			memcpy(entry.src_mac, node->macaddress_A, ETH_ALEN);
-+			entry.path_id = 0;
-+			sw_r_hsr_table(sw, 0, &entry);
-+			if (entry.start_seq[0]) {
-+				u16 win[2];
-+
-+				win[0] = entry.exp_seq[0] - entry.start_seq[0];
-+				win[1] = entry.exp_seq[1] - entry.start_seq[1];
-+				if (!win[0] && !win[1] &&
-+				    info->seq_num != entry.exp_seq[0]) {
-+					no_drop_win = true;
-+					info->center = node;
-+				}
-+				if (info->center == node) {
-+					exp_seq[0] = entry.exp_seq[0];
-+					exp_seq[1] = entry.exp_seq[1];
-+					start_seq[0] = entry.start_seq[0];
-+					start_seq[1] = entry.start_seq[1];
-+				}
-+			}
-+			if (no_drop_win)
-+				break;
-+		}
++		if (node->slave || !node->hsr_dev)
++			continue;
++		if (!info->node_check || info->node_check == node)
++			no_drop_win |= chk_broken_ring(info, node, start_seq,
++						       exp_seq);
++		if (info->node_check == node)
++			break;
++#ifndef MONITOR_HSR
++		if (no_drop_win)
++			break;
++#endif
 +	}
++#ifdef MONITOR_HSR
++dbg_msg("\n");
++#endif
 +
 +	if (info->ring && !no_drop_win) {
 +		if (info->center) {
 +			int p;
 +
-+dbg_msg("%04x:%04x %04x:%04x\n", start_seq[0], start_seq[1],
-+exp_seq[0], exp_seq[1]);
++#if 1
++dbg_msg("%llu %llu; %llu %llu; %llu %llu\n",
++	info->rx_p1[0], info->rx_p2[0], info->rx_p1[1], info->rx_p2[1],
++	info->rx_p1[2], info->rx_p2[2]);
++#endif
++dbg_msg(" %02x:%02x %04x %04x:%04x %04x:%04x\n",
++	info->center->macaddress_A[4], info->center->macaddress_A[5],
++	info->center->seq_out[0],
++	start_seq[0], start_seq[1], exp_seq[0], exp_seq[1]);
 +			if (start_seq[0] == exp_seq[0]) {
 +				info->p1_lost = 1;
 +				p = 1;
@@ -20187,15 +20487,16 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +				info->p2_lost = 1;
 +				p = 0;
 +			}
-+			info->seq_num = exp_seq[p];
 +		}
 +		info->ring = 0;
++		info->check_all = 1;
 +		change = 1;
 +	} else if (!info->ring && no_drop_win) {
-+		info->ring = 1;
-+		info->p1_down = info->p2_down =
-+		info->p1_lost = info->p2_lost = 0;
-+		change = 1;
++		if (!info->p1_down && !info->p2_down) {
++			info->ring = 1;
++			info->p1_lost = info->p2_lost = 0;
++			change = 1;
++		}
 +	}
 +	if (change)
 +		hsr_notify_link_lost(info);
@@ -20205,6 +20506,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +#endif
 +
 +#ifdef CONFIG_KSZ_SWITCH
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +static
 +void hsr_rmv_slaves(struct ksz_hsr_info *info)
 +{
@@ -20225,6 +20527,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	}
 +	spin_unlock_bh(&hsr->list_lock);
 +}
++#endif
 +#endif
 +
 +/* hsr_slave */
@@ -20594,7 +20897,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +#ifdef CONFIG_KSZ_SWITCH
 +	if (!frame->skb_out) {
-+		/* frame->skb_out will be assinged frame->skb_std. */
++		/* frame->skb_out will be assigned frame->skb_std. */
 +		frame->skb_hsr = NULL;
 +
 +#if 0
@@ -20957,28 +21260,63 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct hsr_priv *hsr = port->hsr;
 +	struct sk_buff *skb;
 +
-+	/* Don't send frame over port where it has been sent before.
-+	 * Also fro SAN, this shouldn't be done.
-+	 */
-+	if (!frame->is_from_san &&
-+	    hsr_register_frame_out(port, frame->node_src,
-+				   frame->sequence_nr))
-+		return;
-+
 +	if (frame->is_supervision) {
 +		hsr_handle_sup_frame(frame);
 +#ifdef CONFIG_KSZ_SWITCH
 +		frame->out = 0;
-+#ifdef CONFIG_HAVE_HSR_HW
-+		if (!info->check) {
++
++#ifdef CHECK_HSR_RING
++		if (!info->check && !info->p1_down && !info->p2_down) {
 +			struct ksz_sw *sw = info->sw_dev;
++			struct sw_priv *hw_priv = sw->dev;
 +
 +			/* No HSR hardware. */
 +			if (!(sw->features & REDUNDANCY_SUPPORT))
 +				return;
++
++			/* Ignore Supervision frame for Redbox device. */
++			if (info->redbox_sup)
++				return;
++
++			/* Not to check too often for all incoming frames. */
++			if (!info->center &&
++			    time_is_after_jiffies(info->last_jiffies +
++						  msecs_to_jiffies(1000))) {
++				return;
++			}
++
++			/* Check only when receive information is fresh. */
++			if (info->center && info->center != frame->node_src) {
++				unsigned long period = info->last_jiffies +
++					msecs_to_jiffies(4000);
++
++				/* Center node may stop transmitting. */
++				if (time_is_before_jiffies(period)) {
++dbg_msg("no center\n");
++					info->center = NULL;
++				} else {
++					return;
++				}
++			}
++			info->node_check = info->center;
++			if (info->check_all &&
++			    time_is_before_jiffies(info->last_center_jiffies +
++						   msecs_to_jiffies(30000))) {
++				info->last_center_jiffies = jiffies;
++				info->node_check = NULL;
++				info->check_all = 0;
++dbg_msg("chk all\n");
++			}
 +			info->check = 1;
++			hw_priv->counter[info->ports[0]].read = 1;
++			hw_priv->counter[info->ports[1]].read = 1;
++			schedule_work(&hw_priv->mib_read);
 +			schedule_delayed_work(&info->chk_ring,
 +					      msecs_to_jiffies(50));
++		} else {
++			if (info->center && info->center == frame->node_src) {
++				info->last_jiffies = jiffies;
++			}
 +		}
 +#endif
 +#endif
@@ -21008,20 +21346,20 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	if (!skb) {
 +		return;
 +	}
-+	if (frame->port_rcv->type == HSR_PT_MASTER) {
-+if (skb != frame->skb_out)
-+dbg_msg(" not out\n");
-+	}
 +
 +	/* Forward to Redbox. */
 +	if (frame->port_rcv->type != HSR_PT_MASTER ||
 +	    skb != frame->skb_out) {
-+		struct net_device **dev = (struct net_device **)skb->cb;
++		netdev_tx_t rc = NETDEV_TX_BUSY;
 +
-+		*dev = info->redbox;
 +		skb->dev = port->dev;
-+		proc_hsr_tx(info, skb);
++		hsr_set_dev_info(info, skb, 4);
++		if (skb == frame->skb_out && !skb_queue_len(&info->txq))
++			rc = hsr_dev_xmit(info, skb);
++		if (rc == NETDEV_TX_BUSY)
++			proc_hsr_tx(info, skb);
 +	} else {
++		/* Frame is sent from host to Redbox. */
 +		frame->out = 4;
 +	}
 +}
@@ -21033,13 +21371,30 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct hsr_priv *hsr = port->hsr;
 +	struct sk_buff *skb;
 +
++#ifdef MONITOR_SEQID
++	monitor_frame = frame;
++#endif
++
 +	/* Don't send frame over port where it has been sent before.
-+	 * Also fro SAN, this shouldn't be done.
++	 * Also from SAN, this shouldn't be done.
 +	 */
 +	if (!frame->is_from_san &&
 +	    hsr_register_frame_out(port, frame->node_src,
 +				   frame->sequence_nr))
 +		return;
++
++	/* A sequence id is available. */
++	if (!frame->is_from_san) {
++		struct hsr_port *other;
++
++		/* Update the other port in case it does not receive. */
++		if (port->type == HSR_PT_SLAVE_A)
++			other = info->hsr_ports[HSR_PT_SLAVE_B];
++		else
++			other = info->hsr_ports[HSR_PT_SLAVE_A];
++		hsr_update_frame_out(other, frame->node_src,
++				     frame->sequence_nr);
++	}
 +
 +	skb = hsr->proto_ops->create_tagged_frame(frame, port);
 +	if (!skb) {
@@ -21064,15 +21419,17 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			} else {
 +				forward = 1;
 +			}
-+			frame->out = forward;
++
++			/* Original frame is sent to Redbox. */
 +			if (skb != frame->skb_out) {
-+				skb->vlan_tci = forward;
++				hsr_set_dev_info(info, skb, forward);
 +				proc_hsr_tx(info, skb);
++			} else {
++				/* Output for original frame. */
++				frame->out = forward;
 +			}
-+
-+
 +		} else {
-+			skb->vlan_tci = 1;
++			hsr_set_dev_info(info, skb, 1);
 +			proc_hsr_tx(info, skb);
 +		}
 +	} else if (port->type == HSR_PT_SLAVE_B) {
@@ -21081,7 +21438,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			ether_addr_copy(eth_hdr(skb)->h_dest,
 +					frame->node_dst->macaddress_B);
 +		}
-+		skb->vlan_tci = 2;
++		hsr_set_dev_info(info, skb, 2);
 +		proc_hsr_tx(info, skb);
 +	}
 +}
@@ -21110,6 +21467,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct hsr_port *host, *interlink, *portA, *portB;
 +	struct hsr_port *from = frame->port_rcv;
 +	struct ksz_hsr_info *info;
++	bool proc_hsr = false;
 +
 +	info = container_of(from->hsr, struct ksz_hsr_info, hsr);
 +
@@ -21122,9 +21480,13 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +	/* Coming from host. */
 +	if (from->type == HSR_PT_MASTER) {
-+		/* Process Redbox first to re-use skb_std. */
-+		if (frame->is_redbox_dest)
-+			hsr_fwd_interlink(info, frame, interlink);
++		struct sk_buff *skb;
++
++		/* Save a copy for use with Redbox as the original one will be
++		 * changed to HSR frame.
++		 */
++		if (frame->is_redbox_dest && frame->is_hsr_dest)
++			skb = skb_copy(frame->skb_std, GFP_ATOMIC);
 +
 +		/* Only master port can send to HSR device because of
 +		 * sequence_nr lock.
@@ -21134,12 +21496,25 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			if (info->use_lane_b)
 +				hsr_fwd_port(info, frame, portB);
 +		}
++		if (frame->is_redbox_dest) {
++
++			/* The original one should be used to send to HSR
++			 * device as that will be always the first to send.
++			 */
++			if (frame->is_hsr_dest)
++				frame->skb_std = skb;
++			hsr_fwd_interlink(info, frame, interlink);
++
++			/* frame->skb_std will bet set to NULL. */
++			if (frame->is_hsr_dest)
++				kfree_skb(skb);
++		}
 +	} else if (from->type == HSR_PT_INTERLINK) {
 +		/* Don't deliver locally unless we should */
 +		if (frame->is_local_dest)
 +			hsr_fwd_host(info, frame, host);
 +		if (frame->is_hsr_dest && info->redbox_fwd) {
-+			struct net_device **dev;
++			netdev_tx_t rc = NETDEV_TX_BUSY;
 +			struct sk_buff *skb;
 +
 +			if (!frame->skb_out) {
@@ -21158,15 +21533,39 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			ether_addr_copy(eth_hdr(skb)->h_source,
 +					info->src_addr);
 +
-+			/* Cannot send to HSR device here because the sequence
-+			 * number cannot be be guaranteed to be sequential in
-+			 * the send order.
++			/* HSR device is always sent first because the send
++			 * order needs to match the sequence number.
 +			 */
-+			dev = (struct net_device **)skb->cb;
-+			*dev = info->dev;
-+			proc_hsr_tx(info, skb);
++			skb->dev = info->dev;
++			hsr_set_dev_info(info, skb, 0);
++			if (!skb_queue_len(&info->txq))
++				rc = hsr_dev_xmit(info, skb);
++			if (rc == NETDEV_TX_BUSY)
++				proc_hsr_tx(info, skb);
 +		}
 +	} else {
++		struct hsr_port *other;
++
++		/* Update for hsr_register_frame_in() check. */
++		if (frame->port_rcv->type == HSR_PT_SLAVE_A)
++			other = info->hsr_ports[HSR_PT_SLAVE_B];
++		else
++			other = info->hsr_ports[HSR_PT_SLAVE_A];
++		hsr_update_frame_out(other, frame->node_src,
++				     frame->sequence_nr);
++		proc_hsr = true;
++
++#ifdef MONITOR_SEQID
++		monitor_frame = frame;
++#endif
++
++		/* Drop duplicate here. */
++		if (!frame->is_from_san &&
++		    hsr_register_frame_out(host, frame->node_src,
++					   frame->sequence_nr))
++			proc_hsr = false;
++	}
++	if (proc_hsr) {
 +		/* Don't deliver locally unless we should */
 +		if (frame->is_local_dest)
 +			hsr_fwd_host(info, frame, host);
@@ -21221,7 +21620,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			continue;
 +
 +		/* Don't send frame over port where it has been sent before.
-+		 * Also fro SAN, this shouldn't be done.
++		 * Also from SAN, this shouldn't be done.
 +		 */
 +		if (!frame->is_from_san &&
 +		    hsr_register_frame_out(port, frame->node_src,
@@ -21323,6 +21722,30 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		frame->skb_prp = NULL;
 +		frame->skb_hsr = skb;
 +		frame->sequence_nr = hsr_get_skb_sequence_nr(skb);
++
++#ifdef MONITOR_SEQID
++		do {
++			int p = 0;
++
++			if (frame->port_rcv->type == HSR_PT_SLAVE_B)
++				p = 1;
++			last_nr[p][1] = last_nr[p][0];
++			last_nr[p][0] = frame->sequence_nr;
++			if (next_nr_chk) {
++				--next_nr_chk;
++				if ((u16)(frame->sequence_nr + 1) == next_nr ||
++				    (u16)(next_nr + 1) == frame->sequence_nr) {
++					dbg_msg("n: %d %x %x; %x %x\n",
++						next_nr_chk,
++						last_nr[0][0], last_nr[0][1],
++						last_nr[1][0], last_nr[1][1]);
++					next_nr_chk = 0;
++				}
++				if (!next_nr_chk)
++					next_nr = 0;
++			}
++		} while (0);
++#endif
 +		return 0;
 +	}
 +
@@ -21365,7 +21788,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +#ifdef CONFIG_KSZ_SWITCH
 +	struct ksz_hsr_info *info = container_of(hsr,
 +		struct ksz_hsr_info, hsr);
-+	struct net_device **dev = (struct net_device **)skb->cb;
++	struct hsr_dev_info *dev = (struct hsr_dev_info *)skb->cb;
 +#endif
 +
 +#ifndef CONFIG_KSZ_SWITCH
@@ -21417,7 +21840,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		frame->fwd_hsr = true;
 +
 +	/* Frame is sent to HSR device directly. */
-+	if (*dev == info->dev) {
++	if (dev->dev == info->dev) {
 +		frame->is_hsr_dest = true;
 +		frame->is_hsr_exclusive = true;
 +		return 0;
@@ -21468,6 +21891,11 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		}
 +	}
 +
++	/* Standard frame was assumed to only go to HSR device. */
++	if ((port->type == HSR_PT_MASTER || port->type == HSR_PT_INTERLINK) &&
++	    (frame->skb_std && !frame->is_hsr_dest))
++		hsr->sequence_nr = frame->sequence_nr;
++
 +	/* Host is processing received frame. */
 +	if (frame->is_local_dest)
 +		frame->out = 1;
@@ -21490,7 +21918,28 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	if (fill_frame_info(&frame, skb, port) < 0)
 +		goto out_drop;
 +
++#ifdef CONFIG_KSZ_SWITCH
++	if (port->type == HSR_PT_SLAVE_A || port->type == HSR_PT_SLAVE_B)
++#ifdef DBG_FRAME_IN
++		hsr_register_frame_in(frame.node_src, port, frame.sequence_nr);
++#else
++		hsr_update_frame_in(port, frame.node_src);
++#endif
++#else
++	/* In kernel HSR driver this does not apply to host as its seq_out is
++	 * never updated, but then its node will never be released.
++	 * The count is only updated when forwarding non-local frame to the
++	 * other port, so sending unicast frames to the host like running a
++	 * throughput test will get frames rejected ant not updating the
++	 * time_in value, but then the forget time is 60 seconds so the
++	 * Supervision frame sent every 2 seconds will keep the node live.
++	 * It is expected that both ports will keep receiving same frame to
++	 * update the other port, but this condition may not exist for
++	 * hardware duplicate drop.  This may lead to the node to be
++	 * forgotten if its time stays stale.
++	 */
 +	hsr_register_frame_in(frame.node_src, port, frame.sequence_nr);
++#endif
 +	hsr_forward_do(&frame);
 +	rcu_read_unlock();
 +#ifndef CONFIG_KSZ_SWITCH
@@ -21875,21 +22324,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +#endif
 +
 +#ifdef CONFIG_KSZ_SWITCH
-+static netdev_tx_t hsr_dev_xmit(struct sk_buff *skb, struct net_device *dev)
-+{
-+	const struct net_device_ops *ops = dev->netdev_ops;
-+	netdev_tx_t rc;
-+
-+	rc = ops->ndo_start_xmit(skb, skb->dev);
-+	if (NETDEV_TX_BUSY == rc) {
-+		dev_kfree_skb_any(skb);
-+	}
-+	return rc;
-+}
-+
 +static int hsr_xmit(struct ksz_hsr_info *info)
 +{
-+	struct net_device **dev;
++	netdev_tx_t rc = NETDEV_TX_BUSY;
 +	struct sk_buff *skb;
 +	int len = info->len;
 +
@@ -21909,9 +22346,16 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	skb_put(skb, len);
 +	skb->protocol = htons(ETH_P_PRP);
 +	skb->dev = info->dev;
-+	dev = (struct net_device **)skb->cb;
-+	*dev = info->dev;
-+	return hsr_dev_xmit(skb, skb->dev);
++
++	/* Indicate this frame needs to be handled by HSR. */
++	hsr_set_dev_info(info, skb, 0);
++
++	/* Frames are not waiting in transmit queue. */
++	if (!skb_queue_len(&info->txq))
++		rc = hsr_dev_xmit(info, skb);
++	if (rc == NETDEV_TX_BUSY)
++		proc_hsr_tx(info, skb);
++	return rc;
 +}  /* hsr_xmit */
 +#else
 +static netdev_tx_t hsr_dev_xmit(struct sk_buff *skb, struct net_device *dev)
@@ -22278,7 +22722,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		struct hsr_sup_tag *hsr_stag = info->slave_hsr_stag;
 +		struct hsr_sup_payload *hsr_sp;
 +		struct hsr_sup_tlv *hsr_stype;
-+		struct hsr_port *port;
 +
 +		if (1 != node->slave)
 +			continue;
@@ -22287,9 +22730,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		hsr_sp = (struct hsr_sup_payload *)(hsr_stype + 1);
 +		ether_addr_copy(hsr_sp->macaddress_A, node->macaddress_A);
 +#ifndef REDBOX_NOT_SEND_SUPERVISION
-+		/* Update so that sequence number may not be too far apart. */
-+		port = hsr_port_get_hsr(hsr, HSR_PT_SLAVE_A);
-+		hsr_update_frame_out(port, node, hsr->sequence_nr - 1);
 +		hsr->proto_ops->send_sv_frame(master, NULL);
 +#endif
 +	}
@@ -22322,6 +22762,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	port = hsr_port_get_hsr(hsr, HSR_PT_SLAVE_B);
 +	if (port)
 +		hsr_del_port(port);
++
++#ifdef CONFIG_KSZ_SWITCH
++	port = hsr_port_get_hsr(hsr, HSR_PT_INTERLINK);
++	if (port)
++		hsr_del_port(port);
++#endif
 +
 +	port = hsr_port_get_hsr(hsr, HSR_PT_MASTER);
 +	if (port)
@@ -22611,8 +23057,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		hsr->proto_ops->send_sv_frame(master, NULL);
 +#endif
 +	} else {
-+		struct hsr_port *port;
-+
 +		/* Remove the fixed entries in MAC table. */
 +		if (!node->slave)
 +			proc_hsr_cfg(info, node->macaddress_A, 0);
@@ -22629,10 +23073,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		node->slave = 1;
 +		node->time_in[HSR_PT_SLAVE_A] = jiffies;
 +		node->time_in_stale[HSR_PT_SLAVE_A] = false;
-+
-+		/* Update so that sequence number may not be too far apart. */
-+		port = hsr_port_get_hsr(&info->hsr, HSR_PT_SLAVE_A);
-+		hsr_update_frame_out(port, node, info->hsr.sequence_nr - 1);
 +	}
 +
 +	/* Do not forward internally. Need software bridge. */
@@ -22649,15 +23089,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct ksz_hsr_info *info = container_of(work, struct ksz_hsr_info,
 +						 tx_proc);
 +	struct sk_buff *skb;
-+	bool last;
++	netdev_tx_t rc = 0;
 +
-+	last = skb_queue_empty(&info->txq);
-+	while (!last) {
++	while (skb_queue_len(&info->txq)) {
 +		skb = skb_dequeue(&info->txq);
-+		last = skb_queue_empty(&info->txq);
-+		if (!skb)
-+			continue;
-+		hsr_dev_xmit(skb, skb->dev);
++		if (skb) {
++			rc = hsr_dev_xmit(info, skb);
++			if (rc == NETDEV_TX_BUSY) {
++				skb_queue_head(&info->txq, skb);
++				break;
++			}
++		}
++	}
++	if (!rc) {
++		struct ksz_sw *sw = info->sw_dev;
++		netdev_tx_t rc;
++
++		rc = sw->net_ops->tx_pause(sw, false);
 +	}
 +}  /* hsr_tx_proc */
 +
@@ -22683,7 +23131,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			return 2;
 +		hlen = ETH_HLEN;
 +	}
-+	from = hsr_port_get_hsr(&info->hsr, pt);
++	from = info->hsr_ports[pt];
 +	skb_reset_mac_header(skb);
 +	skb_set_network_header(skb, hlen);
 +	skb_reset_mac_len(skb);
@@ -22713,8 +23161,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +{
 +	struct vlan_ethhdr *vlan = (struct vlan_ethhdr *)
 +		info->master_sup_frame;
++	struct hsr_priv *hsr = &info->hsr;
 +	struct hsr_sup_tlv *hsr_stype;
 +	struct hsr_sup_payload *hsr_sp;
++	struct hsr_node *node;
 +
 +	memcpy(info->src_addr, src, ETH_ALEN);
 +
@@ -22722,6 +23172,13 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	hsr_stype = &info->master_hsr_stag->tlv;
 +	hsr_sp = (struct hsr_sup_payload *)(hsr_stype + 1);
 +	ether_addr_copy(hsr_sp->macaddress_A, info->src_addr);
++
++	node = list_first_or_null_rcu(&hsr->self_node_db, struct hsr_node,
++				      mac_list);
++	if (node) {
++		ether_addr_copy(node->macaddress_A, info->src_addr);
++		ether_addr_copy(node->macaddress_B, info->src_addr);
++	}
 +}  /* prep_hsr_addr */
 +
 +static void prep_hsr_redbox_addr(struct ksz_hsr_info *info)
@@ -22837,8 +23294,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		prep_hsr_supervision_slave_frame(info);
 +	skb_queue_head_init(&info->txq);
 +	INIT_WORK(&info->tx_proc, hsr_tx_proc);
++	info->dev_info.proto = htons(ETH_P_HSR);
 +}  /* setup_hsr */
 +
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +static void setup_hsr_redbox(struct ksz_hsr_info *info, struct net_device *dev,
 +			     int i, bool fwd)
 +{
@@ -22857,6 +23316,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		info->hsr_ports[res] = hsr_port_get_hsr(&info->hsr, res);
 +	}
 +}  /* setup_hsr_redbox */
++#endif
 +
 +static int hsr_get_attrib(struct ksz_hsr_info *info, int subcmd, int size,
 +	int *req_size, size_t *len, u8 *data, int *output)
@@ -23040,9 +23500,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct ksz_sw *sw = info->sw_dev;
 +
 +	info->dev = dev;
-+	info->center = NULL;
-+	info->seq_num = 0;
 +	info->ring = 0;
++#ifdef CHECK_HSR_RING
++	info->center = NULL;
++	info->last_jiffies =
++	info->last_center_jiffies = jiffies;
++#endif
 +	prep_hsr_addr(info, src);
 +	prep_hsr_redbox_addr(info);
 +	if (info->vid) {
@@ -23053,6 +23516,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		vlan = (struct vlan_ethhdr *) info->slave_sup_frame;
 +		vlan->h_vlan_TCI = htons(info->vid);
 +	}
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +	if (info->redbox) {
 +		int i;
 +
@@ -23063,12 +23527,15 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			}
 +		}
 +	}
++#endif
 +	sw->ops->cfg_mac(sw, BRIDGE_ADDR_ENTRY, info->src_addr, sw->HOST_MASK,
 +			 false, false, 0);
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +	if (info->redbox_vlan)
 +		sw->ops->cfg_mac(sw, DEV_1_ADDR_ENTRY, info->src_addr,
 +				 sw->HOST_MASK, false, true,
 +				 info->redbox_vlan);
++#endif
 +
 +	/* Ready for announcement. */
 +	info->state = 0;
@@ -23086,7 +23553,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 + * address also does not work, even though HSR_LEARN_MCAST_DISABLE bit in
 + * register 0x644 can be used to control that.
 + */
-+	SW_D data;
 +	int n;
 +	u16 mask = 0;
 +
@@ -23097,13 +23563,17 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		}
 +	}
 +
++#ifdef CONFIG_HAVE_HSR_HW
 +	/* Have HSR hardware. */
 +	if (sw->features & REDUNDANCY_SUPPORT) {
++		SW_D data;
++
 +		sw->reg->w32(sw, REG_HSR_PORT_MAP__4, mask);
 +		data = SW_R(sw, REG_HSR_ALU_CTRL_0__1);
 +		data &= ~HSR_NODE_UNICAST;
 +		SW_W(sw, REG_HSR_ALU_CTRL_0__1, data);
 +	}
++#endif
 +	if ((sw->overrides & HAVE_MORE_THAN_2_PORTS) && 1 == sw->eth_cnt)
 +		sw_cfg_port_base_vlan(sw, sw->HOST_PORT, mask | sw->HOST_MASK);
 +}  /* sw_setup_hsr */
@@ -23114,12 +23584,14 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +	/* Redbox should not be running. */
 +	info->redbox_up = false;
-+#ifdef CONFIG_HAVE_HSR_HW
++	flush_work(&info->tx_proc);
++#ifdef CHECK_HSR_RING
 +	cancel_delayed_work_sync(&info->chk_ring);
 +#endif
 +	hsr_dev_destroy(info);
 +}
 +
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +static void start_hsr_redbox(struct ksz_hsr_info *info, struct net_device *dev)
 +{
 +	info->redbox_up = netif_carrier_ok(dev);
@@ -23129,9 +23601,20 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +{
 +	info->redbox_up = false;
 +}
++#endif
 +
 +static void ksz_hsr_exit(struct ksz_hsr_info *info)
 +{
++	struct sk_buff *skb;
++	bool last;
++
++	last = skb_queue_empty(&info->txq);
++	while (!last) {
++		skb = skb_dequeue(&info->txq);
++		if (skb)
++			kfree_skb(skb);
++		last = skb_queue_empty(&info->txq);
++	}
 +}  /* ksz_hsr_exit */
 +
 +static void ksz_hsr_init(struct ksz_hsr_info *info, struct ksz_sw *sw)
@@ -23144,7 +23627,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	info->sw_dev = sw;
 +	info->ops = &hsr_dev_ops;
 +
-+#ifdef CONFIG_HAVE_HSR_HW
++#ifdef CHECK_HSR_RING
 +	INIT_DELAYED_WORK(&info->chk_ring, hsr_chk_ring);
 +#endif
 +}  /* ksz_hsr_init */
@@ -23208,12 +23691,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_hsr.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_hsr.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr.c	2024-11-26 14:04:43.176381205 -0800
-@@ -0,0 +1,2432 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr.c	2025-04-15 03:30:35.436635056 -0700
+@@ -0,0 +1,2646 @@
 +/**
 + * Microchip HSR code
 + *
-+ * Copyright (c) 2016-2024 Microchip Technology Inc.
++ * Copyright (c) 2016-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright 2011-2014 Autronica Fire and Security AS
@@ -23240,6 +23723,34 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +#endif
 +#if 1
 +#define REDBOX_NOT_REPLACE_MAC_ADDR
++#endif
++
++#ifdef CONFIG_HAVE_HSR_HW
++#if 0
++/* This feature cannot work reliably in all cases. */
++#define CHECK_HSR_RING
++#endif
++#ifdef CHECK_HSR_RING
++#if 0
++#define MONITOR_HSR
++#endif
++#endif
++#endif
++
++#if 0
++#define DBG_FRAME_IN
++#define MONITOR_FLOW
++#define MONITOR_SEQID
++#endif
++
++#ifdef DBG_FRAME_IN
++static u16 last_in;
++#endif
++
++#ifdef MONITOR_SEQID
++static u16 last_nr[2][2];
++static u16 next_nr;
++static int next_nr_chk;
 +#endif
 +
 +struct hsr_cfg_work {
@@ -23329,6 +23840,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct rcu_head		rcu_head;
 +#ifdef CONFIG_KSZ_SWITCH
 +	int			slave;
++	u16			seq_num;
 +#endif
 +};
 +
@@ -23497,6 +24009,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +#endif
 +
 +#ifdef CONFIG_KSZ_SWITCH
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +static
 +struct hsr_node *hsr_add_slave(struct list_head *node_db,
 +	unsigned char addr[], u16 seq_out)
@@ -23511,6 +24024,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +	return node;
 +}
++#endif
 +#endif
 +
 +/* Get the hsr_node from which 'skb' was sent.
@@ -23756,6 +24270,28 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +#ifdef CONFIG_KSZ_SWITCH
 +static
++void hsr_update_frame_in(struct hsr_port *port, struct hsr_node *node)
++{
++	node->time_in[port->type] = jiffies;
++	node->time_in_stale[port->type] = false;
++}
++
++static
++void hsr_update_frame_out(struct hsr_port *port, struct hsr_node *node,
++	u16 sequence_nr)
++{
++#ifdef MONITOR_FLOW
++	dbg_msg("O: %x:%d=%x\n", (int)node, port->type, sequence_nr);
++#endif
++	node->seq_out[port->type] = sequence_nr;
++}
++
++static int dbg_frame_out;
++#endif
++
++#if 0
++#ifdef CONFIG_KSZ_SWITCH
++static
 +#endif
 +void hsr_register_frame_in(struct hsr_node *node, struct hsr_port *port,
 +			   u16 sequence_nr)
@@ -23764,6 +24300,21 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	 * ensures entries of restarted nodes gets pruned so that they can
 +	 * re-register and resume communications.
 +	 */
++#ifdef MONITOR_FLOW
++	dbg_msg("i: %x:%d=%x %x\n", (int)node, port->type,
++		node->seq_out[port->type], sequence_nr);
++#endif
++#ifdef DBG_FRAME_IN
++	if (seq_nr_before(sequence_nr, node->seq_out[port->type])) {
++		if (!last_in) {
++			dbg_msg("in: %d=%x %x\n", port->type,
++				node->seq_out[port->type], sequence_nr);
++			last_in = sequence_nr;
++			if (!last_in)
++				last_in = 1;
++		}
++	}
++#endif
 +	if (seq_nr_before(sequence_nr, node->seq_out[port->type]))
 +	{
 +		unsigned long diff = jiffies - node->time_in[port->type];
@@ -23772,20 +24323,17 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			return;
 +	}
 +
++#ifdef DBG_FRAME_IN
++	if (last_in) {
++		dbg_msg("re: %d=%x %x\n", port->type,
++			node->seq_out[port->type], sequence_nr);
++		last_in = 0;
++	}
++#endif
 +	node->time_in[port->type] = jiffies;
 +	node->time_in_stale[port->type] = false;
 +}
-+
-+#ifdef CONFIG_KSZ_SWITCH
-+static
 +#endif
-+void hsr_update_frame_out(struct hsr_port *port, struct hsr_node *node,
-+	u16 sequence_nr)
-+{
-+	node->seq_out[port->type] = sequence_nr;
-+}
-+
-+static int dbg_frame_out;
 +
 +/* 'skb' is a HSR Ethernet frame (with a HSR tag inserted), with a valid
 + * ethhdr->h_source address and skb->mac_header set.
@@ -23805,11 +24353,36 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	{
 +		unsigned long diff = jiffies - node->time_out[port->type];
 +
++#ifdef MONITOR_SEQID
++		if (next_nr && next_nr == node->seq_out[port->type])
++			dbg_msg("d: %x %x\n",
++				sequence_nr, node->seq_out[port->type]);
++#endif
 +		if (diff <= msecs_to_jiffies(HSR_ENTRY_FORGET_TIME))
 +			return 1;
 +	}
 +	node->time_out[port->type] = jiffies;
 +
++#ifdef MONITOR_SEQID
++#if 1
++	/* Check for drop in receive queue. */
++	if ((u16)(node->seq_out[port->type] + 2) == sequence_nr) {
++#else
++	/* Check for out of sequence Supervision frame. */
++	if ((u16)(node->seq_out[port->type] + 1) != sequence_nr) {
++#endif
++		dbg_msg("out: %d %x %x %x; %x %x; %x %x; %x\n",
++			port->type, (int)node,
++			node->seq_out[port->type], sequence_nr,
++			last_nr[0][0], last_nr[0][1],
++			last_nr[1][0], last_nr[1][1], node->seq_out[0]);
++		next_nr = sequence_nr;
++		next_nr_chk = 10;
++	}
++#endif
++#ifdef MONITOR_FLOW
++	dbg_msg("o: %x:%d=%x\n", (int)node, port->type, sequence_nr);
++#endif
 +	node->seq_out[port->type] = sequence_nr;
 +	return 0;
 +}
@@ -23879,7 +24452,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	}
 +}  /* hsr_notify_link_lost */
 +
-+#ifdef CONFIG_HAVE_HSR_HW
++#ifdef CHECK_HSR_RING
 +static void hsr_chk_ring(struct work_struct *work)
 +{
 +	struct hsr_node *node;
@@ -23916,10 +24489,20 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +				win[0] = entry.exp_seq[0] - entry.start_seq[0];
 +				win[1] = entry.exp_seq[1] - entry.start_seq[1];
 +				if (!win[0] && !win[1] &&
-+				    info->seq_num != entry.exp_seq[0]) {
++				    node->seq_num != entry.exp_seq[0]) {
 +					no_drop_win = true;
 +					info->center = node;
 +				}
++				if (entry.exp_seq[0] >= entry.exp_seq[1])
++					node->seq_num = entry.exp_seq[0];
++				else
++					node->seq_num = entry.exp_seq[1];
++
++				/* Only work for quiet period when Supervision
++				 * frames are sent every 2 seconds.
++				 * Unicast frames sent to one node will cause
++				 * the drop window to increase.
++				 */
 +				if (info->center == node) {
 +					exp_seq[0] = entry.exp_seq[0];
 +					exp_seq[1] = entry.exp_seq[1];
@@ -23936,7 +24519,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		if (info->center) {
 +			int p;
 +
-+dbg_msg("%04x:%04x %04x:%04x\n", start_seq[0], start_seq[1],
++dbg_msg("%04x %04x:%04x %04x:%04x\n", info->center->seq_out[0],
++start_seq[0], start_seq[1],
 +exp_seq[0], exp_seq[1]);
 +			if (start_seq[0] == exp_seq[0]) {
 +				info->p1_lost = 1;
@@ -23945,15 +24529,15 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +				info->p2_lost = 1;
 +				p = 0;
 +			}
-+			info->seq_num = exp_seq[p];
 +		}
 +		info->ring = 0;
 +		change = 1;
 +	} else if (!info->ring && no_drop_win) {
-+		info->ring = 1;
-+		info->p1_down = info->p2_down =
-+		info->p1_lost = info->p2_lost = 0;
-+		change = 1;
++		if (!info->p1_down && !info->p2_down) {
++			info->ring = 1;
++			info->p1_lost = info->p2_lost = 0;
++			change = 1;
++		}
 +	}
 +	if (change)
 +		hsr_notify_link_lost(info);
@@ -23982,6 +24566,14 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +	rcu_read_lock();
 +	list_for_each_entry_rcu(node, &hsr->node_db, mac_list) {
++		/* Don't prune own node. Neither time_in[HSR_PT_SLAVE_A]
++		 * nor time_in[HSR_PT_SLAVE_B], will ever be updated for
++		 * the master port. Thus the master node will be repeatedly
++		 * pruned leading to packet loss.
++		 */
++		if (hsr_addr_is_self(hsr, node->MacAddressA))
++			continue;
++
 +		/* Shorthand */
 +		time_a = node->time_in[HSR_PT_SLAVE_A];
 +		time_b = node->time_in[HSR_PT_SLAVE_B];
@@ -24052,11 +24644,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +node->MacAddressA[5],
 +time_a, time_b, timestamp, jiffies - timestamp);
 +#endif
++#ifdef CHECK_HSR_RING
 +			if (node == info->center) {
 +				info->center = NULL;
-+				info->seq_num = 0;
 +				info->ring = 0;
 +			}
++#endif
 +#endif
 +#if 0
 +			hsr_nl_nodedown(hsr, node->MacAddressA);
@@ -24075,6 +24668,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +}
 +
 +#ifdef CONFIG_KSZ_SWITCH
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +static
 +void hsr_rmv_slaves(struct ksz_hsr_info *info)
 +{
@@ -24093,6 +24687,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	}
 +	rcu_read_unlock();
 +}
++#endif
 +#endif
 +
 +
@@ -24193,11 +24788,17 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	int rc;
 +	const struct net_device_ops *ops = dev->netdev_ops;
 +	struct net_device **netdev = (struct net_device **)skb->cb;
++	struct ksz_sw *sw = info->sw_dev;
 +
 +	*netdev = dev;
 +	skb->dev = dev;
++
++	/* Guard against sending during receiving. */
++	spin_lock_bh(&sw->rx_lock);
 +	rc = ops->ndo_start_xmit(skb, skb->dev);
++	spin_unlock_bh(&sw->rx_lock);
 +	if (NETDEV_TX_BUSY == rc) {
++		info->dev->stats.tx_dropped++;
 +		dev_kfree_skb_irq(skb);
 +	}
 +	return rc;
@@ -24621,11 +25222,13 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		hsr_update_frame_out(other, frame->node_src,
 +			frame->sequence_nr);
 +
++#if 0
 +		/* Simulate incoming frame so that node is not removed. */
 +		if (frame->is_supervision && !frame->node_src->slave) {
 +			hsr_register_frame_in(frame->node_src, port,
 +				frame->sequence_nr);
 +		}
++#endif
 +
 +		skb = frame_get_tagged_skb(frame, port);
 +		skb->protocol = htons(ETH_P_HSR);
@@ -24676,7 +25279,15 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +					     frame->node_src,
 +					     frame->port_rcv);
 +
-+#ifdef CONFIG_HAVE_HSR_HW
++#ifdef MONITOR_SEQID
++			/* Kernel HSR driver sends Supervison frame out of
++			 * sequence probably because of queuing in the MAC
++			 * driver.
++			 */
++#endif
++			frame->node_src->seq_out[0] = frame->sequence_nr;
++
++#ifdef CHECK_HSR_RING
 +			if (!info->check) {
 +				info->check = 1;
 +				schedule_delayed_work(&info->chk_ring,
@@ -24783,6 +25394,30 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		frame->skb_hsr = skb;
 +		frame->sequence_nr = hsr_get_skb_sequence_nr(skb);
 +
++#ifdef MONITOR_SEQID
++		do {
++			int p = 0;
++
++			if (port->type == HSR_PT_SLAVE_B)
++				p = 1;
++			last_nr[p][1] = last_nr[p][0];
++			last_nr[p][0] = frame->sequence_nr;
++			if (next_nr_chk) {
++				--next_nr_chk;
++				if ((u16)(frame->sequence_nr + 1) == next_nr ||
++				    (u16)(next_nr + 1) == frame->sequence_nr) {
++					dbg_msg("n: %d %x %x; %x %x\n",
++						next_nr_chk,
++						last_nr[0][0], last_nr[0][1],
++						last_nr[1][0], last_nr[1][1]);
++					next_nr_chk = 0;
++				}
++				if (!next_nr_chk)
++					next_nr = 0;
++			}
++		} while (0);
++#endif
++
 +	/* Received frame without HSR tag will not come here. */
 +	} else {
 +		frame->skb_std = skb;
@@ -24841,7 +25476,29 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	}
 +	if (hsr_fill_frame_info(frame, skb, port) < 0)
 +		goto out_drop;
++#ifdef CONFIG_KSZ_SWITCH
++	if (port->type == HSR_PT_SLAVE_A || port->type == HSR_PT_SLAVE_B)
++#ifdef DBG_FRAME_IN
++		hsr_register_frame_in(frame->node_src, port,
++				      frame->sequence_nr);
++#else
++		hsr_update_frame_in(port, frame->node_src);
++#endif
++#else
++	/* In kernel HSR driver this does not apply to host as its seq_out is
++	 * never updated, but then its node will never be released.
++	 * The count is only updated when forwarding non-local frame to the
++	 * other port, so sending unicast frames to the host like running a
++	 * throughput test will get frames rejected ant not updating the
++	 * time_in value, but then the forget time is 60 seconds so the
++	 * Supervision frame sent every 2 seconds will keep the node live.
++	 * It is expected that both ports will keep receiving same frame to
++	 * update the other port, but this condition may not exist for
++	 * hardware duplicate drop.  This may lead to the node to be
++	 * forgotten if its time stays stale.
++	 */
 +	hsr_register_frame_in(frame->node_src, port, frame->sequence_nr);
++#endif
 +	hsr_forward_do(frame);
 +
 +	/* Frame is supervision or was dropped. */
@@ -24898,6 +25555,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	return NULL;
 +}  /* check_hsr_frame */
 +
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +static int hsr_chk(struct ksz_hsr_info *info, struct sk_buff *skb, int port)
 +{
 +	struct vlan_ethhdr *vlan = (struct vlan_ethhdr *) skb->data;
@@ -24961,11 +25619,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		if (!node->slave)
 +			proc_hsr_cfg(info, node->MacAddressA, 0);
 +		node->slave = 1;
-+		node->time_in[HSR_PT_SLAVE_A] = jiffies;
-+		node->time_in_stale[HSR_PT_SLAVE_A] = false;
++		port = hsr_port_get_hsr(&info->hsr, HSR_PT_SLAVE_A);
++		hsr_update_frame_in(port, node);
 +
 +		/* Update so that sequence number may not be too far apart. */
-+		port = hsr_port_get_hsr(&info->hsr, HSR_PT_SLAVE_A);
 +		hsr_update_frame_out(port, node, info->hsr.sequence_nr - 1);
 +	}
 +
@@ -25016,8 +25673,27 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	}
 +}  /* hsr_tx_proc */
 +
++#define TXQ_PAUSE	2000
++#define TXQ_MAX		(TXQ_PAUSE + 100)
++
 +static void proc_hsr_tx(struct ksz_hsr_info *info, struct sk_buff *skb)
 +{
++	u32 cnt = skb_queue_len(&info->txq);
++
++	/* Cannot keep waiting in queue for transmit when receive keeps
++	 * coming.
++	 */
++	if (cnt >= TXQ_PAUSE) {
++		struct ksz_sw *sw = info->sw_dev;
++		int rc;
++
++		rc = sw->net_ops->tx_pause(sw, true);
++		if (rc == NETDEV_TX_BUSY && cnt >= TXQ_MAX) {
++			info->dev->stats.tx_dropped++;
++			dev_kfree_skb_any(skb);
++			return;
++		}
++	}
 +	skb_queue_tail(&info->txq, skb);
 +	schedule_work(&info->tx_proc);
 +}  /* proc_hsr_tx */
@@ -25074,6 +25750,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	}
 +	return forward;
 +}  /* hsr_fwd */
++#endif
 +
 +static int hsr_rcv(struct ksz_hsr_info *info, struct sk_buff *skb, int port)
 +{
@@ -25333,6 +26010,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		prep_hsr_supervision_slave_frame(info);
 +}  /* setup_hsr */
 +
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +static void setup_hsr_redbox(struct ksz_hsr_info *info, struct net_device *dev,
 +			     int i, bool fwd)
 +{
@@ -25344,6 +26022,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	if (info->dev)
 +		prep_hsr_supervision_slave_frame(info);
 +}  /* setup_hsr_redbox */
++#endif
 +
 +static int hsr_get_attrib(struct ksz_hsr_info *info, int subcmd, int size,
 +	int *req_size, size_t *len, u8 *data, int *output)
@@ -25527,8 +26206,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct ksz_sw *sw = info->sw_dev;
 +
 +	info->dev = dev;
++#ifdef CHECK_HSR_RING
 +	info->center = NULL;
-+	info->seq_num = 0;
++#endif
 +	info->ring = 0;
 +	prep_hsr_addr(info, src);
 +	prep_hsr_redbox_addr(info);
@@ -25540,6 +26220,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +		vlan = (struct vlan_ethhdr *) info->slave_sup_frame;
 +		vlan->h_vlan_TCI = htons(info->vid);
 +	}
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +	if (info->redbox) {
 +		int i;
 +
@@ -25550,14 +26231,17 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			}
 +		}
 +	}
++#endif
 +	sw->ops->cfg_mac(sw, BRIDGE_ADDR_ENTRY, info->src_addr, sw->HOST_MASK,
 +			 false, false, 0);
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +	if (info->redbox_vlan)
 +		sw->ops->cfg_mac(sw, DEV_1_ADDR_ENTRY, info->src_addr,
 +				 sw->HOST_MASK, false, true,
 +				 info->redbox_vlan);
 +	skb_queue_head_init(&info->txq);
 +	INIT_WORK(&info->tx_proc, hsr_tx_proc);
++#endif
 +	hsr_dev_finalize(info);
 +}  /* prep_hsr */
 +
@@ -25572,7 +26256,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 + * address also does not work, even though HSR_LEARN_MCAST_DISABLE bit in
 + * register 0x644 can be used to control that.
 + */
-+	SW_D data;
 +	int n;
 +	u16 mask = 0;
 +
@@ -25582,10 +26265,18 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			break;
 +		}
 +	}
-+	sw->reg->w32(sw, REG_HSR_PORT_MAP__4, mask);
-+	data = SW_R(sw, REG_HSR_ALU_CTRL_0__1);
-+	data &= ~HSR_NODE_UNICAST;
-+	SW_W(sw, REG_HSR_ALU_CTRL_0__1, data);
++
++#ifdef CONFIG_HAVE_HSR_HW
++	/* Have HSR hardware. */
++	if (sw->features & REDUNDANCY_SUPPORT) {
++		SW_D data;
++
++		sw->reg->w32(sw, REG_HSR_PORT_MAP__4, mask);
++		data = SW_R(sw, REG_HSR_ALU_CTRL_0__1);
++		data &= ~HSR_NODE_UNICAST;
++		SW_W(sw, REG_HSR_ALU_CTRL_0__1, data);
++	}
++#endif
 +	if ((sw->overrides & HAVE_MORE_THAN_2_PORTS) && 1 == sw->eth_cnt)
 +		sw_cfg_port_base_vlan(sw, sw->HOST_PORT, mask | sw->HOST_MASK);
 +}  /* sw_setup_hsr */
@@ -25596,9 +26287,16 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +	/* Redbox should not be running .*/
 +	info->redbox_up = false;
++#ifdef CONFIG_KSZ_HSR_REDBOX
++	flush_work(&info->tx_proc);
++#endif
++#ifdef CHECK_HSR_RING
++	cancel_delayed_work_sync(&info->chk_ring);
++#endif
 +	hsr_dev_destroy(info);
 +}
 +
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +static void start_hsr_redbox(struct ksz_hsr_info *info, struct net_device *dev)
 +{
 +	info->redbox_up = netif_carrier_ok(dev);
@@ -25608,16 +26306,14 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +{
 +	info->redbox_up = 0;
 +}
++#endif
 +
 +static void ksz_hsr_exit(struct ksz_hsr_info *info)
 +{
++#ifdef CONFIG_KSZ_HSR_REDBOX
 +	struct sk_buff *skb;
 +	bool last;
 +
-+	flush_work(&info->tx_proc);
-+#ifdef CONFIG_HAVE_HSR_HW
-+	cancel_delayed_work_sync(&info->chk_ring);
-+#endif
 +	last = skb_queue_empty(&info->txq);
 +	while (!last) {
 +		skb = skb_dequeue(&info->txq);
@@ -25625,6 +26321,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +			kfree_skb(skb);
 +		last = skb_queue_empty(&info->txq);
 +	}
++#endif
 +}  /* ksz_hsr_exit */
 +
 +static void ksz_hsr_init(struct ksz_hsr_info *info, struct ksz_sw *sw)
@@ -25637,19 +26334,19 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	info->sw_dev = sw;
 +	info->ops = &hsr_ops;
 +
-+#ifdef CONFIG_HAVE_HSR_HW
++#ifdef CHECK_HSR_RING
 +	INIT_DELAYED_WORK(&info->chk_ring, hsr_chk_ring);
 +#endif
 +}  /* ksz_hsr_init */
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_hsr.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_hsr.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr.h	2023-10-13 13:42:25.424422674 -0700
-@@ -0,0 +1,170 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_hsr.h	2025-04-15 03:30:44.152293282 -0700
+@@ -0,0 +1,193 @@
 +/**
 + * Microchip HSR driver header
 + *
-+ * Copyright (c) 2016-2023 Microchip Technology Inc.
++ * Copyright (c) 2016-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -25682,8 +26379,15 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +#ifdef CONFIG_KSZ_SWITCH
 +struct hsr_dev_info {
++#if 0
++	/* If dev_queue_xmit is used then this is required to preserve the
++	 * information.
++	 */
++	u32 dummy[4];
++#endif
 +	struct net_device *dev;
-+	u8 member;
++	u16 proto;
++	u8 forward;
 +};
 +#endif
 +
@@ -25705,8 +26409,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	bool			removed;
 +	struct rcu_head		rcu_head;
 +#ifdef CONFIG_KSZ_SWITCH
++	bool			hsr_dev;
 +	bool			is_same_addr;
 +	int			slave;
++	u16			seq_num;
 +#endif
 +};
 +#endif
@@ -25722,7 +26428,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct sk_buff *skb_out;
 +	struct hsr_node *node_dst;
 +	u8 out;
-+	u8 skb_cnt;
 +#ifndef USE_NEW_HSR
 +	u16 *proto;
 +	struct hsr_tag *hsr_tag;
@@ -25741,6 +26446,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +};
 +
 +
++#ifdef CONFIG_KSZ_SWITCH
 +struct ksz_hsr_info;
 +
 +struct hsr_ops {
@@ -25770,7 +26476,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +#else
 +	struct hsr_port hsr_ports[HSR_PT_PORTS];
 +#endif
-+	struct hsr_node *center;
 +
 +	u8 master_sup_frame[80];
 +	u8 slave_sup_frame[80];
@@ -25779,23 +26484,36 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	struct hsr_sup_tag *master_hsr_stag;
 +	struct hsr_sup_tag *slave_hsr_stag;
 +	struct hsr_frame_info frame;
++#if defined(USE_NEW_HSR) && defined(CONFIG_KSZ_SWITCH)
++	struct hsr_dev_info dev_info;
++#endif
 +	int master_len;
 +	int slave_len;
 +	int len;
 +	int state;
 +	u8 ports[2];
-+	u8 fwd_cnt;
 +	u8 hsr_index;
 +	u8 redbox_index;
 +	u32 cap;
 +	u16 member;
++	u16 dev_cnt;
 +	u16 part_cnt;
 +	struct sk_buff_head txq;
 +	struct work_struct tx_proc;
++#ifdef CONFIG_HAVE_HSR_HW
++	struct hsr_node *center;
++	struct hsr_node *node_check;
 +	struct delayed_work chk_ring;
++	unsigned long last_jiffies;
++	unsigned long last_center_jiffies;
++	u64 last_rx_p1[3];
++	u64 last_rx_p2[3];
++	u64 rx_p1[3];
++	u64 rx_p2[3];
++#endif
 +	u16 redbox_vlan;
-+	u16 seq_num;
 +	u16 check:1;
++	u16 check_all:1;
 +	u16 ring:1;
 +	u16 p1_down:1;
 +	u16 p2_down:1;
@@ -25805,6 +26523,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +	u16 fwd_lane_b:1;
 +	u16 use_lane_b:1;
 +	u16 redbox_fwd:1;
++	u16 redbox_sup:1;
 +	u16 redbox_up:1;
 +	u16 hsr_up:1;
 +
@@ -25814,16 +26533,17 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +	const struct hsr_ops *ops;
 +};
++#endif
 +
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_iba.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_iba.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_iba.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_iba.c	2023-12-04 16:07:33.000000000 -0800
-@@ -0,0 +1,3221 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_iba.c	2025-03-28 17:16:44.510602153 -0700
+@@ -0,0 +1,3224 @@
 +/**
 + * Microchip IBA code
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2013-2015 Micrel, Inc.
@@ -26188,7 +26908,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_i
 +	do {
 +		struct ksz_sw *sw = info->sw_dev;
 +
++		/* Guard against sending during receiving. */
++		spin_lock_bh(&sw->rx_lock);
 +		rc = ops->ndo_start_xmit(skb, skb->dev);
++		spin_unlock_bh(&sw->rx_lock);
 +		if (NETDEV_TX_BUSY == rc) {
 +			rc = wait_event_interruptible_timeout(sw->queue,
 +				!netif_queue_stopped(netdev),
@@ -30674,12 +31397,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_mrp.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_mrp.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_mrp.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_mrp.c	2024-01-02 14:15:29.360817009 -0800
-@@ -0,0 +1,8722 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_mrp.c	2025-04-14 18:03:24.948361494 -0700
+@@ -0,0 +1,8728 @@
 +/**
 + * Microchip MRP driver code
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2014-2015 Micrel, Inc.
@@ -32786,7 +33509,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	struct mrp_info *mrp = param[0];
 +	struct mrp_port_info *info = param[1];
 +	struct mrp_traffic_info *traffic = param[2];
-+	int *port = param[3];
++	u8 *port = param[3];
 +	struct SRP_reserv *t_reserv = param[4];
 +	int *active = param[5];
 +
@@ -33209,7 +33932,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	struct SRP_reserv *reserv;
 +	struct mrp_port_info *info = param[0];
 +	struct mrp_traffic_info *traffic = param[1];
-+	int *mark = param[2];
++	bool *mark = param[2];
 +
 +	if (traffic->bandwidth_used > traffic->bandwidth_max) {
 +		reserv = data->reserv;
@@ -33247,7 +33970,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	struct SRP_stream *stream;
 +	struct mrp_info *mrp = param[0];
 +	struct mrp_traffic_info *traffic = param[1];
-+	int *port = param[2];
++	u8 *port = param[2];
 +	int result;
 +
 +	if (data->mark) {
@@ -33311,7 +34034,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	struct mrp_info *mrp = param[0];
 +	struct mrp_port_info *info = param[1];
 +	struct mrp_traffic_info *traffic = param[2];
-+	int *port = param[3];
++	u8 *port = param[3];
 +	int result;
 +	u32 bandwidth;
 +	bool adv = false;
@@ -33419,7 +34142,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	struct SRP_stream *stream;
 +	struct mrp_info *mrp = param[0];
 +	struct mrp_traffic_info *traffic = param[1];
-+	int *port = param[2];
++	u8 *port = param[2];
 +	int *avail = param[3];
 +	int result;
 +
@@ -36349,7 +37072,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	ports |= TAIL_TAG_SET_QUEUE;
 +	sw->net_ops->add_tail_tag(sw, skb, ports);
 +	do {
++		/* Guard against sending during receiving. */
++		spin_lock_bh(&sw->rx_lock);
 +		rc = ops->ndo_start_xmit(skb, skb->dev);
++		spin_unlock_bh(&sw->rx_lock);
 +		if (NETDEV_TX_BUSY == rc) {
 +			rc = wait_event_interruptible_timeout(sw->queue,
 +				!netif_queue_stopped(sw->main_dev),
@@ -36359,7 +37085,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +		}
 +	} while (NETDEV_TX_BUSY == rc);
 +	return result;
-+}  /* proc_mrp_mrp_xmit */
++}  /* proc_mrp_xmit */
 +#endif
 +
 +static void proc_mrp_cmd(struct mrp_info *mrp, struct mrp_work *parent)
@@ -36671,7 +37397,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	int subcmd;
 +	int output;
 +	u8 data[PARAM_DATA_SIZE];
-+	u8 cmd_data[4];
++	u8 cmd_data[40];
 +	int err = 0;
 +	int result = 0;
 +	struct mrp_cfg_options *cmd = (struct mrp_cfg_options *) cmd_data;
@@ -37293,6 +38019,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	struct ksz_sw *sw = mrp->parent;
 +
 +	cmd->port = get_log_port(sw, app->port);
++	cmd->type = MRP_TYPE_UNKNOWN;
 +	if (MMRP_ATTR_MAC == attr->type) {
 +		memcpy(cmd->data.mac.addr, attr->value, ETH_ALEN);
 +		cmd->type = MRP_TYPE_MAC;
@@ -37333,6 +38060,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	struct ksz_sw *sw = mrp->parent;
 +
 +	cmd->port = get_log_port(sw, app->port);
++	cmd->type = MRP_TYPE_UNKNOWN;
 +	if (MVRP_ATTR_VID == attr->type) {
 +		u16 *vid = (u16 *) attr->value;
 +
@@ -37423,6 +38151,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +		break;
 +	}
 +	default:
++		cmd->type = MRP_TYPE_UNKNOWN;
 +		break;
 +	}
 +	attr->notify = MRP_NOTIFY_NONE;
@@ -39774,12 +40503,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_mstp.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_mstp.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_mstp.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_mstp.c	2023-05-08 15:48:14.783994622 -0700
-@@ -0,0 +1,6526 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_mstp.c	2025-04-14 22:47:54.340640589 -0700
+@@ -0,0 +1,6525 @@
 +/**
 + * Microchip MSTP code
 + *
-+ * Copyright (c) 2016-2023 Microchip Technology Inc.
++ * Copyright (c) 2016-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -41521,6 +42250,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +
 +	memcpy(skb->data, stp->tx_frame, len);
 +	memcpy(&skb->data[6], info->mac_addr, ETH_ALEN);
++	skb_reset_mac_header(skb);
++	skb_set_network_header(skb, ETH_HLEN);
 +
 +	skb_put(skb, len);
 +	sw->net_ops->add_tail_tag(sw, skb, ports);
@@ -41529,7 +42260,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +	do {
 +		struct ksz_sw *sw = stp->sw_dev;
 +
++		/* Guard against sending during receiving. */
++		spin_lock_bh(&sw->rx_lock);
 +		rc = ops->ndo_start_xmit(skb, skb->dev);
++		spin_unlock_bh(&sw->rx_lock);
 +		if (NETDEV_TX_BUSY == rc) {
 +			rc = wait_event_interruptible_timeout(sw->queue,
 +				!netif_queue_stopped(stp->dev),
@@ -45201,11 +45935,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +			skb = skb_dequeue(&p->rxq);
 +			last = skb_queue_empty(&p->rxq);
 +			if (skb) {
-+				uint port;
 +				struct bpdu *bpdu;
 +				u16 len = 0;
 +
-+				port = skb->cb[0];
 +				bpdu = chk_bpdu(skb->data, &len);
 +				if (bpdu)
 +					stp_proc_rx(p, bpdu, len);
@@ -45234,9 +45966,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +		struct ksz_stp_port *p = &br->ports[port];
 +
 +		if (stp->machine_running || rcvdBPDU || br->port_rx) {
-+
-+			/* Use control buffer to save port information. */
-+			skb->cb[0] = (char) port;
 +			skb_queue_tail(&p->rxq, skb);
 +			br->port_rx |= (1 << port);
 +			schedule_work(&stp->rx_proc);
@@ -46172,8 +46901,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_m
 +
 +static void ksz_stp_exit(struct ksz_stp_info *stp)
 +{
-+	flush_work(&stp->state_machine);
-+	flush_work(&stp->rx_proc);
++	/* stp_stop should be called before. */
 +}  /* ksz_stp_exit */
 +
 +static void ksz_stp_init(struct ksz_stp_info *stp, struct ksz_sw *sw)
@@ -64321,12 +65049,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_stp.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_stp.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_stp.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_stp.c	2023-05-23 14:53:08.117170745 -0700
-@@ -0,0 +1,5037 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_stp.c	2025-04-14 22:43:38.646497756 -0700
+@@ -0,0 +1,5034 @@
 +/**
 + * Microchip RSTP code
 + *
-+ * Copyright (c) 2016-2023 Microchip Technology Inc.
++ * Copyright (c) 2016-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -65564,7 +66292,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	do {
 +		struct ksz_sw *sw = stp->sw_dev;
 +
++		/* Guard against sending during receiving. */
++		spin_lock_bh(&sw->rx_lock);
 +		rc = ops->ndo_start_xmit(skb, skb->dev);
++		spin_unlock_bh(&sw->rx_lock);
 +		if (NETDEV_TX_BUSY == rc) {
 +			rc = wait_event_interruptible_timeout(sw->queue,
 +				!netif_queue_stopped(stp->dev),
@@ -68504,11 +69235,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			skb = skb_dequeue(&p->rxq);
 +			last = skb_queue_empty(&p->rxq);
 +			if (skb) {
-+				uint port;
 +				struct bpdu *bpdu;
 +				u16 len = 0;
 +
-+				port = skb->cb[0];
 +				bpdu = chk_bpdu(skb->data, &len);
 +				if (bpdu)
 +					stp_proc_rx(p, bpdu, len);
@@ -68537,9 +69266,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct ksz_stp_port *p = &br->ports[port];
 +
 +		if (stp->machine_running || rcvdBPDU || br->port_rx) {
-+
-+			/* Use control buffer to save port information. */
-+			skb->cb[0] = (char) port;
 +			skb_queue_tail(&p->rxq, skb);
 +			br->port_rx |= (1 << port);
 +			schedule_work(&stp->rx_proc);
@@ -69261,8 +69987,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +static void ksz_stp_exit(struct ksz_stp_info *stp)
 +{
-+	flush_work(&stp->state_machine);
-+	flush_work(&stp->rx_proc);
++	/* stp_stop should be called before. */
 +}  /* ksz_stp_exit */
 +
 +static void ksz_stp_init(struct ksz_stp_info *stp, struct ksz_sw *sw)
@@ -69713,12 +70438,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.c	2024-04-29 17:05:07.728461080 -0700
-@@ -0,0 +1,12262 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-04-16 16:07:08.499476527 -0700
+@@ -0,0 +1,12357 @@
 +/**
 + * Microchip KSZ8795 switch common code
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -73846,6 +74571,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +	memcpy(sw->info->mac_addr, mac_addr, 6);
 +}  /* sw_set_addr */
++
++static void sw_setup_pause(struct ksz_sw *sw)
++{
++	sw->pause_frame[0] = 0x01;
++	sw->pause_frame[1] = 0x80;
++	sw->pause_frame[2] = 0xC2;
++	sw->pause_frame[3] = 0x00;
++	sw->pause_frame[4] = 0x00;
++	sw->pause_frame[5] = 0x01;
++	memcpy(&sw->pause_frame[6], sw->info->mac_addr, ETH_ALEN);
++	sw->pause_frame[12] = 0x88;
++	sw->pause_frame[13] = 0x08;
++	sw->pause_frame[14] = 0x00;
++	sw->pause_frame[15] = 0x01;
++	sw->pause_frame[16] = 0xff;
++	sw->pause_frame[17] = 0xff;
++}
 +
 +#ifdef CONFIG_KSZ_MRP
 +#include "ksz_mrp.c"
@@ -78061,6 +78803,69 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	}
 +}  /* sw_set_multi */
 +
++static bool sw_special_frame(struct ksz_sw *sw, struct sk_buff *skb)
++{
++	u16 proto = ntohs(skb->protocol);
++
++	if (proto == ETH_P_PAUSE)
++		return true;
++	return false;
++}
++
++static int sw_tx_pause(struct ksz_sw *sw, bool pause)
++{
++	const struct net_device_ops *ops = sw->main_dev->netdev_ops;
++	struct net_device **dev;
++	struct sk_buff *skb;
++	netdev_tx_t rc;
++	int len = 18;
++
++	if (pause && sw->last_pause_sent) {
++		if (time_after_eq(sw->last_pause_sent + (250 * HZ) / 1000,
++				  jiffies))
++			return NETDEV_TX_BUSY;
++	}
++	if (!pause && sw->last_pause_sent == 0)
++		return 0;
++
++	/* Add extra for tail tagging. */
++	skb = dev_alloc_skb(60 + 4 + 8);
++	if (!skb)
++		return -ENOMEM;
++
++	if (!pause)
++		len -= 2;
++	memcpy(skb->data, sw->pause_frame, len);
++	memset(&skb->data[len], 0, 60 - len);
++	skb_reset_mac_header(skb);
++	skb_set_network_header(skb, ETH_HLEN);
++
++	skb_put(skb, len);
++	sw->net_ops->add_tail_tag(sw, skb, 0);
++	skb->protocol = htons(ETH_P_PAUSE);
++	dev = (struct net_device **)skb->cb;
++	*dev = sw->main_dev;
++	skb->dev = sw->main_dev;
++
++	/* Guard against sending during receiving. */
++	spin_lock_bh(&sw->rx_lock);
++	rc = ops->ndo_start_xmit(skb, skb->dev);
++	spin_unlock_bh(&sw->rx_lock);
++	if (rc == NETDEV_TX_BUSY) {
++		dev_kfree_skb_any(skb);
++		skb->dev->stats.tx_dropped++;
++		return rc;
++	}
++	if (pause) {
++		sw->last_pause_sent = jiffies;
++		if (sw->last_pause_sent < 1)
++			sw->last_pause_sent = 1;
++	} else {
++		sw->last_pause_sent = 0;
++	}
++	return 0;
++}
++
 +static struct net_device *sw_rx_dev(struct ksz_sw *sw, u8 *data, u32 *len,
 +	int *tag, int *port)
 +{
@@ -78482,6 +79287,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!skb)
 +			return NULL;
 +		consume_skb(org_skb);
++	} else {
++		/* Make sure socket buffer does not have fragments. */
++		skb_linearize(skb);
 +	}
 +
 +	/* skb_put requires tail pointer set first. */
@@ -78515,7 +79323,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!*csum_loc) {
 +			__sum16 new_csum;
 +
-+			new_csum = dest << 8;
++			if (skb->len & 1)
++				new_csum = dest << 8;
++			else
++				new_csum = dest;
 +			*csum_loc = ~htons(new_csum);
 +		}
 +	}
@@ -78534,7 +79345,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_final_skb(struct ksz_sw *sw, struct sk_buff *skb,
 +	struct net_device *dev, struct ksz_port *port)
 +{
++	sw_lock_tx(sw);
 +	skb = sw->net_ops->check_tx(sw, dev, skb, port);
++	sw_unlock_tx(sw);
 +	if (!skb)
 +		return NULL;
 +	return skb;
@@ -78549,6 +79362,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw_setup(sw);
 +	sw_enable(sw);
 +	sw_set_addr(sw, addr);
++	sw_setup_pause(sw);
 +#if 0
 +	if (1 == sw->dev_count)
 +		sw_cfg_self_filter(sw, true);
@@ -80782,6 +81596,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	.final_skb		= sw_final_skb,
 +	.drv_rx			= sw_drv_rx,
 +	.set_multi		= sw_set_multi,
++	.special_frame		= sw_special_frame,
++	.tx_pause		= sw_tx_pause,
 +
 +};
 +
@@ -81164,7 +81980,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +					break;
 +				}
 +			}
-+dbg_msg(" %d f:%d l:%d\n", phy_id, first, last);
++#if 0
++dbg_msg(" %d f:%d l:%d; %x %04x\n", phy_id, first, last, regnum, val);
++#endif
 +		}
 +
 +		/* PHY device driver resets or powers down the PHY. */
@@ -81578,6 +82396,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw = &ks->sw;
 +	mutex_init(&sw->lock);
 +	mutex_init(&sw->acllock);
++	spin_lock_init(&sw->rx_lock);
++	spin_lock_init(&sw->tx_lock);
 +	sw->hwlock = &ks->hwlock;
 +	sw->reglock = &ks->lock;
 +	sw->dev = ks;
@@ -81979,12 +82799,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8795.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8795.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.h	2023-12-06 23:01:02.022969827 -0800
-@@ -0,0 +1,992 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8795.h	2025-04-16 16:07:24.370874910 -0700
+@@ -0,0 +1,1017 @@
 +/**
 + * Microchip KSZ8795 switch common header
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -82408,6 +83228,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int (*drv_rx)(struct ksz_sw *sw, struct sk_buff *skb, uint port);
 +	void (*set_multi)(struct ksz_sw *sw, struct net_device *dev,
 +		struct ksz_port *priv);
++	bool (*special_frame)(struct ksz_sw *sw, struct sk_buff *skb);
++	int (*tx_pause)(struct ksz_sw *sw, bool pause);
 +};
 +
 +struct ksz_sw_ops {
@@ -82538,6 +83360,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#define FAST_AGING			(1 << 1)
 +#define UPDATE_CSUM			(1 << 2)
 +#define HAVE_MORE_THAN_2_PORTS		(1 << 3)
++#define NO_TX_LOCK			(1 << 8)
 +
 +#define ACL_INTR_MONITOR		(1 << 17)
 +#define SYSFS_PHY_PORT			(1 << 18)
@@ -82599,6 +83422,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	phy_interface_t interface;
 +	u32 msg_enable;
 +	wait_queue_head_t queue;
++	spinlock_t rx_lock;
++	spinlock_t tx_lock;
 +	struct mutex *hwlock;
 +	struct mutex *reglock;
 +	struct mutex acllock;
@@ -82673,6 +83498,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_dev_map eth_maps[SWITCH_PORT_NUM];
 +	int eth_cnt;
 +
++	u8 pause_frame[18];
++	unsigned long last_pause_sent;
++
 +#ifdef CONFIG_KSZ_MRP
 +	struct delayed_work set_mrp;
 +	struct mrp_info mrp;
@@ -82736,6 +83564,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static inline void sw_update_csum(struct ksz_sw *sw)
 +{
 +	sw->overrides |= UPDATE_CSUM;
++}
++
++static inline void sw_no_tx_lock(struct ksz_sw *sw)
++{
++	sw->overrides |= NO_TX_LOCK;
++}
++
++static inline void sw_lock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_lock_bh(&sw->tx_lock);
++}
++
++static inline void sw_unlock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_unlock_bh(&sw->tx_lock);
 +}
 +
 +#ifdef CONFIG_KSZ_HSR
@@ -82975,12 +83820,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.c	2024-04-29 17:04:42.509521847 -0700
-@@ -0,0 +1,10046 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-04-16 16:08:03.393395736 -0700
+@@ -0,0 +1,10141 @@
 +/**
 + * Microchip KSZ8895 switch common code
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -85887,6 +86732,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +	memcpy(sw->info->mac_addr, mac_addr, 6);
 +}  /* sw_set_addr */
++
++static void sw_setup_pause(struct ksz_sw *sw)
++{
++	sw->pause_frame[0] = 0x01;
++	sw->pause_frame[1] = 0x80;
++	sw->pause_frame[2] = 0xC2;
++	sw->pause_frame[3] = 0x00;
++	sw->pause_frame[4] = 0x00;
++	sw->pause_frame[5] = 0x01;
++	memcpy(&sw->pause_frame[6], sw->info->mac_addr, ETH_ALEN);
++	sw->pause_frame[12] = 0x88;
++	sw->pause_frame[13] = 0x08;
++	sw->pause_frame[14] = 0x00;
++	sw->pause_frame[15] = 0x01;
++	sw->pause_frame[16] = 0xff;
++	sw->pause_frame[17] = 0xff;
++}
 +
 +#ifdef CONFIG_KSZ_MRP
 +#include "ksz_mrp.c"
@@ -89396,6 +90258,69 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	}
 +}  /* sw_set_multi */
 +
++static bool sw_special_frame(struct ksz_sw *sw, struct sk_buff *skb)
++{
++	u16 proto = ntohs(skb->protocol);
++
++	if (proto == ETH_P_PAUSE)
++		return true;
++	return false;
++}
++
++static int sw_tx_pause(struct ksz_sw *sw, bool pause)
++{
++	const struct net_device_ops *ops = sw->main_dev->netdev_ops;
++	struct net_device **dev;
++	struct sk_buff *skb;
++	netdev_tx_t rc;
++	int len = 18;
++
++	if (pause && sw->last_pause_sent) {
++		if (time_after_eq(sw->last_pause_sent + (250 * HZ) / 1000,
++				  jiffies))
++			return NETDEV_TX_BUSY;
++	}
++	if (!pause && sw->last_pause_sent == 0)
++		return 0;
++
++	/* Add extra for tail tagging. */
++	skb = dev_alloc_skb(60 + 4 + 8);
++	if (!skb)
++		return -ENOMEM;
++
++	if (!pause)
++		len -= 2;
++	memcpy(skb->data, sw->pause_frame, len);
++	memset(&skb->data[len], 0, 60 - len);
++	skb_reset_mac_header(skb);
++	skb_set_network_header(skb, ETH_HLEN);
++
++	skb_put(skb, len);
++	sw->net_ops->add_tail_tag(sw, skb, 0);
++	skb->protocol = htons(ETH_P_PAUSE);
++	dev = (struct net_device **)skb->cb;
++	*dev = sw->main_dev;
++	skb->dev = sw->main_dev;
++
++	/* Guard against sending during receiving. */
++	spin_lock_bh(&sw->rx_lock);
++	rc = ops->ndo_start_xmit(skb, skb->dev);
++	spin_unlock_bh(&sw->rx_lock);
++	if (rc == NETDEV_TX_BUSY) {
++		dev_kfree_skb_any(skb);
++		skb->dev->stats.tx_dropped++;
++		return rc;
++	}
++	if (pause) {
++		sw->last_pause_sent = jiffies;
++		if (sw->last_pause_sent < 1)
++			sw->last_pause_sent = 1;
++	} else {
++		sw->last_pause_sent = 0;
++	}
++	return 0;
++}
++
 +static struct net_device *sw_rx_dev(struct ksz_sw *sw, u8 *data, u32 *len,
 +	int *tag, int *port)
 +{
@@ -89796,6 +90721,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!skb)
 +			return NULL;
 +		consume_skb(org_skb);
++	} else {
++		/* Make sure socket buffer does not have fragments. */
++		skb_linearize(skb);
 +	}
 +
 +	/* skb_put requires tail pointer set first. */
@@ -89829,7 +90757,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!*csum_loc) {
 +			__sum16 new_csum;
 +
-+			new_csum = dest << 8;
++			if (skb->len & 1)
++				new_csum = dest << 8;
++			else
++				new_csum = dest;
 +			*csum_loc = ~htons(new_csum);
 +		}
 +	}
@@ -89848,7 +90779,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_final_skb(struct ksz_sw *sw, struct sk_buff *skb,
 +	struct net_device *dev, struct ksz_port *port)
 +{
++	sw_lock_tx(sw);
 +	skb = sw->net_ops->check_tx(sw, dev, skb, port);
++	sw_unlock_tx(sw);
 +	if (!skb)
 +		return NULL;
 +	return skb;
@@ -89863,6 +90796,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw_setup(sw);
 +	sw_enable(sw);
 +	sw_set_addr(sw, addr);
++	sw_setup_pause(sw);
 +#if 0
 +	if (1 == sw->dev_count)
 +		sw_cfg_self_filter(sw, true);
@@ -91962,6 +92896,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	.final_skb		= sw_final_skb,
 +	.drv_rx			= sw_drv_rx,
 +	.set_multi		= sw_set_multi,
++	.special_frame		= sw_special_frame,
++	.tx_pause		= sw_tx_pause,
 +
 +};
 +
@@ -92309,7 +93245,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +					break;
 +				}
 +			}
-+dbg_msg(" %d f:%d l:%d\n", phy_id, first, last);
++#if 0
++dbg_msg(" %d f:%d l:%d; %x %04x\n", phy_id, first, last, regnum, val);
++#endif
 +		}
 +
 +		/* PHY device driver resets or powers down the PHY. */
@@ -92737,6 +93675,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	sw = &ks->sw;
 +	mutex_init(&sw->lock);
++	spin_lock_init(&sw->rx_lock);
++	spin_lock_init(&sw->tx_lock);
 +	sw->hwlock = &ks->hwlock;
 +	sw->reglock = &ks->lock;
 +	sw->dev = ks;
@@ -93025,12 +93965,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8895.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_8895.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.h	2023-12-05 17:29:01.106971871 -0800
-@@ -0,0 +1,879 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_8895.h	2025-04-16 16:07:40.026281480 -0700
+@@ -0,0 +1,905 @@
 +/**
 + * Microchip KSZ8895 switch common header
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -93395,6 +94335,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int (*drv_rx)(struct ksz_sw *sw, struct sk_buff *skb, uint port);
 +	void (*set_multi)(struct ksz_sw *sw, struct net_device *dev,
 +		struct ksz_port *priv);
++	bool (*special_frame)(struct ksz_sw *sw, struct sk_buff *skb);
++	int (*tx_pause)(struct ksz_sw *sw, bool pause);
 +};
 +
 +struct ksz_sw_ops {
@@ -93518,6 +94460,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#define PAUSE_FLOW_CTRL			(1 << 0)
 +#define FAST_AGING			(1 << 1)
 +#define UPDATE_CSUM			(1 << 2)
++#define HAVE_MORE_THAN_2_PORTS		(1 << 3)
++#define NO_TX_LOCK			(1 << 8)
 +
 +#define SYSFS_PHY_PORT			(1 << 18)
 +
@@ -93577,6 +94521,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	phy_interface_t interface;
 +	u32 msg_enable;
 +	wait_queue_head_t queue;
++	spinlock_t rx_lock;
++	spinlock_t tx_lock;
 +	struct mutex *hwlock;
 +	struct mutex *reglock;
 +	struct mutex lock;
@@ -93650,6 +94596,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_dev_map eth_maps[SWITCH_PORT_NUM];
 +	int eth_cnt;
 +
++	u8 pause_frame[18];
++	unsigned long last_pause_sent;
++
 +#ifdef CONFIG_KSZ_MRP
 +	struct delayed_work set_mrp;
 +	struct mrp_info mrp;
@@ -93713,6 +94662,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static inline void sw_update_csum(struct ksz_sw *sw)
 +{
 +	sw->overrides |= UPDATE_CSUM;
++}
++
++static inline void sw_no_tx_lock(struct ksz_sw *sw)
++{
++	sw->overrides |= NO_TX_LOCK;
++}
++
++static inline void sw_lock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_lock_bh(&sw->tx_lock);
++}
++
++static inline void sw_unlock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_unlock_bh(&sw->tx_lock);
 +}
 +
 +#ifdef CONFIG_KSZ_HSR
@@ -93908,12 +94874,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c	2024-11-26 14:24:57.302894066 -0800
-@@ -0,0 +1,19768 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-05-20 18:49:18.074565091 -0700
+@@ -0,0 +1,20531 @@
 +/**
 + * Microchip gigabit switch common code
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -95953,6 +96919,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	do {
 +		ctrl = sw->reg->r32(sw, REG_HSR_ALU_CTRL__4);
 +	} while (!(ctrl & HSR_VALID) && (ctrl & HSR_START));
++	if (ctrl & HSR_SEARCH_END)
++dbg_msg("hsr end\n");
 +	if (ctrl & HSR_VALID) {
 +		ctrl >>= HSR_VALID_CNT_S;
 +		ctrl &= HSR_VALID_CNT_M;
@@ -99812,6 +100780,17 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	uint q;
 +	struct ksz_port_cfg *cfg;
 +
++	/* Put in a 1000 Mbps transmit rate limit on the host port when using
++	 * Redbox as there may be no flow control against incoming traffic.
++	 */
++	if (sw->features & HSR_REDBOX) {
++		port = get_phy_port(sw, 0);
++		cfg = get_port_cfg(sw, port);
++		for (q = 0; q < PRIO_QUEUES; q++) {
++			cfg->tx_rate[q] = 1000000;
++		}
++	}
++
 +	/* All QoS functions disabled. */
 +	for (n = 0; n <= sw->mib_port_cnt; n++) {
 +		port = get_phy_port(sw, n);
@@ -99824,8 +100803,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw_cfg_port_based(sw, port, cfg->port_prio);
 +
 +		sw_ena_802_1p(sw, port);
-+		for (q = 0; q < PRIO_QUEUES; q++)
++		for (q = 0; q < PRIO_QUEUES; q++) {
 +			port_set_tx_ratio(sw, port, q, 1 << q);
++			if (cfg->tx_rate[q])
++				hw_cfg_tx_prio_rate(sw, cfg, port, q,
++						    cfg->tx_rate[q]);
++		}
 +		if (sw->features & AVB_SUPPORT) {
 +			cfg->tc_map[0] = 0x11113200;
 +			port_set_tc_map(sw, port, 0, cfg->tc_map[0]);
@@ -100045,6 +101028,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +}  /* sw_set_addr */
 +
++static void sw_setup_pause(struct ksz_sw *sw)
++{
++	sw->pause_frame[0] = 0x01;
++	sw->pause_frame[1] = 0x80;
++	sw->pause_frame[2] = 0xC2;
++	sw->pause_frame[3] = 0x00;
++	sw->pause_frame[4] = 0x00;
++	sw->pause_frame[5] = 0x01;
++	memcpy(&sw->pause_frame[6], sw->info->mac_addr, ETH_ALEN);
++	sw->pause_frame[12] = 0x88;
++	sw->pause_frame[13] = 0x08;
++	sw->pause_frame[14] = 0x00;
++	sw->pause_frame[15] = 0x01;
++	sw->pause_frame[16] = 0xff;
++	sw->pause_frame[17] = 0xff;
++}
++
 +static void sw_setup_reserved_multicast(struct ksz_sw *sw)
 +{
 +	struct ksz_mac_table table[8];
@@ -100220,7 +101220,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		phydev->speed = SPEED_10;
 +		phydev->dev_flags |= 1;
 +#endif
++#ifdef USE_GMII_100_MODE
++		phydev->speed = SPEED_100;
++		phydev->dev_flags |= 1;
++#endif
 +#ifdef USE_HALF_DUPLEX
++		duplex = 0;
 +		phydev->duplex = DUPLEX_HALF;
 +		phydev->dev_flags |= 1;
 +#endif
@@ -100333,7 +101338,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		info->tx_rate = speed * TX_RATE_UNIT;
 +		info->duplex = duplex + 1;
 +		phydev->speed = speed;
-+		phydev->duplex = duplex - 1;
++		phydev->duplex = duplex;
 +#ifdef USE_RGMII_PHY
 +		data |= PORT_RGMII_ID_EG_ENABLE;
 +		mode = 3;
@@ -107258,6 +108263,595 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		sw->HOST_MASK | SW_UNK_VID_ENABLE);
 +}  /* sw_fwd_unk_vid */
 +
++#ifdef CONFIG_USE_WEB
++static ssize_t get_dev_info(struct ksz_sw *sw, ssize_t len, char *buf)
++{
++	char name[80];
++	u32 id;
++
++	id = sw->reg->r32(sw, REG_CHIP_ID0__1);
++	switch (sw->chip_id) {
++	case KSZ9477_SW_CHIP:
++		strncpy(name, "EVB-KSZ9477 Rev.A (UNG_8071)", sizeof(name));
++		break;
++	case KSZ9897_SW_CHIP:
++		strncpy(name, "EVB-KSZ9897", sizeof(name));
++		break;
++	case KSZ9896_SW_CHIP:
++		strncpy(name, "KSZ9896", sizeof(name));
++		break;
++	case KSZ9567_SW_CHIP:
++		strncpy(name, "KSZ9567", sizeof(name));
++		break;
++	case KSZ8567_SW_CHIP:
++		strncpy(name, "KSZ8567", sizeof(name));
++		break;
++	case KSZ9563_SW_CHIP:
++		strncpy(name, "KSZ9563", sizeof(name));
++		break;
++	case KSZ8563_SW_CHIP:
++		strncpy(name, "KSZ8563", sizeof(name));
++		break;
++	case LAN9646_SW_CHIP:
++		strncpy(name, "EVB-LAN9646", sizeof(name));
++		break;
++	default:
++		strncpy(name, "Unknown", sizeof(name));
++		break;
++	}
++
++	len += sprintf(buf + len, "%08x", id);
++	len += sprintf(buf + len, ":FutureUse");
++	len += sprintf(buf + len, ":%u", sw->mib_port_cnt + 1);
++	len += sprintf(buf + len, ":%s", name);
++	return len;
++}
++
++static ssize_t get_tgt_info(struct ksz_sw *sw, ssize_t len, char *buf)
++{
++	u32 id;
++
++	id = sw->reg->r32(sw, REG_CHIP_ID0__1);
++	len += sprintf(buf + len, "Target Chip Id:\n%08x\n\n", id);
++	len += sprintf(buf + len, "No of Ports:\n%u\n", sw->port_cnt);
++	return len;
++}
++
++static ssize_t web_get_port_status(struct ksz_sw *sw, struct ksz_port *port,
++				   ssize_t len, char *buf)
++{
++	struct ksz_port_info *port_info;
++	int speed;
++	int n, p;
++
++	for (n = 1; n <= sw->phy_port_cnt; n++) {
++		p = get_phy_port(sw, n);
++		port_info = get_port_info(sw, p);
++		speed = port_info->tx_rate / TX_RATE_UNIT;
++		if (port->force_link) {
++			if (speed == 1000)
++				len += sprintf(buf + len, "1000M");
++			else if (speed == 100)
++				len += sprintf(buf + len, "100M");
++			else
++				len += sprintf(buf + len, "10M");
++			if (port_info->duplex == 2)
++				len += sprintf(buf + len, "FD:");
++			else
++				len += sprintf(buf + len, "HD:");
++		} else {
++			len += sprintf(buf + len, "Auto:");
++		}
++		if (port_info->state == media_connected) {
++			len += sprintf(buf + len, "Link Up");
++			len += sprintf(buf + len, " - ");
++			if (speed == 1000)
++				len += sprintf(buf + len, "1G ");
++			else if (speed == 100)
++				len += sprintf(buf + len, "100M ");
++			else
++				len += sprintf(buf + len, "10M ");
++			if (port_info->duplex == 2)
++				len += sprintf(buf + len, "Full");
++			else
++				len += sprintf(buf + len, "Half");
++			len += sprintf(buf + len, " Duplex:");
++		} else {
++			len += sprintf(buf + len, "Link Down:");
++		}
++	}
++	return len;
++}
++
++static ssize_t web_get_pvid(struct ksz_sw *sw, ssize_t len, char *buf)
++{
++	struct ksz_port_cfg *port_cfg;
++	int drop_non, drop_tag;
++	u16 prio, vid;
++	int n, p;
++
++	for (n = 1; n <= sw->mib_port_cnt + 1; n++) {
++		p = get_phy_port(sw, n);
++		port_cfg = get_port_cfg(sw, p);
++		vid = port_cfg->vid & ~0xf000;
++		prio = port_cfg->vid >> 13;
++		len += sprintf(buf + len, "%u:%u:", vid,
++			       port_chk_in_filter(sw, p));
++		drop_non = port_chk_drop_non_vlan(sw, p);
++		drop_tag = port_chk_drop_tag(sw, p);
++		if (!drop_non && !drop_tag)
++			len += sprintf(buf + len, "AA:");
++		else if (drop_non)
++			len += sprintf(buf + len, "AT:");
++		else
++			len += sprintf(buf + len, "AU:");
++		len += sprintf(buf + len, "%u:", prio);
++	}
++	return len;
++}
++
++static ssize_t web_dynamic_table(struct ksz_sw *sw, ssize_t len, char *buf)
++{
++	struct ksz_mac_table mac;
++	u32 ports;
++	u16 i;
++
++	sw_start_dyn_mac_table(sw);
++	i = 0;
++	do {
++		if (sw_g_dyn_mac_table(sw, &i, &mac))
++			break;
++		ports = mac.ports;
++		ports = get_log_mask_from_phy(sw, ports);
++		len += sprintf(buf + len,
++			"%4x: %02X:%02X:%02X:%02X:%02X:%02X  "
++			"%04x  m:%u  t:%u  s:%u  d:%u  o:%u  %02x  [%u]"NL,
++			i, mac.addr[0], mac.addr[1], mac.addr[2],
++			mac.addr[3], mac.addr[4], mac.addr[5],
++			ports, mac.mstp, mac.prio, mac.src, mac.dst,
++			mac.override, mac.fid, mac.valid);
++		i++;
++		if (len >= MAX_SYSFS_BUF_SIZE)
++			break;
++	} while (1);
++	sw_stop_dyn_mac_table(sw, i);
++	return len;
++}  /* web_dynamic_table */
++
++static ssize_t web_static_table(struct ksz_sw *sw, ssize_t len, char *buf)
++{
++	int i, j, n;
++	u16 ports;
++	int seen;
++	struct ksz_mac_table table[8];
++	struct ksz_mac_table *mac;
++	int first_static = true;
++	u16 addr[8];
++
++	for (j = 0; j < 8; j++)
++		addr[j] = get_mcast_reserved_addr(j);
++	sw_r_m_sta_mac_table(sw, addr, 1, 8, table);
++	for (j = 0; j < 8; j++) {
++		mac = &table[j];
++		if (!mac->valid)
++			continue;
++		ports = mac->ports;
++		ports = get_log_mask_from_phy(sw, ports);
++		len += sprintf(buf + len,
++			       "%2x: %02X:%02X:%02X:%02X:%02X:%02X  "
++			       "%04x  m:%u  p:%u  s:%u  d:%u  o:%u  %u:%02x  <",
++			       j,
++			       mac->addr[0], mac->addr[1], mac->addr[2],
++			       mac->addr[3], mac->addr[4], mac->addr[5],
++			       ports, mac->mstp, mac->prio,
++			       mac->src, mac->dst,
++			       mac->override, mac->use_fid, mac->fid);
++		seen = 0;
++		for (i = 0; i < RESERVED_MCAST_TABLE_ENTRIES; i++) {
++			if (j == mcast_reserved_map[i]) {
++				if (!seen) {
++					if (i != mac->addr[5])
++						len += sprintf(buf + len, " ");
++					len += sprintf(buf + len,
++						       "%02X", i);
++					seen = i + 1;
++				}
++			} else if (seen) {
++				if (i != seen)
++					len += sprintf(buf + len,
++						       "..%02X", i - 1);
++				seen = 0;
++			}
++		}
++		if (seen && i != seen)
++			len += sprintf(buf + len, "..%02X", i - 1);
++		len += sprintf(buf + len, ">"NL);
++	}
++	i = 0;
++	n = 8;
++	do {
++		for (j = 0; j < MAX_IBA_MAC_ENTRIES; j++)
++			addr[j] = i + j;
++		sw_r_m_sta_mac_table(sw, addr, 0, MAX_IBA_MAC_ENTRIES,
++			table);
++		for (j = 0; j < MAX_IBA_MAC_ENTRIES; j++) {
++			mac = &table[j];
++			if (!mac->valid)
++				continue;
++			ports = mac->ports;
++			ports = get_log_mask_from_phy(sw, ports);
++			if (first_static) {
++				first_static = false;
++				len += sprintf(buf + len, NL);
++			}
++			len += sprintf(buf + len,
++				       "%2x: %02X:%02X:%02X:%02X:%02X:%02X  "
++				       "%04x  m:%u  p:%u  s:%u  d:%u  o:%u  "
++				       "%u:%02x"NL,
++				       i + j,
++				       mac->addr[0], mac->addr[1], mac->addr[2],
++				       mac->addr[3], mac->addr[4], mac->addr[5],
++				       ports, mac->mstp, mac->prio,
++				       mac->src, mac->dst,
++				       mac->override, mac->use_fid, mac->fid);
++			n++;
++			if (len >= MAX_SYSFS_BUF_SIZE)
++				break;
++		}
++		i += MAX_IBA_MAC_ENTRIES;
++	} while (i < STATIC_MAC_TABLE_ENTRIES);
++	return len;
++}  /* web_static_table */
++
++static ssize_t web_static_table_(struct ksz_sw *sw, ssize_t len, char *buf)
++{
++	int i, j, n, p;
++	u16 ports;
++	struct ksz_mac_table table[8];
++	struct ksz_mac_table *mac;
++	u16 addr[8];
++	char tmp[8];
++
++	len += sprintf(buf + len, "   *");
++	for (j = 0; j < 8; j++)
++		addr[j] = get_mcast_reserved_addr(j);
++	sw_r_m_sta_mac_table(sw, addr, 1, 8, table);
++	for (j = 0; j < 8; j++) {
++		mac = &table[j];
++		if (!mac->valid)
++			continue;
++		ports = mac->ports;
++		ports = get_log_mask_from_phy(sw, ports);
++		len += sprintf(buf + len,
++			       "%2x*%02X:%02X:%02X:%02X:%02X:%02X*",
++			       j,
++			       mac->addr[0], mac->addr[1], mac->addr[2],
++			       mac->addr[3], mac->addr[4], mac->addr[5]);
++		for (p = 0; p < sw->mib_port_cnt + 1; p++) {
++			if (ports & 1)
++				len += sprintf(buf + len, "M-");
++			else
++				len += sprintf(buf + len, "N-");
++			ports >>= 1;
++		}
++		len += sprintf(buf + len, "*");
++	}
++	i = 0;
++	n = 8;
++	do {
++		for (j = 0; j < MAX_IBA_MAC_ENTRIES; j++)
++			addr[j] = i + j;
++		sw_r_m_sta_mac_table(sw, addr, 0, MAX_IBA_MAC_ENTRIES,
++			table);
++		for (j = 0; j < MAX_IBA_MAC_ENTRIES; j++) {
++			mac = &table[j];
++			if (!mac->valid)
++				continue;
++			ports = mac->ports;
++			ports = get_log_mask_from_phy(sw, ports);
++			len += sprintf(buf + len,
++				       "%2x*%02X:%02X:%02X:%02X:%02X:%02X*",
++				       i + j,
++				       mac->addr[0], mac->addr[1], mac->addr[2],
++				       mac->addr[3], mac->addr[4], mac->addr[5]);
++			for (p = 0; p < sw->mib_port_cnt + 1; p++) {
++				if (ports & 1)
++					len += sprintf(buf + len, "M-");
++				else
++					len += sprintf(buf + len, "N-");
++				ports >>= 1;
++			}
++			len += sprintf(buf + len, "*");
++			n++;
++			if (len >= MAX_SYSFS_BUF_SIZE)
++				break;
++		}
++		i += MAX_IBA_MAC_ENTRIES;
++	} while (i < STATIC_MAC_TABLE_ENTRIES);
++	sprintf(tmp, "%3u", n);
++	for (i = 0; i < 3; i++)
++		buf[i] = tmp[i];
++	return len;
++}  /* web_static_table */
++
++static ssize_t web_vlan_table(struct ksz_sw *sw, ssize_t len, char *buf)
++{
++	int j, n, p;
++	u16 i;
++	u16 ports;
++	u16 untag;
++	struct ksz_vlan_table *vlan;
++	struct ksz_vlan_table table[8];
++	char tmp[8];
++
++	len += sprintf(buf + len, "   :Ports:");
++	i = 0;
++	n = 0;
++	do {
++		sw_r_m_vlan_table(sw, i, MAX_IBA_VLAN_ENTRIES, table);
++		for (j = 0; j < MAX_IBA_VLAN_ENTRIES; j++) {
++			vlan = &table[j];
++			if (!vlan->valid)
++				continue;
++			ports = vlan->ports;
++			untag = vlan->untag;
++			ports = get_log_mask_from_phy(sw, ports);
++			untag = get_log_mask_from_phy(sw, untag);
++			len += sprintf(buf + len, "%u:%u:",
++				       vlan->vid, vlan->fid);
++			for (p = 0; p < sw->mib_port_cnt + 1; p++) {
++				if (ports & 1) {
++					if (untag & 1)
++						len += sprintf(buf + len,
++							       " U -");
++					else
++						len += sprintf(buf + len,
++							       " T -");
++				} else {
++					len += sprintf(buf + len, " N -");
++				}
++				ports >>= 1;
++				untag >>= 1;
++			}
++			len += sprintf(buf + len, ":");
++			n++;
++			if (len >= MAX_SYSFS_BUF_SIZE)
++				break;
++		}
++		i += MAX_IBA_VLAN_ENTRIES;
++	} while (i < VLAN_TABLE_ENTRIES);
++	sprintf(tmp, "%3u", n);
++	for (i = 0; i < 3; i++)
++		buf[i] = tmp[i];
++	return len;
++}  /* web_vlan_table */
++
++static ssize_t sysfs_web_read(struct ksz_sw *sw, int proc_num,
++	struct ksz_port *port, ssize_t len, char *buf)
++{
++	bool processed = true;
++
++	sw->ops->acquire(sw);
++	switch (proc_num) {
++	case WEB_GET_DEV_INFO:
++		len = get_dev_info(sw, len, buf);
++		break;
++	case WEB_GET_TGT_INFO:
++		len = get_tgt_info(sw, len, buf);
++		break;
++	case WEB_ENABLE_VLAN:
++		if (sw_chk(sw, REG_SW_LUE_CTRL_0, SW_VLAN_ENABLE))
++			len += sprintf(buf + len, "1:1");
++		else
++			len += sprintf(buf + len, "0:0");
++		break;
++	case WEB_ENABLE_JUMBO_PACKET:
++		if (sw_chk(sw, REG_SW_MAC_CTRL_1, SW_JUMBO_PACKET))
++			len += sprintf(buf + len, "1:1");
++		else
++			len += sprintf(buf + len, "0:0");
++		break;
++	case WEB_SET_MTU:
++	{
++		u16 mtu;
++
++		mtu = sw->reg->r16(sw, REG_SW_MTU__2);
++		sw->mtu = mtu;
++		len += sprintf(buf + len, "%u", mtu);
++		break;
++	}
++	case WEB_SET_PVID:
++		len = web_get_pvid(sw, len, buf);
++		break;
++	default:
++		processed = false;
++		break;
++	}
++	sw->ops->release(sw);
++	if (processed)
++		return len;
++
++	switch (proc_num) {
++	case WEB_DYNAMIC:
++		len = web_dynamic_table(sw, len, buf);
++		break;
++	case WEB_STATIC:
++		len = web_static_table(sw, len, buf);
++		break;
++	case WEB_STATIC_CFG:
++		len = web_static_table_(sw, len, buf);
++		break;
++	case WEB_VLAN:
++		len = web_vlan_table(sw, len, buf);
++		break;
++	case WEB_SET_PORT_STATUS:
++		len = web_get_port_status(sw, port, len, buf);
++		break;
++	}
++	return len;
++}  /* sysfs_web_read */
++
++static int sysfs_web_write(struct ksz_sw *sw, int proc_num,
++	struct ksz_port *port, int num,	const char *buf)
++{
++	bool processed = true;
++	unsigned int val[12];
++	uint n, p;
++	int count;
++
++	sw->ops->acquire(sw);
++	switch (proc_num) {
++	case WEB_DYNAMIC:
++		sw_flush_dyn_mac_table(sw, sw->port_cnt);
++		break;
++	case WEB_STATIC:
++		sw_clr_sta_mac_table(sw);
++		break;
++	case WEB_ENABLE_VLAN:
++		if (!num)
++			sw_dis_vlan(sw);
++		else
++			sw_ena_vlan(sw);
++		break;
++	case WEB_ENABLE_JUMBO_PACKET:
++		sw_cfg(sw, REG_SW_MAC_CTRL_1, SW_JUMBO_PACKET, num);
++		break;
++	case WEB_SET_MTU:
++		if (64 <= num && num <= 9000) {
++			sw->reg->w16(sw, REG_SW_MTU__2, (u16) num);
++			sw->mtu = num;
++		}
++		break;
++	case WEB_SET_PVID:
++	{
++		bool drop_non, drop_tag;
++		char accept[40];
++		u16 pvid;
++
++		count = sscanf(buf, "%u %u %u %u %4s",
++			       &val[0], &val[1], &val[2], &val[3], accept);
++		if (count != 5)
++			break;
++		n = val[0];
++		p = get_phy_port(sw, n);
++		pvid = val[1] | (val[2] & 7) << 13;
++		if (!strncmp(accept, "AA", 2))
++			drop_non = drop_tag = false;
++		else if (!strncmp(accept, "AT", 2))
++			drop_non = true;
++		else
++			drop_tag = true;
++		sw_cfg_def_vid(sw, p, pvid);
++		port_cfg_in_filter(sw, p, !!val[3]);
++		port_cfg_drop_non_vlan(sw, p, drop_non);
++		port_cfg_drop_tag(sw, p, drop_tag);
++		break;
++	}
++	default:
++		processed = false;
++		break;
++	}
++	sw->ops->release(sw);
++	if (processed)
++		return processed;
++
++	processed = true;
++	switch (proc_num) {
++	case WEB_STATIC_CFG:
++	{
++		struct ksz_mac_table *entry = &sw->info->mac_entry;
++		unsigned int a[6];
++		u16 ports;
++
++		count = sscanf(buf,
++			       "%u %u %x:%x:%x:%x:%x:%x %x %u %u %u %u %u %u %u %u",
++			       &val[0], &val[1],
++			       &a[0], &a[1], &a[2], &a[3], &a[4], &a[5],
++			       &val[2], &val[3], &val[4], &val[5], &val[6],
++			       &val[7], &val[8], &val[9], &val[10]);
++		if (count != 17)
++			break;
++		if (0 <= val[8] && val[8] <= ALU_V_FID_M)
++			entry->fid = (u16)val[8];
++		if (val[7])
++			entry->use_fid = 1;
++		else
++			entry->use_fid = 0;
++		if (0 <= val[3] && val[3] <= ALU_V_MSTP_M)
++			entry->mstp = (u8)val[3];
++		if (0 <= val[4] && val[4] <= ALU_V_PRIO_AGE_CNT_M)
++			entry->prio = (u8)val[4];
++		if (val[6])
++			entry->src = 1;
++		else
++			entry->src = 0;
++		if (val[5])
++			entry->dst = 1;
++		else
++			entry->dst = 0;
++		if (val[9])
++			entry->override = 1;
++		else
++			entry->override = 0;
++		if (val[10])
++			entry->valid = 1;
++		else
++			entry->valid = 0;
++		if (0 <= val[2] && val[2] <= sw->PORT_MASK) {
++			ports = val[2];
++			ports = get_phy_mask_from_log(sw, ports);
++			entry->ports = ports;
++		}
++		for (n = 0; n < 6; n++)
++			entry->addr[n] = (u8)a[n];
++		if (0 <= val[1] && val[1] < 3)
++			sw->alu_type = (u8)val[1];
++		if (0 <= val[0] && val[0] < 0x1000)
++			sw->alu_index = (u16)val[0];
++		if (2 == sw->alu_type)
++			sw_w_dyn_mac_table(sw, sw->alu_index,
++				entry->addr, entry->fid, entry);
++		else
++			sw_w_sta_mac_table(sw, sw->alu_index,
++				sw->alu_type, entry);
++		break;
++	}
++	case WEB_VLAN:
++	{
++		struct ksz_vlan_table *entry = &sw->info->vlan_entry;
++
++		count = sscanf(buf, "%u %u %u %u %u",
++			       &val[0], &val[1], &val[2], &val[3], &val[4]);
++		if (count != 5)
++			break;
++		entry->vid = (u16)val[0];
++		entry->fid = (u16)val[1];
++		entry->ports = (u32)val[2];
++		entry->untag = (u32)val[3];
++		entry->valid = !!val[4];
++		entry->ports = get_phy_mask_from_log(sw, entry->ports);
++		entry->untag = get_phy_mask_from_log(sw, entry->untag);
++		sw->vlan_index = entry->vid;
++#ifdef CONFIG_KSZ_MRP
++		if (sw->features & MRP_SUPPORT) {
++			struct mrp_info *mrp = &sw->mrp;
++
++			mrp->ops->setup_vlan(mrp, sw->vlan_index, entry);
++		}
++#endif
++		sw_w_vlan_table(sw, sw->vlan_index, entry);
++		sw->vlan_dirty = 0;
++		sw->overrides |= VLAN_SET;
++		break;
++	}
++	default:
++		processed = false;
++		break;
++	}
++	return processed;
++}  /* sysfs_web_write */
++#endif
++
 +static int sw_need_dest(struct ksz_sw *sw, u8 *addr)
 +{
 +	int need = 0;
@@ -107362,7 +108956,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!skb)
 +			continue;
 +		do {
++			/* Guard against sending during receiving. */
++			spin_lock_bh(&sw->rx_lock);
 +			rc = ops->ndo_start_xmit(skb, skb->dev);
++			spin_unlock_bh(&sw->rx_lock);
 +			if (NETDEV_TX_BUSY == rc) {
 +				rc = wait_event_interruptible_timeout(sw->queue,
 +					!netif_queue_stopped(sw->main_dev),
@@ -107373,6 +108970,69 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		} while (NETDEV_TX_BUSY == rc);
 +	}
 +}  /* sw_tx_fwd */
++
++static bool sw_special_frame(struct ksz_sw *sw, struct sk_buff *skb)
++{
++	u16 proto = ntohs(skb->protocol);
++
++	if (proto == IBA_TAG_TYPE || proto == ETH_P_PAUSE)
++		return true;
++	return false;
++}
++
++static int sw_tx_pause(struct ksz_sw *sw, bool pause)
++{
++	const struct net_device_ops *ops = sw->main_dev->netdev_ops;
++	struct net_device **dev;
++	struct sk_buff *skb;
++	netdev_tx_t rc;
++	int len = 18;
++
++	if (pause && sw->last_pause_sent) {
++		if (time_after_eq(sw->last_pause_sent + (250 * HZ) / 1000,
++				  jiffies))
++			return NETDEV_TX_BUSY;
++	}
++	if (!pause && sw->last_pause_sent == 0)
++		return 0;
++
++	/* Add extra for tail tagging. */
++	skb = dev_alloc_skb(60 + 4 + 8);
++	if (!skb)
++		return -ENOMEM;
++
++	if (!pause)
++		len -= 2;
++	memcpy(skb->data, sw->pause_frame, len);
++	memset(&skb->data[len], 0, 60 - len);
++	skb_reset_mac_header(skb);
++	skb_set_network_header(skb, ETH_HLEN);
++
++	skb_put(skb, len);
++	sw->net_ops->add_tail_tag(sw, skb, 0);
++	skb->protocol = htons(ETH_P_PAUSE);
++	dev = (struct net_device **)skb->cb;
++	*dev = sw->main_dev;
++	skb->dev = sw->main_dev;
++
++	/* Guard against sending during receiving. */
++	spin_lock_bh(&sw->rx_lock);
++	rc = ops->ndo_start_xmit(skb, skb->dev);
++	spin_unlock_bh(&sw->rx_lock);
++	if (rc == NETDEV_TX_BUSY) {
++		dev_kfree_skb_any(skb);
++		skb->dev->stats.tx_dropped++;
++		return rc;
++	}
++	if (pause) {
++		sw->last_pause_sent = jiffies;
++		if (sw->last_pause_sent < 1)
++			sw->last_pause_sent = 1;
++	} else {
++		sw->last_pause_sent = 0;
++	}
++	return 0;
++}
 +
 +#if 1
 +static u8 last_addr[6];
@@ -108021,21 +109681,27 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_ins_hsr(struct ksz_sw *sw, uint n,
 +	struct sk_buff *skb, struct ksz_sw_tx_tag *tag)
 +{
-+	int i;
-+	uint p;
++#ifdef USE_NEW_HSR
++	struct hsr_dev_info *dev = (struct hsr_dev_info *)skb->cb;
++#endif
 +	struct ksz_hsr_info *info = &sw->info->hsr;
++	int member;
++	uint p;
++	int i;
 +
 +	p = sw->priv_port;
 +	i = sw->info->port_cfg[p].index;
 +
 +#ifdef USE_NEW_HSR
 +	if (info->redbox) {
-+		struct net_device **dev = (struct net_device **)skb->cb;
++		if (dev->dev == info->redbox) {
 +
-+		/* Destination is Redbox. */
-+		if (*dev == info->redbox) {
 +			/* Do not show transmit count in eth1. */
 +			skb->dev = info->dev;
++
++			/* sw->priv_port is already set to the correct value
++			 * because skb->dev points to eth1.
++			 */
 +			return skb;
 +		}
 +	}
@@ -108045,6 +109711,16 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (skb->dev == info->redbox) {
 +			dev_kfree_skb_irq(skb);
 +			return NULL;
++		}
++	}
++
++	/* This frame is sent from HSR driver and may already be ready to send
++	 * out.
++	 */
++	if (dev->dev == info->dev) {
++		if (dev->forward && dev->forward <= 3) {
++			member = dev->forward;
++			goto skip_hsr;
 +		}
 +	}
 +#else
@@ -108082,9 +109758,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	}
 +#endif
 +	if (sw->eth_cnt && (sw->eth_maps[i].proto & HSR_HW)) {
++#ifdef USE_NEW_HSR
++		struct hsr_port *from = info->hsr_ports[HSR_PT_MASTER];
++#else
 +		struct hsr_port *from =
 +			hsr_port_get_hsr(&info->hsr, HSR_PT_MASTER);
-+		int member;
++#endif
 +#ifdef CONFIG_1588_PTP
 +		struct ptp_info *ptp = &sw->ptp_hw;
 +		struct ptp_msg *msg;
@@ -108097,8 +109776,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			ptp->tx_msg = msg;
 +		}
 +		if (msg) {
-+			struct net_device **dev =
-+				(struct net_device **)skb->cb;
 +			if (!info->hsr_up) {
 +				dev_kfree_skb_irq(skb);
 +				return NULL;
@@ -108112,7 +109789,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +				dev_kfree_skb_irq(skb);
 +				return NULL;
 +			}
-+			*dev = info->dev;
++#ifdef USE_NEW_HSR
++			dev->dev = info->dev;
++#endif
 +		}
 +#endif
 +#ifdef USE_NEW_HSR
@@ -108125,6 +109804,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!member)
 +			return NULL;
 +
++skip_hsr:
 +		/* Unicast frame to eth1 so get VLAN for eth1. */
 +		if (member == 4) {
 +			struct ksz_port *sw_port =
@@ -108176,6 +109856,14 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	if (skb->protocol == htons(ETH_P_TRAILER))
 +		return skb;
++#if 1
++	if (skb->protocol == htons(ETH_P_PAUSE)) {
++		struct net_device **dev = (struct net_device **)skb->cb;
++
++		if (*dev == skb->dev)
++			return skb;
++	}
++#endif
 +#ifdef CONFIG_KSZ_STP
 +	if (skb->protocol == htons(STP_TAG_TYPE))
 +		return skb;
@@ -108301,6 +109989,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!skb)
 +			return NULL;
 +		consume_skb(org_skb);
++	} else {
++		/* Make sure socket buffer does not have fragments. */
++		skb_linearize(skb);
 +	}
 +
 +	/* skb_put requires tail pointer set first. */
@@ -108420,18 +110111,26 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +		/* Checksum is cleared by driver to be filled by hardware. */
 +		if (!*csum_loc) {
-+			u16 *tag_csum = (u16 *) &tag_data;
 +			__sum16 new_csum;
-+			int csum = 0;
-+			int i;
 +
-+			/* Length may be odd. */
-+			tag_start++;
-+			for (i = 0; i < tag_start / 2; i++)
-+				csum += ntohs(tag_csum[i]);
-+			csum = (csum >> 16) + (csum & 0xffff);
-+			csum += (csum >> 16);
-+			new_csum = (__sum16) csum;
++			if (tag_len == 1) {
++				if (skb->len & 1)
++					new_csum = tag_data[0] << 8;
++				else
++					new_csum = tag_data[1];
++			} else {
++				u16 *tag_csum = (u16 *) &tag_data;
++				int csum = 0;
++				int i;
++
++				/* Length may be odd. */
++				tag_start++;
++				for (i = 0; i < tag_start / 2; i++)
++					csum += ntohs(tag_csum[i]);
++				csum = (csum >> 16) + (csum & 0xffff);
++				csum += (csum >> 16);
++				new_csum = (__sum16) csum;
++			}
 +			*csum_loc = ~htons(new_csum);
 +		}
 +	}
@@ -108458,9 +110157,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_final_skb(struct ksz_sw *sw, struct sk_buff *skb,
 +	struct net_device *dev, struct ksz_port *port)
 +{
++	sw_lock_tx(sw);
 +	skb = sw->net_ops->check_tx(sw, dev, skb, port);
 +	if (!skb)
-+		return NULL;
++		goto done;
 +
 +#ifdef CONFIG_1588_PTP
 +	if (sw->features & PTP_HW) {
@@ -108470,6 +110170,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			ptp->ops->get_tx_tstamp(ptp, skb);
 +	}
 +#endif
++
++done:
++	sw_unlock_tx(sw);
 +	return skb;
 +}  /* sw_final_skb */
 +
@@ -108493,6 +110196,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw_enable(sw);
 +
 +	sw_set_addr(sw, addr);
++	sw_setup_pause(sw);
 +
 +	/* STP has its own mechanism to handle looping. */
 +	if (!(sw->features & STP_SUPPORT))
@@ -108603,6 +110307,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct sw_priv *ks = sw->dev;
 +		int ret;
 +
++		/* Interrupt is already started. */
++		if (ks->irq_work.func)
++			break;
 +		ret = sw_start_interrupt(ks, dev_name(ks->dev));
 +		if (ret < 0) {
 +			printk(KERN_WARNING "No switch interrupt"NL);
@@ -108863,7 +110570,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	info = get_port_info(sw, sw->HOST_PORT);
 +	s->interface = sw->interface;
 +	s->speed = info->tx_rate / TX_RATE_UNIT;
-+	s->duplex = 1;
++	s->duplex = (info->duplex == 2);
 +	s->pause = 3;
 +	s->link = 1;
 +	s->an_enabled = 0;
@@ -109093,6 +110800,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +err:
 +	cnt = 0;
 +#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	if (sw->multi_dev == 0)
++		return 0;
 +	dev_err(ks->dev, "Please fix the device tree for correct ports.");
 +	cnt = -1;
 +#endif
@@ -110499,10 +112208,18 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#if defined(USE_HSR_REDBOX) || defined(USE_DLR_FORWARD)
 +static int multi_dev = 1;
 +#else
++#ifdef CONFIG_KSZ_IBA_ONLY
++static int multi_dev = 0;
++#else
 +static int multi_dev = -1;
 +#endif
++#endif
 +
++#ifdef CONFIG_KSZ_IBA_ONLY
++static int stp = 0;
++#else
 +static int stp = -1;
++#endif
 +
 +/*
 + * This enables fast aging in the switch.  Not sure what situation requires
@@ -110740,6 +112457,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			sw->ops->acquire(sw);
 +			sw_set_addr(sw, dev->dev_addr);
 +			sw->ops->release(sw);
++			sw_setup_pause(sw);
 +		}
 +	}
 +
@@ -111014,6 +112732,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	.final_skb		= sw_final_skb,
 +	.drv_rx			= sw_drv_rx,
 +	.set_multi		= sw_set_multi,
++	.special_frame		= sw_special_frame,
++	.tx_pause		= sw_tx_pause,
 +
 +};
 +
@@ -111058,6 +112778,11 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	.sysfs_mac_write	= sysfs_mac_write,
 +	.sysfs_vlan_read	= sysfs_vlan_read,
 +	.sysfs_vlan_write	= sysfs_vlan_write,
++
++#ifdef CONFIG_USE_WEB
++	.sysfs_web_read		= sysfs_web_read,
++	.sysfs_web_write	= sysfs_web_write,
++#endif
 +
 +#ifdef CONFIG_KSZ_STP
 +	.sysfs_stp_read		= sysfs_stp_read,
@@ -111754,7 +113479,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +					break;
 +				}
 +			}
-+dbg_msg(" %d f:%d l:%d"NL, phy_id, first, last);
++#if 0
++dbg_msg(" %d f:%d l:%d; %x %04x"NL, phy_id, first, last, regnum, val);
++#endif
 +		}
 +
 +		/* PHY device driver resets or powers down the PHY. */
@@ -112199,6 +113926,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	mutex_init(&sw->alulock);
 +	mutex_init(&sw->vlanlock);
 +	mutex_init(&sw->hsrlock);
++	spin_lock_init(&sw->rx_lock);
++	spin_lock_init(&sw->tx_lock);
 +	sw->hwlock = &ks->hwlock;
 +	sw->reglock = &ks->lock;
 +	sw->dev = ks;
@@ -113097,6 +114826,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	}
 +	sw->sgmii_mode = sgmii;
 +	sw->interface = PHY_INTERFACE_MODE_MII;
++	sw->multi_dev |= multi_dev;
 +	if (setup_device_node(sw)) {
 +		ret = -ENODEV;
 +		goto err_platform;
@@ -113281,7 +115011,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			sw->phy[i] = &sw->phy_map[i];
 +	}
 +
-+	sw->multi_dev |= multi_dev;
 +	sw->stp |= stp;
 +	sw->fast_aging |= fast_aging;
 +#ifdef CONFIG_KSZ_STP
@@ -113680,12 +115409,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_9897.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.h	2024-11-14 23:22:48.187817718 -0800
-@@ -0,0 +1,1440 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_9897.h	2025-05-20 18:05:20.796185935 -0700
+@@ -0,0 +1,1475 @@
 +/**
 + * Microchip KSZ9897 switch common header
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2013-2015 Micrel, Inc.
@@ -113761,6 +115490,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +#ifdef CONFIG_KSZ_HSR
 +#include "ksz_hsr.h"
++#endif
++#ifdef CONFIG_USE_WEB
++#include "ksz_web.h"
 +#endif
 +
 +
@@ -114258,6 +115990,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int (*drv_rx)(struct ksz_sw *sw, struct sk_buff *skb, uint port);
 +	void (*set_multi)(struct ksz_sw *sw, struct net_device *dev,
 +		struct ksz_port *priv);
++	bool (*special_frame)(struct ksz_sw *sw, struct sk_buff *skb);
++	int (*tx_pause)(struct ksz_sw *sw, bool pause);
 +};
 +
 +struct ksz_sw_ops {
@@ -114312,6 +116046,13 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	ssize_t (*sysfs_vlan_read)(struct ksz_sw *sw, int proc_num,
 +		ssize_t len, char *buf);
 +	int (*sysfs_vlan_write)(struct ksz_sw *sw, int proc_num, int num);
++
++#ifdef CONFIG_USE_WEB
++	ssize_t (*sysfs_web_read)(struct ksz_sw *sw, int proc_num,
++		struct ksz_port *port, ssize_t len, char *buf);
++	int (*sysfs_web_write)(struct ksz_sw *sw, int proc_num,
++		struct ksz_port *port, int num,	const char *buf);
++#endif
 +
 +#ifdef CONFIG_KSZ_STP
 +	ssize_t (*sysfs_stp_read)(struct ksz_sw *sw, int proc_num, ssize_t len,
@@ -114446,6 +116187,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#define UNK_MCAST_BLOCK			BIT(5)
 +#define UPDATE_CSUM			BIT(6)
 +#define DELAY_UPDATE_LINK		BIT(7)
++#define NO_TX_LOCK			BIT(8)
 +
 +#define IBA_TEST			BIT(16)
 +#define ACL_INTR_MONITOR		BIT(17)
@@ -114523,6 +116265,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	u32 msg_enable;
 +	wait_queue_head_t queue;
 +	struct sk_buff_head txq;
++	spinlock_t rx_lock;
++	spinlock_t tx_lock;
 +	struct mutex *hwlock;
 +	struct mutex *reglock;
 +	struct mutex acllock;
@@ -114630,6 +116374,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_dev_map eth_maps[SWITCH_PORT_NUM];
 +	int eth_cnt;
 +
++	u8 pause_frame[18];
++	unsigned long last_pause_sent;
++
 +#ifdef CONFIG_KSZ_MRP
 +	struct delayed_work set_mrp;
 +#endif
@@ -114703,6 +116450,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static inline void sw_update_csum(struct ksz_sw *sw)
 +{
 +	sw->overrides |= UPDATE_CSUM;
++}
++
++static inline void sw_no_tx_lock(struct ksz_sw *sw)
++{
++	sw->overrides |= NO_TX_LOCK;
++}
++
++static inline void sw_lock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_lock_bh(&sw->tx_lock);
++}
++
++static inline void sw_unlock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_unlock_bh(&sw->tx_lock);
 +}
 +
 +static inline uint get_rx_tag_ports(struct ksz_sw_tx_tag *tag)
@@ -115202,12 +116966,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.c	2024-04-26 16:01:25.033223531 -0700
-@@ -0,0 +1,10259 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.c	2025-04-16 16:08:25.892542890 -0700
+@@ -0,0 +1,10497 @@
 +/**
 + * Microchip switch common code
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -116140,8 +117904,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	for (timeout = 2; timeout > 0; timeout--) {
 +		data = sw->reg->r32(sw, REG_IND_DATA_LO);
 +
-+if (data & 0x3f000000)
-+dbg_msg(" mib: %d=%04x %08x\n", port, ctrl_addr, data);
 +		if (data & MIB_COUNTER_VALID) {
 +			if (data & MIB_COUNTER_OVERFLOW)
 +dbg_msg(" overflow: %d %x\n", addr, ctrl_addr);
@@ -118276,6 +120038,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	memcpy(sw->info->mac_addr, mac_addr, 6);
 +}
 +
++static void sw_setup_pause(struct ksz_sw *sw)
++{
++	sw->pause_frame[0] = 0x01;
++	sw->pause_frame[1] = 0x80;
++	sw->pause_frame[2] = 0xC2;
++	sw->pause_frame[3] = 0x00;
++	sw->pause_frame[4] = 0x00;
++	sw->pause_frame[5] = 0x01;
++	memcpy(&sw->pause_frame[6], sw->info->mac_addr, ETH_ALEN);
++	sw->pause_frame[12] = 0x88;
++	sw->pause_frame[13] = 0x08;
++	sw->pause_frame[14] = 0x00;
++	sw->pause_frame[15] = 0x01;
++	sw->pause_frame[16] = 0xff;
++	sw->pause_frame[17] = 0xff;
++}
++
 +#ifdef SWITCH_PORT_PHY_ADDR_MASK
 +/**
 + * sw_init_phy_addr - initialize switch PHY address
@@ -118310,6 +120089,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +
 +#define STP_ENTRY			0
++
++#if defined(CONFIG_KSZ_DLR) || defined(CONFIG_KSZ_HSR)
++#define DEV_0_ADDR_ENTRY		0
++#define DEV_1_ADDR_ENTRY		1
++#endif
++
 +#define BROADCAST_ENTRY			1
 +#define BRIDGE_ADDR_ENTRY		2
 +#define IPV6_ADDR_ENTRY			3
@@ -118594,7 +120379,11 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#include "ksz_dlr.c"
 +#endif
 +#ifdef CONFIG_KSZ_HSR
++#ifdef USE_NEW_HSR
++#include "ksz_hsr_6_1.c"
++#else
 +#include "ksz_hsr.c"
++#endif
 +#endif
 +
 +/*
@@ -119497,6 +121286,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	if (sw->features & DLR_HW)
 +		sw_setup_dlr(sw);
 +#endif
++#ifdef CONFIG_KSZ_HSR
++	if (sw->features & HSR_HW)
++		sw_setup_hsr(sw);
++#endif
 +}  /* sw_setup */
 +
 +static inline void sw_reset(struct ksz_sw *sw)
@@ -119639,6 +121432,20 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (check_sw_reg_range(reg))
 +			*addr = SW_R(sw, reg);
 +	}
++
++	/* 16-bit access with odd address. */
++	if (SW_SIZE != 1 && (reg & 1)) {
++		/*
++		 * Return zero to let the calling program know the boundary
++		 * must be 16-bit.
++		 */
++		if (!(count & 1))
++			i = 0;
++		else if (count == 1)
++			buf[0] = buf[1];
++	}
++	if (count == 1)
++		i = 1;
 +	return i;
 +}
 +
@@ -119648,6 +121455,19 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	SW_D *addr;
 +
 +	addr = (SW_D *) buf;
++
++	/* 16-bit access with 8-bit write. */
++	if (SW_SIZE != 1 && count == 1) {
++		SW_D tmp = SW_R(sw, reg);
++
++		if (reg & 1)
++			tmp = (tmp & 0x00ff) | (buf[0] << 8);
++		else
++			tmp = (tmp & 0xff00) | buf[0];
++		if (check_sw_reg_range(reg))
++			SW_W(sw, reg, tmp);
++		return 1;
++	}
 +	for (i = 0; i < count; i += SW_SIZE, reg += SW_SIZE, addr++) {
 +		if (check_sw_reg_range(reg))
 +			SW_W(sw, reg, *addr);
@@ -122037,6 +123857,69 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +}  /* sw_forward */
 +
++static bool sw_special_frame(struct ksz_sw *sw, struct sk_buff *skb)
++{
++	u16 proto = ntohs(skb->protocol);
++
++	if (proto == ETH_P_PAUSE)
++		return true;
++	return false;
++}
++
++static int sw_tx_pause(struct ksz_sw *sw, bool pause)
++{
++	const struct net_device_ops *ops = sw->main_dev->netdev_ops;
++	struct net_device **dev;
++	struct sk_buff *skb;
++	netdev_tx_t rc;
++	int len = 18;
++
++	if (pause && sw->last_pause_sent) {
++		if (time_after_eq(sw->last_pause_sent + (250 * HZ) / 1000,
++				  jiffies))
++			return NETDEV_TX_BUSY;
++	}
++	if (!pause && sw->last_pause_sent == 0)
++		return 0;
++
++	/* Add extra for tail tagging. */
++	skb = dev_alloc_skb(60 + 4 + 8);
++	if (!skb)
++		return -ENOMEM;
++
++	if (!pause)
++		len -= 2;
++	memcpy(skb->data, sw->pause_frame, len);
++	memset(&skb->data[len], 0, 60 - len);
++	skb_reset_mac_header(skb);
++	skb_set_network_header(skb, ETH_HLEN);
++
++	skb_put(skb, len);
++	sw->net_ops->add_tail_tag(sw, skb, 0);
++	skb->protocol = htons(ETH_P_PAUSE);
++	dev = (struct net_device **)skb->cb;
++	*dev = sw->main_dev;
++	skb->dev = sw->main_dev;
++
++	/* Guard against sending during receiving. */
++	spin_lock_bh(&sw->rx_lock);
++	rc = ops->ndo_start_xmit(skb, skb->dev);
++	spin_unlock_bh(&sw->rx_lock);
++	if (rc == NETDEV_TX_BUSY) {
++		dev_kfree_skb_any(skb);
++		skb->dev->stats.tx_dropped++;
++		return rc;
++	}
++	if (pause) {
++		sw->last_pause_sent = jiffies;
++		if (sw->last_pause_sent < 1)
++			sw->last_pause_sent = 1;
++	} else {
++		sw->last_pause_sent = 0;
++	}
++	return 0;
++}
++
 +static struct net_device *sw_rx_dev(struct ksz_sw *sw, u8 *data, u32 *len,
 +	int *tag, int *port)
 +{
@@ -122347,7 +124230,40 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		u16 vid;
 +		struct vlan_ethhdr *vlan;
 +		struct ethhdr *eth = (struct ethhdr *) skb->data;
++		int headerlen = skb_headroom(skb);
++		int padlen = 0;
 +
++		/* Socket buffer length will be increased by 4 but the VLAN
++		 * tag will be removed by the switch, so make sure socket
++		 * buffer has minimum Ethernet length after that removal.
++		 * Note switch may keep minimum length so this code is not
++		 * necessary.
++		 */
++		if (skb->len < ETH_ZLEN)
++			padlen = ETH_ZLEN - skb->len;
++
++		/* PTP message sent in KSZ8863 but not KSZ8463 can have
++		 * headroom of 2.
++		 */
++		if (headerlen < VLAN_HLEN) {
++			struct sk_buff *org_skb = skb;
++			int len = skb->len + padlen;
++
++			headerlen = VLAN_HLEN;
++
++			/* ip_summed is not modified. */
++			skb = skb_copy_expand(org_skb, headerlen, len,
++					      GFP_ATOMIC);
++			if (!skb)
++				return NULL;
++			consume_skb(org_skb);
++		}
++#if 1
++		if (padlen) {
++			if (__skb_put_padto(skb, skb->len + padlen, false))
++				return NULL;
++		}
++#endif
 +		vid = sw->info->port_cfg[port].vid;
 +		vlan = (struct vlan_ethhdr *) skb_push(skb, VLAN_HLEN);
 +		memmove(vlan, eth, 12);
@@ -122358,14 +124274,14 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +}  /* sw_ins_vlan */
 +
 +#ifdef CONFIG_KSZ_HSR
-+static struct sk_buff *sw_ins_hsr(struct ksz_sw *sw, uint port,
++static struct sk_buff *sw_ins_hsr(struct ksz_sw *sw, uint n,
 +	struct sk_buff *skb, u8 *ports)
 +{
 +	int i;
 +	uint p;
 +
 +	p = get_phy_port(sw, n);
-+	i = sw->info->port_cfg[port].index;
++	i = sw->info->port_cfg[p].index;
 +	if (sw->eth_cnt && (sw->eth_maps[i].proto & HSR_HW)) {
 +		struct ksz_hsr_info *info = &sw->info->hsr;
 +		struct hsr_port *from =
@@ -122495,6 +124411,11 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	/* Check the socket buffer length is enough to hold the tail tag. */
 +	if (skb->len < ETH_ZLEN)
 +		padlen = ETH_ZLEN - skb->len;
++
++	/* The length can be just 1514 for TCP packet with no extra room.
++	 * Therefore it is better to disable scatter/gather so that no new
++	 * socket buffer is allocated.
++	 */
 +	len = skb_tailroom(skb);
 +	if (len < 1 + padlen) {
 +		need_new_copy = true;
@@ -122508,10 +124429,15 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +		if (headerlen < headlen)
 +			headerlen = headlen;
++
++		/* ip_summed is not modified. */
 +		skb = skb_copy_expand(org_skb, headerlen, len, GFP_ATOMIC);
 +		if (!skb)
 +			return NULL;
 +		consume_skb(org_skb);
++	} else {
++		/* Make sure socket buffer does not have fragments. */
++		skb_linearize(skb);
 +	}
 +
 +	/* skb_put requires tail pointer set first. */
@@ -122550,7 +124476,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (!*csum_loc) {
 +			__sum16 new_csum;
 +
-+			new_csum = dest << 8;
++			if (skb->len & 1)
++				new_csum = dest << 8;
++			else
++				new_csum = dest;
 +			*csum_loc = ~htons(new_csum);
 +		}
 +	}
@@ -122578,9 +124507,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static struct sk_buff *sw_final_skb(struct ksz_sw *sw, struct sk_buff *skb,
 +	struct net_device *dev, struct ksz_port *port)
 +{
++	sw_lock_tx(sw);
 +	skb = sw->net_ops->check_tx(sw, dev, skb, port);
 +	if (!skb)
-+		return NULL;
++		goto done;
 +
 +#ifdef CONFIG_1588_PTP
 +	if (sw->features & PTP_HW) {
@@ -122590,6 +124520,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			ptp->ops->get_tx_tstamp(ptp, skb);
 +	}
 +#endif
++
++done:
++	sw_unlock_tx(sw);
 +	return skb;
 +}  /* sw_final_skb */
 +
@@ -122602,6 +124535,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw_setup(sw);
 +	sw_enable(sw);
 +	sw_set_addr(sw, addr);
++	sw_setup_pause(sw);
 +	if (1 == sw->dev_count)
 +		sw_setup_src_filter(sw, addr);
 +#ifdef CONFIG_KSZ_DLR
@@ -122665,6 +124599,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +			port_cfg_rmv_tag(sw, sw->HOST_PORT, true);
 +		else
 +			port_cfg_ins_tag(sw, sw->HOST_PORT, true);
++#ifdef PORT_DOUBLE_TAG
++		if (!need_tail_tag)
++			sw_vlan_cfg_double_tag(sw, sw->HOST_PORT, true);
++#endif
 +		need_vlan = true;
 +	}
 +	if (sw->features & STP_SUPPORT)
@@ -124032,12 +125970,15 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 + */
 +static int fast_aging;
 +
++static int eth1_vlan;
++static int eth2_vlan;
++
 +static void sw_setup_zone(struct ksz_sw *sw)
 +{
 +#ifdef CONFIG_KSZ_DLR
 +	sw->eth_maps[0].cnt = 2;
 +	sw->eth_maps[0].mask = 3;
-+	sw->eth_maps[0].port = 0;
++	sw->eth_maps[0].first = 1;
 +	sw->eth_maps[0].phy_id = 1;
 +	sw->eth_maps[0].vlan = 1;
 +	sw->eth_maps[0].proto = DLR_HW;
@@ -124047,13 +125988,40 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#ifdef CONFIG_KSZ_HSR
 +	sw->eth_maps[0].cnt = 2;
 +	sw->eth_maps[0].mask = 3;
-+	sw->eth_maps[0].port = 0;
++	sw->eth_maps[0].first = 1;
 +	sw->eth_maps[0].phy_id = 1;
 +	sw->eth_maps[0].vlan = 1;
 +	sw->eth_maps[0].proto = HSR_HW;
 +	sw->eth_cnt = 1;
 +	sw->features |= HSR_HW;
 +#endif
++	if (multi_dev == 1 && eth1_vlan) {
++		sw->eth_maps[0].cnt = 1;
++		sw->eth_maps[0].mask = 1;
++		sw->eth_maps[0].first = 1;
++		sw->eth_maps[0].phy_id = 1;
++		sw->eth_maps[0].vlan = eth1_vlan;
++		sw->eth_maps[1].cnt = 1;
++		sw->eth_maps[1].mask = 2;
++		sw->eth_maps[1].first = 2;
++		sw->eth_maps[1].phy_id = 2;
++		if (!eth2_vlan)
++			eth2_vlan = eth1_vlan + 1;
++		sw->eth_maps[1].vlan = eth2_vlan;
++		sw->eth_cnt = 2;
++		sw->features |= SW_VLAN_DEV;
++	}
++	do {
++		struct ksz_dev_map *map;
++		uint p;
++
++		for (p = 0; p < sw->eth_cnt; p++) {
++			map = &sw->eth_maps[p];
++			dbg_msg("%d: %d:%d:%d m=%04x v=%03x %08x"NL,
++				p, map->first, map->cnt, map->phy_id,
++				map->mask, map->vlan, map->proto);
++		}
++	} while (0);
 +}  /* sw_setup_zone */
 +
 +static void sw_setup_logical_ports(struct ksz_sw *sw)
@@ -124218,12 +126186,24 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		mib_port_cnt = port_cnt;
 +	}
 +
++	port->flow_ctrl = PHY_FLOW_CTRL;
++
++#ifdef CONFIG_KSZ_DLR
++	/* Cannot flow control because of beacon timeout. */
++	if (sw->eth_cnt && (sw->eth_maps[i].proto & DLR_HW)) {
++		port_cnt = sw->eth_maps[i].cnt;
++		p = sw->eth_maps[i].first - 1;
++		mib_port_cnt = port_cnt;
++		port->flow_ctrl = PHY_TX_ONLY;
++		prep_dlr_mcast(dev);
++	}
++#endif
 +#ifdef CONFIG_KSZ_HSR
 +	if (sw->eth_cnt && (sw->eth_maps[i].proto & HSR_HW)) {
 +		port_cnt = sw->eth_maps[i].cnt;
-+		p = sw->eth_maps[i].port;
++		p = sw->eth_maps[i].first - 1;
 +		mib_port_cnt = port_cnt;
-+		setup_hsr(&sw->info->hsr, dev);
++		setup_hsr(&sw->info->hsr, dev, i);
 +		dev->hard_header_len += HSR_HLEN;
 +	}
 +#endif
@@ -124231,7 +126211,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	port->port_cnt = port_cnt;
 +	port->mib_port_cnt = mib_port_cnt;
 +	port->first_port = p + 1;
-+	port->flow_ctrl = PHY_FLOW_CTRL;
 +
 +#ifdef CONFIG_KSZ_STP
 +	if (!i && sw->features & STP_SUPPORT)
@@ -124411,6 +126390,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	.final_skb		= sw_final_skb,
 +	.drv_rx			= sw_drv_rx,
 +	.set_multi		= sw_set_multi,
++	.special_frame		= sw_special_frame,
++	.tx_pause		= sw_tx_pause,
 +
 +};
 +
@@ -124764,7 +126745,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +					break;
 +				}
 +			}
-+dbg_msg(" %d f:%d l:%d\n", phy_id, first, last);
++#if 0
++dbg_msg(" %d f:%d l:%d; %x %04x\n", phy_id, first, last, regnum, val);
++#endif
 +		}
 +
 +		/* PHY device driver resets or powers down the PHY. */
@@ -125191,6 +127174,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	sw = &ks->sw;
 +	mutex_init(&sw->lock);
++	spin_lock_init(&sw->rx_lock);
++	spin_lock_init(&sw->tx_lock);
 +	sw->hwlock = &ks->hwlock;
 +	sw->reglock = &ks->lock;
 +	sw->dev = ks;
@@ -125365,6 +127350,10 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#ifdef CONFIG_KSZ_STP
 +		ksz_stp_init(&sw->info->rstp, sw);
 +#endif
++#ifdef CONFIG_KSZ_DLR
++		if (sw->features & DLR_HW)
++			ksz_dlr_init(&sw->info->dlr, sw);
++#endif
 +#ifdef CONFIG_KSZ_HSR
 +		if (sw->features & HSR_HW)
 +			ksz_hsr_init(&sw->info->hsr, sw);
@@ -125429,6 +127418,14 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#ifdef CONFIG_KSZ_STP
 +		ksz_stp_exit(&sw->info->rstp);
 +#endif
++#ifdef CONFIG_KSZ_DLR
++		if (sw->features & DLR_HW)
++			ksz_dlr_exit(&sw->info->dlr);
++#endif
++#ifdef CONFIG_KSZ_HSR
++		if (sw->features & HSR_HW)
++			ksz_hsr_exit(&sw->info->hsr);
++#endif
 +	}
 +
 +	delete_debugfs(ks);
@@ -125463,14 +127460,19 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +MODULE_PARM_DESC(multi_dev, "Multiple device interfaces");
 +MODULE_PARM_DESC(stp, "STP support");
 +
++module_param(eth1_vlan, int, 0);
++module_param(eth2_vlan, int, 0);
++MODULE_PARM_DESC(eth1_vlan, "VLAN to use on device 1.");
++MODULE_PARM_DESC(eth2_vlan, "VLAN to use on device 2.");
++
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.h
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.h	2023-12-05 17:29:08.478972179 -0800
-@@ -0,0 +1,867 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw.h	2025-04-16 16:08:41.671944763 -0700
+@@ -0,0 +1,896 @@
 +/**
 + * Microchip switch common header
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -125575,6 +127577,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#define FWD_STP_DEV			(1 << 2)
 +#define FWD_MAIN_DEV			(1 << 3)
 +#define FWD_VLAN_DEV			(1 << 4)
++#define FWD_MCAST			(1 << 5)
++#define FWD_UCAST			(1 << 6)
++#define FWD_KNOWN			(1 << 7)
 +
 +struct ksz_alu_table {
 +	u8 owner;
@@ -125848,6 +127853,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int (*drv_rx)(struct ksz_sw *sw, struct sk_buff *skb, uint port);
 +	void (*set_multi)(struct ksz_sw *sw, struct net_device *dev,
 +		struct ksz_port *priv);
++	bool (*special_frame)(struct ksz_sw *sw, struct sk_buff *skb);
++	int (*tx_pause)(struct ksz_sw *sw, bool pause);
 +};
 +
 +struct ksz_sw_ops {
@@ -125968,6 +127975,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#define PAUSE_FLOW_CTRL			(1 << 0)
 +#define FAST_AGING			(1 << 1)
 +#define UPDATE_CSUM			(1 << 2)
++#define HAVE_MORE_THAN_2_PORTS		(1 << 3)
++#define NO_TX_LOCK			(1 << 8)
 +
 +#define TAIL_PRP_0			(1 << 24)
 +#define TAIL_PRP_1			(1 << 25)
@@ -126025,6 +128034,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	phy_interface_t interface;
 +	u32 msg_enable;
 +	wait_queue_head_t queue;
++	spinlock_t rx_lock;
++	spinlock_t tx_lock;
 +	struct mutex *hwlock;
 +	struct mutex *reglock;
 +	struct mutex lock;
@@ -126092,6 +128103,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	int fast_aging;
 +	struct ksz_dev_map eth_maps[SWITCH_PORT_NUM];
 +	int eth_cnt;
++
++	u8 pause_frame[18];
++	unsigned long last_pause_sent;
 +
 +#ifdef CONFIG_MRP
 +	struct mrp_info mrp;
@@ -126164,6 +128178,23 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static inline void sw_update_csum(struct ksz_sw *sw)
 +{
 +	sw->overrides |= UPDATE_CSUM;
++}
++
++static inline void sw_no_tx_lock(struct ksz_sw *sw)
++{
++	sw->overrides |= NO_TX_LOCK;
++}
++
++static inline void sw_lock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_lock_bh(&sw->tx_lock);
++}
++
++static inline void sw_unlock_tx(struct ksz_sw *sw)
++{
++	if (!(sw->overrides & NO_TX_LOCK))
++		spin_unlock_bh(&sw->tx_lock);
 +}
 +
 +#ifdef CONFIG_KSZ_HSR
@@ -126336,7 +128367,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_8795.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_8795.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_8795.c	2023-03-19 17:41:55.580012484 -0700
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_8795.c	2025-04-14 11:54:16.025396627 -0700
 @@ -0,0 +1,750 @@
 +/**
 + * Microchip KSZ8795 switch common sysfs code
@@ -126371,7 +128402,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static ssize_t netlan_show(struct device *d, struct device_attribute *attr,
 +	char *buf, unsigned long offset)
 +{
-+	struct ksz_port *port;
++	struct ksz_port *port = NULL;
 +	struct ksz_sw *sw;
 +	struct semaphore *proc_sem;
 +	ssize_t len = -EINVAL;
@@ -126414,7 +128445,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static ssize_t netlan_store(struct device *d, struct device_attribute *attr,
 +	const char *buf, size_t count, unsigned long offset)
 +{
-+	struct ksz_port *port;
++	struct ksz_port *port = NULL;
 +	struct ksz_sw *sw;
 +	struct semaphore *proc_sem;
 +	ssize_t ret = -EINVAL;
@@ -127090,7 +129121,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_8895.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_8895.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_8895.c	2023-03-19 17:41:55.580012484 -0700
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_8895.c	2025-04-14 11:54:16.025396627 -0700
 @@ -0,0 +1,659 @@
 +/**
 + * Microchip KSZ8895 switch common sysfs code
@@ -127125,7 +129156,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static ssize_t netlan_show(struct device *d, struct device_attribute *attr,
 +	char *buf, unsigned long offset)
 +{
-+	struct ksz_port *port;
++	struct ksz_port *port = NULL;
 +	struct ksz_sw *sw;
 +	struct semaphore *proc_sem;
 +	ssize_t len = -EINVAL;
@@ -127168,7 +129199,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static ssize_t netlan_store(struct device *d, struct device_attribute *attr,
 +	const char *buf, size_t count, unsigned long offset)
 +{
-+	struct ksz_port *port;
++	struct ksz_port *port = NULL;
 +	struct ksz_sw *sw;
 +	struct semaphore *proc_sem;
 +	ssize_t ret = -EINVAL;
@@ -127753,12 +129784,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	2023-03-19 17:41:55.580012484 -0700
-@@ -0,0 +1,1126 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	2025-05-20 18:06:15.098093568 -0700
+@@ -0,0 +1,1142 @@
 +/**
 + * Microchip gigabit switch common sysfs code
 + *
-+ * Copyright (c) 2015-2019 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2011-2014 Micrel, Inc.
@@ -127775,6 +129806,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +
 +#include "ksz_sysfs.h"
++#ifdef CONFIG_USE_WEB
++#include "ksz_web.c"
++#endif
 +
 +
 +static char *sw_name[] = {
@@ -127791,7 +129825,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static ssize_t netlan_show(struct device *d, struct device_attribute *attr,
 +	char *buf, unsigned long offset)
 +{
-+	struct ksz_port *port;
++	struct ksz_port *port = NULL;
 +	struct ksz_sw *sw;
 +	struct semaphore *proc_sem;
 +	ssize_t len = -EINVAL;
@@ -127846,7 +129880,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static ssize_t netlan_store(struct device *d, struct device_attribute *attr,
 +	const char *buf, size_t count, unsigned long offset)
 +{
-+	struct ksz_port *port;
++	struct ksz_port *port = NULL;
 +	struct ksz_sw *sw;
 +	struct semaphore *proc_sem;
 +	ssize_t ret = -EINVAL;
@@ -128798,6 +130832,13 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	.attrs  = lan_attrs,
 +};
 +
++#ifdef CONFIG_USE_WEB
++static struct attribute_group web_group = {
++	.name  = "web",
++	.attrs  = web_attrs,
++};
++#endif
++
 +static struct attribute_group sw_group = {
 +	.name  = "sw0",
 +	.attrs  = sw_attrs,
@@ -128837,6 +130878,9 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	ksz_sw_dev_attrs_ptr = ksz_sw_dev_attrs;
 +
 +	sysfs_remove_group(&dev->kobj, &lan_group);
++#ifdef CONFIG_USE_WEB
++	sysfs_remove_group(&dev->kobj, &web_group);
++#endif
 +}
 +
 +static int init_sw_sysfs(struct ksz_sw *sw, struct ksz_sw_sysfs *info,
@@ -128878,12 +130922,15 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +		if (err)
 +			return err;
 +	}
++#ifdef CONFIG_USE_WEB
++	err = sysfs_create_group(&dev->kobj, &web_group);
++#endif
 +	return err;
 +}
 +
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs.c	2023-03-19 17:41:55.580012484 -0700
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_sw_sysfs.c	2025-04-14 11:54:16.021396763 -0700
 @@ -0,0 +1,909 @@
 +/**
 + * Microchip switch common sysfs code
@@ -128954,7 +131001,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static ssize_t netlan_show(struct device *d, struct device_attribute *attr,
 +	char *buf, unsigned long offset)
 +{
-+	struct ksz_port *port;
++	struct ksz_port *port = NULL;
 +	struct ksz_sw *sw;
 +	struct semaphore *proc_sem;
 +	ssize_t len = -EINVAL;
@@ -128989,7 +131036,7 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +static ssize_t netlan_store(struct device *d, struct device_attribute *attr,
 +	const char *buf, size_t count, unsigned long offset)
 +{
-+	struct ksz_port *port;
++	struct ksz_port *port = NULL;
 +	struct ksz_sw *sw;
 +	struct semaphore *proc_sem;
 +	ssize_t ret = -EINVAL;
@@ -129934,6 +131981,156 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_s
 +	*attr_ptr = NULL;
 +	return 0;
 +}
++
++#endif
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_web.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_web.c
+--- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_web.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_web.c	2025-05-16 18:58:10.752069312 -0700
+@@ -0,0 +1,107 @@
++#include "ksz_web.h"
++
++
++static ssize_t netweb_show(struct device *d, struct device_attribute *attr,
++	char *buf, unsigned long offset)
++{
++	struct ksz_port *port;
++	struct ksz_sw *sw;
++	struct semaphore *proc_sem;
++	ssize_t len = -EINVAL;
++	int proc_num;
++
++	get_private_data(d, &proc_sem, &sw, &port);
++	if (down_interruptible(proc_sem))
++		return -ERESTARTSYS;
++
++	len = 0;
++	proc_num = offset / sizeof(int);
++	len = sw->ops->sysfs_web_read(sw, proc_num, port, len, buf);
++
++	up(proc_sem);
++	return len;
++}
++
++static ssize_t netweb_store(struct device *d, struct device_attribute *attr,
++	const char *buf, size_t count, unsigned long offset)
++{
++	struct ksz_port *port;
++	struct ksz_sw *sw;
++	struct semaphore *proc_sem;
++	ssize_t ret = -EINVAL;
++	int num;
++	int proc_num;
++
++	num = get_num_val(buf);
++	get_private_data(d, &proc_sem, &sw, &port);
++	if (down_interruptible(proc_sem))
++		return -ERESTARTSYS;
++
++	proc_num = offset / sizeof(int);
++	ret = count;
++
++	sw->ops->sysfs_web_write(sw, proc_num, port, num, buf);
++
++	up(proc_sem);
++	return ret;
++}
++
++#define WEB_ATTR(_name, _mode, _show, _store) \
++struct device_attribute web_attr_##_name = \
++	__ATTR(_name, _mode, _show, _store)
++
++/* generate a read-only attribute */
++#define NETWEB_RD_ENTRY(name)						\
++static ssize_t show_web_##name(struct device *d,			\
++	struct device_attribute *attr, char *buf)			\
++{									\
++	return netweb_show(d, attr, buf,				\
++		offsetof(struct web_attributes, name));			\
++}									\
++static WEB_ATTR(name, S_IRUGO, show_web_##name, NULL)
++
++/* generate a write-able attribute */
++#define NETWEB_WR_ENTRY(name)						\
++static ssize_t show_web_##name(struct device *d,			\
++	struct device_attribute *attr, char *buf)			\
++{									\
++	return netweb_show(d, attr, buf,				\
++		offsetof(struct web_attributes, name));			\
++}									\
++static ssize_t store_web_##name(struct device *d,			\
++	struct device_attribute *attr, const char *buf, size_t count)	\
++{									\
++	return netweb_store(d, attr, buf, count,			\
++		offsetof(struct web_attributes, name));			\
++}									\
++static WEB_ATTR(name, S_IRUGO | S_IWUSR, show_web_##name, store_web_##name)
++
++NETWEB_RD_ENTRY(dev_info);
++NETWEB_RD_ENTRY(tgt_info);
++NETWEB_WR_ENTRY(dynamic_table);
++NETWEB_WR_ENTRY(static_table);
++NETWEB_WR_ENTRY(static_cfg);
++NETWEB_WR_ENTRY(vlan_table);
++NETWEB_WR_ENTRY(vlan);
++NETWEB_WR_ENTRY(jumbo_packet);
++NETWEB_WR_ENTRY(mtu);
++NETWEB_WR_ENTRY(port_status);
++NETWEB_WR_ENTRY(pvid);
++
++
++static struct attribute *web_attrs[] = {
++	&web_attr_dev_info.attr,
++	&web_attr_tgt_info.attr,
++	&web_attr_dynamic_table.attr,
++	&web_attr_static_table.attr,
++	&web_attr_static_cfg.attr,
++	&web_attr_vlan_table.attr,
++	&web_attr_vlan.attr,
++	&web_attr_jumbo_packet.attr,
++	&web_attr_mtu.attr,
++	&web_attr_port_status.attr,
++	&web_attr_pvid.attr,
++
++	NULL
++};
++
+diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_web.h linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_web.h
+--- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/ksz_web.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/ksz_web.h	2025-05-16 18:56:47.955537080 -0700
+@@ -0,0 +1,35 @@
++
++
++#ifndef KSZ_WEB_H
++#define KSZ_WEB_H
++
++
++struct web_attributes {
++	int dev_info;
++	int tgt_info;
++	int dynamic_table;
++	int static_table;
++	int static_cfg;
++	int vlan_table;
++	int vlan;
++	int jumbo_packet;
++	int mtu;
++	int port_status;
++	int pvid;
++};
++
++enum {
++	WEB_GET_DEV_INFO,
++	WEB_GET_TGT_INFO,
++	WEB_DYNAMIC,
++	WEB_STATIC,
++	WEB_STATIC_CFG,
++	WEB_VLAN,
++	WEB_ENABLE_VLAN,
++	WEB_ENABLE_JUMBO_PACKET,
++	WEB_SET_MTU,
++	WEB_SET_PORT_STATUS,
++	WEB_SET_PVID,
++};
 +
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/Makefile linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/Makefile
@@ -136834,12 +139031,12 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/spi-k
 +#endif
 diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/spi-ksz9897.c linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/spi-ksz9897.c
 --- linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/spi-ksz9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/spi-ksz9897.c	2024-11-26 14:42:32.015379359 -0800
-@@ -0,0 +1,700 @@
++++ linux-linux4microchip-2023.10/drivers/net/ethernet/micrel/spi-ksz9897.c	2025-04-15 03:08:37.200328304 -0700
+@@ -0,0 +1,688 @@
 +/**
 + * Microchip KSZ9897 SPI driver
 + *
-+ * Copyright (c) 2015-2024 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + * Copyright (c) 2013-2015 Micrel, Inc.
 + *
 + * Copyright 2009 Simtec Electronics
@@ -136906,18 +139103,6 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/spi-k
 +#include "ksz_cfg_9897.h"
 +
 +
-+#ifdef CONFIG_KSZ_DLR
-+/* Have ACL to handle beacon timeout. */
-+#define CONFIG_HAVE_ACL_HW
-+
-+/* Have DLR to transmit beacons. */
-+#define CONFIG_HAVE_DLR_HW
-+#endif
-+
-+#ifdef CONFIG_KSZ_HSR
-+#define CONFIG_HAVE_HSR_HW
-+#endif
-+
 +#if 0
 +#define USE_MII_PHY
 +#endif
@@ -136951,8 +139136,8 @@ diff -Napur linux-linux4microchip-2023.10-orig/drivers/net/ethernet/micrel/spi-k
 +
 +#define KS9897MLI_DEV0			"ksz9897"
 +
-+#define SW_DRV_RELDATE			"Nov 26, 2024"
-+#define SW_DRV_VERSION			"1.2.9"
++#define SW_DRV_RELDATE			"Apr 15, 2025"
++#define SW_DRV_VERSION			"1.2.10"
 +
 +/* -------------------------------------------------------------------------- */
 +
