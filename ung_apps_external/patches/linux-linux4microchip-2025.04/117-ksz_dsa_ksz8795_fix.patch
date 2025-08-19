@@ -1,0 +1,27 @@
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c	2025-06-19 15:51:14.070421445 -0700
++++ linux-linux4microchip-2025.04new/drivers/net/dsa/microchip/ksz8.c	2025-06-19 15:50:39.469707127 -0700
+@@ -1949,6 +1949,10 @@ void ksz8_get_caps(struct ksz_device *de
+ {
+ 	config->mac_capabilities = MAC_10 | MAC_100;
+ 
++	/* KSZ8795 has RGMII interface in the host port. */
++	if (ksz_is_ksz87xx(dev) && port == dev->cpu_port)
++		config->mac_capabilities |= MAC_1000FD;
++
+ 	/* Silicon Errata Sheet (DS80000830A):
+ 	 * "Port 1 does not respond to received flow control PAUSE frames"
+ 	 * So, disable Pause support on "Port 1" (port == 0) for all ksz88x3
+@@ -1957,8 +1961,10 @@ void ksz8_get_caps(struct ksz_device *de
+ 	if (!ksz_is_ksz88x3(dev) || port)
+ 		config->mac_capabilities |= MAC_SYM_PAUSE;
+ 
+-	/* Asym pause is not supported on KSZ8863 and KSZ8873 */
+-	if (!ksz_is_ksz88x3(dev))
++	/* Asym pause is not supported on KSZ8863 and KSZ8873 and KSZ8895 and
++	 * the host port of KSZ8795.
++	 */
++	if (!is_ksz88xx(dev) && port != dev->cpu_port)
+ 		config->mac_capabilities |= MAC_ASYM_PAUSE;
+ }
+ 

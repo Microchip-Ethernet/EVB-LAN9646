@@ -1,0 +1,28 @@
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c	2025-07-29 14:09:10.536589788 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c	2025-07-29 14:13:56.293543292 -0700
+@@ -35,7 +35,12 @@
+ 
+ static void ksz_cfg(struct ksz_device *dev, u32 addr, u8 bits, bool set)
+ {
+-	regmap_update_bits(ksz_regmap_8(dev), addr, bits, set ? bits : 0);
++	int ret;
++
++	ret = regmap_update_bits(ksz_regmap_8(dev), addr, bits, set ? bits : 0);
++	if (ret)
++		dev_err(dev->dev, "can't update reg 0x%x: %pe\n", addr,
++			ERR_PTR(ret));
+ }
+ 
+ static void ksz_port_cfg(struct ksz_device *dev, int port, int offset, u8 bits,
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.c	2025-06-19 15:51:14.078421148 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c	2025-07-29 14:10:19.108938996 -0700
+@@ -1309,6 +1309,7 @@ static const struct regmap_range ksz8873
+ 	regmap_reg_range(0x3f, 0x3f),
+ 
+ 	/* advanced control registers */
++	regmap_reg_range(0x43, 0x43),
+ 	regmap_reg_range(0x60, 0x6f),
+ 	regmap_reg_range(0x70, 0x75),
+ 	regmap_reg_range(0x76, 0x78),

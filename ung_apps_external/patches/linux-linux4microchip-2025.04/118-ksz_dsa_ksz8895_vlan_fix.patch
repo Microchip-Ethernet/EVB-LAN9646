@@ -1,0 +1,65 @@
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c	2025-06-19 15:53:36.253138287 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c	2025-06-19 15:53:52.593531124 -0700
+@@ -701,45 +701,51 @@ static void ksz8_to_vlan(struct ksz_devi
+ static void ksz8_r_vlan_entries(struct ksz_device *dev, u16 addr)
+ {
+ 	const u8 *shifts;
+-	u64 data;
++	u64 data, mask;
+ 	int i;
+ 
+ 	shifts = dev->info->shifts;
++	mask = (1 << shifts[VLAN_TABLE]) - 1;
+ 
+ 	ksz8_r_table(dev, TABLE_VLAN, addr, &data);
+ 	addr *= 4;
+ 	for (i = 0; i < 4; i++) {
+-		dev->vlan_cache[addr + i].table[0] = (u16)data;
++		dev->vlan_cache[addr + i].table[0] = (u16)(data & mask);
+ 		data >>= shifts[VLAN_TABLE];
+ 	}
+ }
+ 
+ static void ksz8_r_vlan_table(struct ksz_device *dev, u16 vid, u16 *vlan)
+ {
++	const u8 *shifts = dev->info->shifts;
++	u64 buf, mask;
+ 	int index;
+-	u16 *data;
+ 	u16 addr;
+-	u64 buf;
+ 
+-	data = (u16 *)&buf;
+ 	addr = vid / 4;
+ 	index = vid & 3;
+ 	ksz8_r_table(dev, TABLE_VLAN, addr, &buf);
+-	*vlan = data[index];
++	mask = (1 << shifts[VLAN_TABLE]) - 1;
++	index *= shifts[VLAN_TABLE];
++	buf >>= index;
++	buf &= mask;
++	*vlan = (u16)buf;
+ }
+ 
+ static void ksz8_w_vlan_table(struct ksz_device *dev, u16 vid, u16 vlan)
+ {
++	const u8 *shifts = dev->info->shifts;
++	u64 buf, mask;
+ 	int index;
+-	u16 *data;
+ 	u16 addr;
+-	u64 buf;
+ 
+-	data = (u16 *)&buf;
+ 	addr = vid / 4;
+ 	index = vid & 3;
+ 	ksz8_r_table(dev, TABLE_VLAN, addr, &buf);
+-	data[index] = vlan;
++	mask = (1 << shifts[VLAN_TABLE]) - 1;
++	index *= shifts[VLAN_TABLE];
++	buf &= ~(mask << index);
++	buf |= (u64)vlan << index;
+ 	dev->vlan_cache[vid].table[0] = vlan;
+ 	ksz8_w_table(dev, TABLE_VLAN, addr, buf);
+ }

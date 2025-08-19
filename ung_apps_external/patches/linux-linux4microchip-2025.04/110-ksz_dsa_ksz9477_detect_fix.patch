@@ -1,0 +1,101 @@
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz9477.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.c	2025-04-25 12:11:41.000000000 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz9477.c	2025-06-17 17:00:20.792863240 -0700
+@@ -169,9 +169,7 @@ int ksz9477_reset_switch(struct ksz_devi
+ 	/* reset switch */
+ 	ksz_cfg(dev, REG_SW_OPERATION, SW_RESET, true);
+ 
+-	/* turn off SPI DO Edge select */
+-	regmap_update_bits(ksz_regmap_8(dev), REG_SW_GLOBAL_SERIAL_CTRL_0,
+-			   SPI_AUTO_EDGE_DETECTION, 0);
++	ksz9477_detect_init(dev);
+ 
+ 	/* default configuration */
+ 	ksz_write8(dev, REG_SW_LUE_CTRL_1,
+@@ -1328,21 +1326,8 @@ void ksz9477_hsr_leave(struct dsa_switch
+ 
+ int ksz9477_switch_init(struct ksz_device *dev)
+ {
+-	u8 data8;
+-	int ret;
+-
+ 	dev->port_mask = (1 << dev->info->port_cnt) - 1;
+ 
+-	/* turn off SPI DO Edge select */
+-	ret = ksz_read8(dev, REG_SW_GLOBAL_SERIAL_CTRL_0, &data8);
+-	if (ret)
+-		return ret;
+-
+-	data8 &= ~SPI_AUTO_EDGE_DETECTION;
+-	ret = ksz_write8(dev, REG_SW_GLOBAL_SERIAL_CTRL_0, data8);
+-	if (ret)
+-		return ret;
+-
+ 	return 0;
+ }
+ 
+@@ -1351,6 +1336,20 @@ void ksz9477_switch_exit(struct ksz_devi
+ 	ksz9477_reset_switch(dev);
+ }
+ 
++void ksz9477_detect_init(struct ksz_device *dev)
++{
++	/* KSZ9897 family chip can fail to read registers correctly when the
++	 * SPI frequency is too high.  A solution is to disable SPI Auto Edge
++	 * Detection after chip reset.  This operation should not be done by
++	 * reading the register first and turning off the bit as the read may
++	 * be incorrect already so the value written may not be appropriate.
++	 * Currently other bits in this register are not crucial in normal
++	 * operation.
++	 */
++	if (ksz_is_9897_family(dev))
++		ksz_write8(dev, REG_SW_GLOBAL_SERIAL_CTRL_0, 0x40);
++}
++
+ MODULE_AUTHOR("Woojung Huh <Woojung.Huh@microchip.com>");
+ MODULE_DESCRIPTION("Microchip KSZ9477 Series Switch DSA Driver");
+ MODULE_LICENSE("GPL");
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.h linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz9477.h
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.h	2025-04-25 12:11:41.000000000 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz9477.h	2025-06-17 17:02:21.186389727 -0700
+@@ -60,6 +60,7 @@ void ksz9477_switch_exit(struct ksz_devi
+ void ksz9477_port_queue_split(struct ksz_device *dev, int port);
+ void ksz9477_hsr_join(struct dsa_switch *ds, int port, struct net_device *hsr);
+ void ksz9477_hsr_leave(struct dsa_switch *ds, int port, struct net_device *hsr);
++void ksz9477_detect_init(struct ksz_device *dev);
+ 
+ int ksz9477_port_acl_init(struct ksz_device *dev, int port);
+ void ksz9477_port_acl_free(struct ksz_device *dev, int port);
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.c	2025-04-25 12:11:41.000000000 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c	2025-06-17 17:00:20.793863203 -0700
+@@ -3772,6 +3772,9 @@ static int ksz_switch_detect(struct ksz_
+ 	u32 id32;
+ 	int ret;
+ 
++	/* Need to disable Auto Edge Detection before reading in KSZ9897. */
++	ksz9477_detect_init(dev);
++
+ 	/* read chip id */
+ 	ret = ksz_read16(dev, REG_CHIP_ID0, &id16);
+ 	if (ret)
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.h linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.h
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.h	2025-04-25 12:11:41.000000000 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.h	2025-06-17 17:05:32.319287708 -0700
+@@ -716,6 +716,16 @@ static inline bool is_ksz9477(struct ksz
+ 	return dev->chip_id == KSZ9477_CHIP_ID;
+ }
+ 
++static inline bool ksz_is_9897_family(struct ksz_device *dev)
++{
++	return dev->chip_id == KSZ9477_CHIP_ID ||
++	       dev->chip_id == KSZ9897_CHIP_ID ||
++	       dev->chip_id == KSZ9896_CHIP_ID ||
++	       dev->chip_id == KSZ9567_CHIP_ID ||
++	       dev->chip_id == KSZ8567_CHIP_ID ||
++	       dev->chip_id == LAN9646_CHIP_ID;
++}
++
+ static inline int is_lan937x(struct ksz_device *dev)
+ {
+ 	return dev->chip_id == LAN9370_CHIP_ID ||

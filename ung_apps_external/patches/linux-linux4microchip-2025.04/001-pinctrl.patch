@@ -1,0 +1,32 @@
+diff -Napur linux-linux4microchip-2025.04-orig/drivers/pinctrl/pinctrl-at91.c linux-linux4microchip-2025.04/drivers/pinctrl/pinctrl-at91.c
+--- linux-linux4microchip-2025.04-orig/drivers/pinctrl/pinctrl-at91.c	2025-04-25 12:11:41.000000000 -0700
++++ linux-linux4microchip-2025.04/drivers/pinctrl/pinctrl-at91.c	2025-05-06 16:45:53.679767713 -0700
+@@ -1567,7 +1567,12 @@ static void gpio_irq_unmask(struct irq_d
+ 	void __iomem	*pio = at91_gpio->regbase;
+ 	unsigned	mask = 1 << d->hwirq;
+ 	unsigned        gpio = irqd_to_hwirq(d);
++#if defined(CONFIG_KSZ_SWITCH) || defined(CONFIG_NET_DSA_TAG_KSZ) || defined(CONFIG_NET_DSA_TAG_KSZ_MODULE)
++	unsigned long	isr;
+ 
++	if (pio)
++		isr = readl_relaxed(pio + PIO_ISR);
++#endif
+ 	gpiochip_enable_irq(&at91_gpio->chip, gpio);
+ 
+ 	if (pio)
+diff -Napur linux-linux4microchip-2025.04-orig/drivers/pinctrl/pinctrl-at91-pio4.c linux-linux4microchip-2025.04/drivers/pinctrl/pinctrl-at91-pio4.c
+--- linux-linux4microchip-2025.04-orig/drivers/pinctrl/pinctrl-at91-pio4.c	2025-04-25 12:11:41.000000000 -0700
++++ linux-linux4microchip-2025.04/drivers/pinctrl/pinctrl-at91-pio4.c	2025-05-06 16:45:53.679767713 -0700
+@@ -239,7 +239,12 @@ static void atmel_gpio_irq_unmask(struct
+ {
+ 	struct atmel_pioctrl *atmel_pioctrl = irq_data_get_irq_chip_data(d);
+ 	struct atmel_pin *pin = atmel_pioctrl->pins[d->hwirq];
++#if defined(CONFIG_KSZ_SWITCH) || defined(CONFIG_NET_DSA_TAG_KSZ) || defined(CONFIG_NET_DSA_TAG_KSZ_MODULE)
++	unsigned long isr;
+ 
++	isr = (unsigned long)atmel_gpio_read(atmel_pioctrl, pin->bank,
++					     ATMEL_PIO_ISR);
++#endif
+ 	atmel_gpio_write(atmel_pioctrl, pin->bank, ATMEL_PIO_IER,
+ 			 BIT(pin->line));
+ }
