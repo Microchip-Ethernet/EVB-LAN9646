@@ -9,7 +9,8 @@ create_br_dev() {
 
     if [ ! -z "$1" ]; then
         ETH=$1
-    elif [ ! -d /sys/class/net/eth$ETH/sw ]; then
+    elif [ ! -d /sys/class/net/eth$ETH/sw ] &&
+         [ ! -d /sys/class/net/eth$ETH/dsa ]; then
         IP=$(ifconfig eth$ETH | grep "inet addr" | cut -d":" -f2 | cut -d" " -f1)
         SUBNET1=$(echo "$IP" | cut -d"." -f1)
         SUBNET2=$(echo "$IP" | cut -d"." -f2)
@@ -17,6 +18,7 @@ create_br_dev() {
         SUBNET4=$(echo "$IP" | cut -d"." -f4)
         ifconfig eth$ETH 0.0.0.0
         ETH=1
+        [ -d /sys/class/net/eth$ETH ] || exit 1
         ifconfig eth$ETH $SUBNET1.$SUBNET2.$SUBNET3.$SUBNET4
     fi
 

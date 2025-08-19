@@ -14,7 +14,8 @@ update_interfaces() {
 
     # First MAC can use a real PHY
     ETH=0
-    if [ ! -d /sys/class/net/eth$ETH/sw ]; then
+    if [ ! -d /sys/class/net/eth$ETH/sw ] &&
+       [ ! -d /sys/class/net/eth$ETH/dsa ]; then
         ETH=1
         [ -d /sys/class/net/eth$ETH ] || exit 1
     fi
