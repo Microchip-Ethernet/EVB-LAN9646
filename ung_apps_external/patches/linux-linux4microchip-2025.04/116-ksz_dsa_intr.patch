@@ -1,15 +1,10 @@
 diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c
 --- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c	2025-04-25 12:11:41.000000000 -0700
 +++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c	2025-06-19 15:48:28.930557639 -0700
-@@ -1044,6 +1044,17 @@ int ksz8_r_phy(struct ksz_device *dev, u
+@@ -1044,6 +1044,12 @@ int ksz8_r_phy(struct ksz_device *dev, u
  			return ret;
  
  		break;
-+
-+	/* No MMD access. */
-+	case MII_MMD_CTRL:
-+	case MII_MMD_DATA:
-+		break;
 +	case MII_TPISTATUS:
 +		/* This register holds the PHY interrupt status for simulated
 +		 * Micrel KSZ PHY.
@@ -89,7 +84,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  			if (irq < 0) {
  				ret = irq;
  				goto out;
-@@ -2633,9 +2651,15 @@ static void ksz_irq_bus_sync_unlock(stru
+@@ -2633,12 +2651,27 @@ static void ksz_irq_bus_sync_unlock(stru
  {
  	struct ksz_irq *kirq  = irq_data_get_irq_chip_data(d);
  	struct ksz_device *dev = kirq->dev;
@@ -100,13 +95,25 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
 +	/* Switches having only global interrupt use bits for enabling
 +	 * interrupt rather than masking it.
 +	 */
-+	if (!dev->info->port_nirqs)
++	if (!dev->info->port_nirqs) {
 +		masked = ~masked;
++		if (masked) {
++			struct dsa_switch *ds = dev->ds;
++
++			/* Only enable interrupt when all ports are setup. */
++			if (masked != dsa_user_ports(ds))
++				goto done;
++		}
++	}
 +	ret = ksz_write8(dev, kirq->reg_mask, masked);
  	if (ret)
  		dev_err(dev->dev, "failed to change IRQ mask\n");
  
-@@ -2696,6 +2720,15 @@ static irqreturn_t ksz_irq_thread_fn(int
++done:
+ 	mutex_unlock(&dev->lock_irq);
+ }
+ 
+@@ -2696,6 +2729,20 @@ static irqreturn_t ksz_irq_thread_fn(int
  	if (ret)
  		goto out;
  
@@ -114,15 +121,20 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
 +	 * acknowledge the interrupt here.
 +	 */
 +	if (!dev->info->port_nirqs && data) {
++		struct dsa_switch *ds = dev->ds;
++
 +		ret = ksz_write8(dev, kirq->reg_status, data);
 +		if (ret)
 +			goto out;
++
++		/* Only process simulated port interrupts. */
++		data &= dsa_user_ports(ds);
 +	}
 +
  	for (n = 0; n < kirq->nirqs; ++n) {
  		if (data & BIT(n)) {
  			sub_irq = irq_find_mapping(kirq->domain, n);
-@@ -2740,8 +2773,8 @@ static int ksz_girq_setup(struct ksz_dev
+@@ -2740,8 +2787,8 @@ static int ksz_girq_setup(struct ksz_dev
  	struct ksz_irq *girq = &dev->girq;
  
  	girq->nirqs = dev->info->port_cnt;
@@ -133,7 +145,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  	snprintf(girq->name, sizeof(girq->name), "global_port_irq");
  
  	girq->irq_num = dev->irq;
-@@ -2770,6 +2803,7 @@ static int ksz_parse_drive_strength(stru
+@@ -2770,6 +2817,7 @@ static int ksz_parse_drive_strength(stru
  static int ksz_setup(struct dsa_switch *ds)
  {
  	struct ksz_device *dev = ds->priv;
@@ -141,7 +153,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  	struct dsa_port *dp;
  	struct ksz_port *p;
  	const u16 *regs;
-@@ -2833,11 +2867,15 @@ static int ksz_setup(struct dsa_switch *
+@@ -2833,11 +2881,15 @@ static int ksz_setup(struct dsa_switch *
  	p->learning = true;
  
  	if (dev->irq > 0) {
@@ -157,7 +169,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  			ret = ksz_pirq_setup(dev, dp->index);
  			if (ret)
  				goto out_girq;
-@@ -2879,11 +2917,11 @@ out_ptp_clock_unregister:
+@@ -2879,11 +2931,11 @@ out_ptp_clock_unregister:
  	if (dev->info->ptp_capable)
  		ksz_ptp_clock_unregister(ds);
  out_ptpirq:
