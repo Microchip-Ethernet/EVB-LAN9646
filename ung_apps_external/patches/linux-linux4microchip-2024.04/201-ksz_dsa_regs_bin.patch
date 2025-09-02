@@ -1,7 +1,7 @@
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c	2024-09-23 14:39:41.609199552 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c	2024-09-24 13:53:48.187975136 -0700
-@@ -1408,6 +1408,18 @@ int ksz8_enable_stp_addr(struct ksz_devi
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c	2025-08-28 18:49:34.090367818 -0700
+@@ -1482,6 +1482,18 @@ int ksz8_enable_stp_addr(struct ksz_devi
  	return ksz8_w_sta_mac_table(dev, 0, &alu);
  }
  
@@ -20,18 +20,22 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.
  int ksz8_setup(struct dsa_switch *ds)
  {
  	struct ksz_device *dev = ds->priv;
-@@ -1452,6 +1464,10 @@ int ksz8_setup(struct dsa_switch *ds)
+@@ -1529,6 +1541,14 @@ int ksz8_setup(struct dsa_switch *ds)
  	for (i = 0; i < (dev->info->num_vlans / 4); i++)
  		ksz8_r_vlan_entries(dev, i);
  
 +	dev->regs_size = KSZ8_REGS_SIZE;
++	if (ksz_is_ksz8463(dev)) {
++		dev->regs_size = 0x800;
++		ksz8_registers_attr.size = dev->regs_size;
++	}
 +	i = sysfs_create_bin_file(&dev->dev->kobj, &ksz8_registers_attr);
 +	(void)i;
 +
  	return ksz8_handle_global_errata(ds);
  }
  
-@@ -1495,6 +1511,7 @@ int ksz8_switch_init(struct ksz_device *
+@@ -1650,6 +1670,7 @@ int ksz8_switch_init(struct ksz_device *
  
  void ksz8_switch_exit(struct ksz_device *dev)
  {
@@ -41,8 +45,8 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.
  
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c	2024-09-24 14:06:28.015208847 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2024-09-24 13:53:08.459426928 -0700
-@@ -1540,6 +1540,18 @@ int ksz9477_enable_stp_addr(struct ksz_d
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2025-08-28 18:33:21.432627745 -0700
+@@ -1399,6 +1399,18 @@ int ksz9477_enable_stp_addr(struct ksz_d
  	return 0;
  }
  
@@ -61,9 +65,9 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  int ksz9477_setup(struct dsa_switch *ds)
  {
  	struct ksz_device *dev = ds->priv;
-@@ -1586,6 +1598,11 @@ int ksz9477_setup(struct dsa_switch *ds)
- 		}
- 	}
+@@ -1428,6 +1440,11 @@ int ksz9477_setup(struct dsa_switch *ds)
+ 	/* enable global MIB counter freeze function */
+ 	ksz_cfg(dev, REG_SW_MAC_CTRL_6, SW_MIB_COUNTER_FREEZE, true);
  
 +	dev->regs_size = KSZ9477_REGS_SIZE;
 +	ret = sysfs_create_bin_file(&dev->dev->kobj,
@@ -73,18 +77,18 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  	return 0;
  }
  
-@@ -1612,6 +1629,7 @@ void ksz9477_switch_exit(struct ksz_devi
- {
- 	if (delayed_work_pending(&dev->sgmii_check))
- 		cancel_delayed_work_sync(&dev->sgmii_check);
+@@ -1461,6 +1478,7 @@ void ksz9477_switch_exit(struct ksz_devi
+ 			p->xpcs = NULL;
+ 		}
+ 	}
 +	sysfs_remove_bin_file(&dev->dev->kobj, &ksz9477_registers_attr);
  	ksz9477_reset_switch(dev);
  }
  
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2024-09-24 14:06:28.016208811 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2024-09-24 13:31:42.124433257 -0700
-@@ -3796,6 +3796,62 @@ static const struct dsa_switch_ops ksz_s
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2025-08-28 18:42:48.991805877 -0700
+@@ -3887,6 +3887,98 @@ static const struct dsa_switch_ops ksz_s
  	.set_mac_eee		= ksz_set_mac_eee,
  };
  
@@ -94,6 +98,8 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
 +{
 +	struct ksz_device *swdev;
 +	struct device *dev;
++	struct regmap *map;
++	size_t cnt = count;
 +	size_t i;
 +	u32 reg;
 +
@@ -110,8 +116,30 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
 +		return count;
 +
 +	reg = off;
-+	i = regmap_bulk_read(swdev->regmap[0], reg, buf, count);
++	map = swdev->regmap[0];
++	if (swdev->chip_id == KSZ8463_CHIP_ID) {
++		if (!(count & 1) && !(reg & 1)) {
++			map = swdev->regmap[1];
++			cnt /= 2;
++		} else if (!(count & 3) && !(reg & 3)) {
++			map = swdev->regmap[2];
++			cnt /= 4;
++		}
++	}
++	i = regmap_bulk_read(map, reg, buf, cnt);
 +	i = count;
++
++	/* 16-bit access with odd address. */
++	if (swdev->chip_id == KSZ8463_CHIP_ID && (off & 1)) {
++		/*
++		 * Return zero to let the calling program know the boundary
++		 * must be 16-bit.
++		 */
++		if (!(count & 1))
++			i = 0;
++	}
++	if (count == 1)
++		i = 1;
 +	return i;
 +}
 +EXPORT_SYMBOL_GPL(ksz_registers_read);
@@ -122,6 +150,8 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
 +{
 +	struct ksz_device *swdev;
 +	struct device *dev;
++	struct regmap *map;
++	size_t cnt = count;
 +	size_t i;
 +	u32 reg;
 +
@@ -138,7 +168,17 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
 +		return count;
 +
 +	reg = off;
-+	i = regmap_bulk_write(swdev->regmap[0], reg, buf, count);
++	map = swdev->regmap[0];
++	if (swdev->chip_id == KSZ8463_CHIP_ID) {
++		if (!(count & 1) && !(reg & 1)) {
++			map = swdev->regmap[1];
++			cnt /= 2;
++		} else if (!(count & 3) && !(reg & 3)) {
++			map = swdev->regmap[2];
++			cnt /= 4;
++		}
++	}
++	i = regmap_bulk_write(map, reg, buf, cnt);
 +	i = count;
 +	return i;
 +}
@@ -150,7 +190,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h	2024-09-24 14:06:28.016208811 -0700
 +++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h	2024-09-24 13:30:40.178696929 -0700
-@@ -159,6 +159,7 @@ struct ksz_device {
+@@ -148,6 +148,7 @@ struct ksz_device {
  
  	struct device *dev;
  	struct regmap *regmap[__KSZ_NUM_REGMAPS];
@@ -158,7 +198,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  
  	void *priv;
  	int irq;
-@@ -414,6 +415,13 @@ bool ksz_get_gbit(struct ksz_device *dev
+@@ -400,6 +401,13 @@ bool ksz_get_gbit(struct ksz_device *dev
  phy_interface_t ksz_get_xmii(struct ksz_device *dev, int port, bool gbit);
  extern const struct ksz_chip_data ksz_switch_chips[];
  
