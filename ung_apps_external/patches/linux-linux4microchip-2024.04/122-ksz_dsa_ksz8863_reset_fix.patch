@@ -1,0 +1,66 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c	2025-08-28 15:51:33.720785573 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c	2025-08-28 16:01:26.835193997 -0700
+@@ -28,14 +28,14 @@
+ 
+ static void ksz_cfg(struct ksz_device *dev, u32 addr, u8 bits, bool set)
+ {
+-	regmap_update_bits(ksz_regmap_8(dev), addr, bits, set ? bits : 0);
++	ksz_rmw8(dev, addr, bits, set ? bits : 0);
+ }
+ 
+ static void ksz_port_cfg(struct ksz_device *dev, int port, int offset, u8 bits,
+ 			 bool set)
+ {
+-	regmap_update_bits(ksz_regmap_8(dev), PORT_CTRL_ADDR(port, offset),
+-			   bits, set ? bits : 0);
++	ksz_rmw8(dev, dev->dev_ops->get_port_addr(port, offset), bits,
++		 set ? bits : 0);
+ }
+ 
+ static int ksz8_ind_write8(struct ksz_device *dev, u8 table, u16 addr, u8 data)
+@@ -1420,7 +1420,7 @@ int ksz8_enable_stp_addr(struct ksz_devi
+ int ksz8_setup(struct dsa_switch *ds)
+ {
+ 	struct ksz_device *dev = ds->priv;
+-	int i;
++	int i, ret;
+ 
+ 	ds->mtu_enforcement_ingress = true;
+ 
+@@ -1440,16 +1440,19 @@ int ksz8_setup(struct dsa_switch *ds)
+ 	ksz_cfg(dev, S_LINK_AGING_CTRL, SW_LINK_AUTO_AGING, true);
+ 
+ 	/* Enable aggressive back off algorithm in half duplex mode. */
+-	regmap_update_bits(ksz_regmap_8(dev), REG_SW_CTRL_1,
+-			   SW_AGGR_BACKOFF, SW_AGGR_BACKOFF);
++	ret = ksz_rmw8(dev, REG_SW_CTRL_1, SW_AGGR_BACKOFF, SW_AGGR_BACKOFF);
++	if (ret)
++		return ret;
+ 
+ 	/*
+ 	 * Make sure unicast VLAN boundary is set as default and
+ 	 * enable no excessive collision drop.
+ 	 */
+-	regmap_update_bits(ksz_regmap_8(dev), REG_SW_CTRL_2,
+-			   UNICAST_VLAN_BOUNDARY | NO_EXC_COLLISION_DROP,
+-			   UNICAST_VLAN_BOUNDARY | NO_EXC_COLLISION_DROP);
++	ret = ksz_rmw8(dev, REG_SW_CTRL_2,
++		       UNICAST_VLAN_BOUNDARY | NO_EXC_COLLISION_DROP,
++		       UNICAST_VLAN_BOUNDARY | NO_EXC_COLLISION_DROP);
++	if (ret)
++		return ret;
+ 
+ 	ksz_cfg(dev, S_REPLACE_VID_CTRL, SW_REPLACE_VID, false);
+ 
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2025-08-28 15:35:35.315357315 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2025-08-28 15:58:56.355684851 -0700
+@@ -1100,6 +1100,7 @@ static const struct regmap_range ksz8873
+ 	regmap_reg_range(0x3f, 0x3f),
+ 
+ 	/* advanced control registers */
++	regmap_reg_range(0x43, 0x43),
+ 	regmap_reg_range(0x60, 0x6f),
+ 	regmap_reg_range(0x70, 0x75),
+ 	regmap_reg_range(0x76, 0x78),

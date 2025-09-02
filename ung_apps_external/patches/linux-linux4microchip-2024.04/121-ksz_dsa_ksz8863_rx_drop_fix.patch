@@ -1,0 +1,27 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.c	2025-08-28 15:43:08.400091897 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795.c	2025-08-28 15:49:13.657847389 -0700
+@@ -263,6 +263,9 @@ static void ksz8863_r_mib_pkt(struct ksz
+ 	addr -= dev->info->reg_mib_cnt;
+ 	ctrl_addr = addr ? KSZ8863_MIB_PACKET_DROPPED_TX_0 :
+ 			   KSZ8863_MIB_PACKET_DROPPED_RX_0;
++	if (ksz_is_8895_family(dev) &&
++	    ctrl_addr == KSZ8863_MIB_PACKET_DROPPED_RX_0)
++		ctrl_addr = KSZ8895_MIB_PACKET_DROPPED_RX_0;
+ 	ctrl_addr += port;
+ 	ctrl_addr |= IND_ACC_TABLE(TABLE_MIB | TABLE_READ);
+ 
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795_reg.h linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795_reg.h
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795_reg.h	2024-05-24 05:04:06.000000000 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz8795_reg.h	2025-08-28 15:48:38.647112663 -0700
+@@ -801,7 +801,9 @@
+ #define KSZ8795_MIB_TOTAL_TX_1		0x105
+ 
+ #define KSZ8863_MIB_PACKET_DROPPED_TX_0 0x100
+-#define KSZ8863_MIB_PACKET_DROPPED_RX_0 0x105
++#define KSZ8863_MIB_PACKET_DROPPED_RX_0 0x103
++
++#define KSZ8895_MIB_PACKET_DROPPED_RX_0 0x105
+ 
+ #define MIB_PACKET_DROPPED		0x0000FFFF
+ 
