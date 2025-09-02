@@ -1,0 +1,16 @@
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.c	2025-08-27 16:54:12.691608975 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c	2025-08-27 16:58:55.599527999 -0700
+@@ -2284,6 +2284,12 @@ static void ksz_update_port_member(struc
+ 		dev->dev_ops->cfg_port_member(dev, i, val | cpu_port);
+ 	}
+ 
++	/* HSR ports are setup once so need to use the assigned membership
++	 * when the port is enabled.
++	 */
++	if (!port_member && p->stp_state == BR_STATE_FORWARDING &&
++	    (dev->hsr_ports & BIT(port)))
++		port_member = dev->hsr_ports;
+ 	dev->dev_ops->cfg_port_member(dev, port, port_member | cpu_port);
+ }
+ 
