@@ -1,3 +1,14 @@
+diff -Napur linux-linux4microchip-2025.04-old/Documentation/devicetree/bindings/net/dsa/microchip,ksz.yaml linux-linux4microchip-2025.04-new/Documentation/devicetree/bindings/net/dsa/microchip,ksz.yaml
+--- linux-linux4microchip-2025.04-old/Documentation/devicetree/bindings/net/dsa/microchip,ksz.yaml	2025-05-26 04:26:53.000000000 -0700
++++ linux-linux4microchip-2025.04-new/Documentation/devicetree/bindings/net/dsa/microchip,ksz.yaml	2025-08-29 19:17:55.783843627 -0700
+@@ -18,6 +18,7 @@ properties:
+   # required and optional properties.
+   compatible:
+     enum:
++      - microchip,ksz8463
+       - microchip,ksz8765
+       - microchip,ksz8794
+       - microchip,ksz8795
 diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c
 --- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c	2025-08-27 16:54:12.690609010 -0700
 +++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz8.c	2025-08-27 17:33:46.876008706 -0700
@@ -64,7 +75,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  	} else {
  		mask_4q = KSZ8795_PORT_4QUEUE_SPLIT_EN;
  		mask_2q = KSZ8795_PORT_2QUEUE_SPLIT_EN;
-@@ -1290,12 +1297,15 @@ int ksz8_w_phy(struct ksz_device *dev, u
+@@ -1285,12 +1292,15 @@ int ksz8_w_phy(struct ksz_device *dev, u
  
  void ksz8_cfg_port_member(struct ksz_device *dev, int port, u8 member)
  {
@@ -83,7 +94,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  }
  
  void ksz8_flush_dyn_mac_table(struct ksz_device *dev, int port)
-@@ -1303,6 +1313,8 @@ void ksz8_flush_dyn_mac_table(struct ksz
+@@ -1298,6 +1308,8 @@ void ksz8_flush_dyn_mac_table(struct ksz
  	u8 learn[DSA_MAX_PORTS];
  	int first, index, cnt;
  	const u16 *regs;
@@ -92,7 +103,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  
  	regs = dev->info->regs;
  
-@@ -1320,7 +1332,11 @@ void ksz8_flush_dyn_mac_table(struct ksz
+@@ -1315,7 +1327,11 @@ void ksz8_flush_dyn_mac_table(struct ksz
  			ksz_pwrite8(dev, index, regs[P_STP_CTRL],
  				    learn[index] | PORT_LEARN_DISABLE);
  	}
@@ -105,7 +116,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  	for (index = first; index < cnt; index++) {
  		if (!(learn[index] & PORT_LEARN_DISABLE))
  			ksz_pwrite8(dev, index, regs[P_STP_CTRL], learn[index]);
-@@ -1459,7 +1475,7 @@ int ksz8_fdb_del(struct ksz_device *dev,
+@@ -1454,7 +1470,7 @@ int ksz8_fdb_del(struct ksz_device *dev,
  int ksz8_port_vlan_filtering(struct ksz_device *dev, int port, bool flag,
  			     struct netlink_ext_ack *extack)
  {
@@ -114,7 +125,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  		return -ENOTSUPP;
  
  	/* Discard packets with VID not enabled on the switch */
-@@ -1475,9 +1491,12 @@ int ksz8_port_vlan_filtering(struct ksz_
+@@ -1470,9 +1486,12 @@ int ksz8_port_vlan_filtering(struct ksz_
  
  static void ksz8_port_enable_pvid(struct ksz_device *dev, int port, bool state)
  {
@@ -130,7 +141,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  	} else {
  		ksz_pwrite8(dev, port, REG_PORT_CTRL_12, state ? 0x0f : 0x00);
  	}
-@@ -1492,7 +1511,7 @@ int ksz8_port_vlan_add(struct ksz_device
+@@ -1487,7 +1506,7 @@ int ksz8_port_vlan_add(struct ksz_device
  	u16 data, new_pvid = 0;
  	u8 fid, member, valid;
  
@@ -139,7 +150,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  		return -ENOTSUPP;
  
  	/* If a VLAN is added with untagged flag different from the
-@@ -1561,7 +1580,7 @@ int ksz8_port_vlan_del(struct ksz_device
+@@ -1556,7 +1575,7 @@ int ksz8_port_vlan_del(struct ksz_device
  	u16 data, pvid;
  	u8 fid, member, valid;
  
@@ -148,7 +159,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  		return -ENOTSUPP;
  
  	ksz_pread16(dev, port, REG_PORT_CTRL_VID, &pvid);
-@@ -1591,19 +1610,23 @@ int ksz8_port_mirror_add(struct ksz_devi
+@@ -1586,19 +1605,23 @@ int ksz8_port_mirror_add(struct ksz_devi
  			 struct dsa_mall_mirror_tc_entry *mirror,
  			 bool ingress, struct netlink_ext_ack *extack)
  {
@@ -176,7 +187,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  			     PORT_MIRROR_SNIFFER, true);
  
  	return 0;
-@@ -1612,20 +1635,23 @@ int ksz8_port_mirror_add(struct ksz_devi
+@@ -1607,20 +1630,23 @@ int ksz8_port_mirror_add(struct ksz_devi
  void ksz8_port_mirror_del(struct ksz_device *dev, int port,
  			  struct dsa_mall_mirror_tc_entry *mirror)
  {
@@ -204,7 +215,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  			     PORT_MIRROR_SNIFFER, false);
  }
  
-@@ -1650,13 +1676,17 @@ void ksz8_port_setup(struct ksz_device *
+@@ -1645,13 +1671,17 @@ void ksz8_port_setup(struct ksz_device *
  	const u16 *regs = dev->info->regs;
  	struct dsa_switch *ds = dev->ds;
  	const u32 *masks;
@@ -223,7 +234,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  
  	/* For KSZ88x3 enable only one queue by default, otherwise we won't
  	 * be able to get rid of PCP prios on Port 2.
-@@ -1669,7 +1699,10 @@ void ksz8_port_setup(struct ksz_device *
+@@ -1664,7 +1694,10 @@ void ksz8_port_setup(struct ksz_device *
  	ksz8_port_queue_split(dev, port, queues);
  
  	/* replace priority */
@@ -235,7 +246,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  		     masks[PORT_802_1P_REMAPPING], false);
  
  	if (cpu_port)
-@@ -1709,6 +1742,7 @@ void ksz8_config_cpu_port(struct dsa_swi
+@@ -1704,6 +1737,7 @@ void ksz8_config_cpu_port(struct dsa_swi
  	const u32 *masks;
  	const u16 *regs;
  	u8 remote;
@@ -243,7 +254,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  	int i;
  
  	masks = dev->info->masks;
-@@ -1739,6 +1773,32 @@ void ksz8_config_cpu_port(struct dsa_swi
+@@ -1734,6 +1768,32 @@ void ksz8_config_cpu_port(struct dsa_swi
  		else
  			ksz_port_cfg(dev, i, regs[P_STP_CTRL],
  				     PORT_FORCE_FLOW_CTRL, false);
@@ -276,7 +287,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  	}
  }
  
-@@ -1920,22 +1980,25 @@ int ksz8_setup(struct dsa_switch *ds)
+@@ -1923,22 +1983,25 @@ int ksz8_setup(struct dsa_switch *ds)
  	ksz_cfg(dev, S_LINK_AGING_CTRL, SW_LINK_AUTO_AGING, true);
  
  	/* Enable aggressive back off algorithm in half duplex mode. */
@@ -308,7 +319,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  		ksz_cfg(dev, REG_SW_CTRL_19, SW_INS_TAG_ENABLE, true);
  
  	for (i = 0; i < (dev->info->num_vlans / 4); i++)
-@@ -1987,6 +2050,84 @@ u32 ksz8_get_port_addr(int port, int off
+@@ -1990,6 +2053,84 @@ u32 ksz8_get_port_addr(int port, int off
  	return PORT_CTRL_ADDR(port, offset);
  }
  
@@ -608,18 +619,21 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  		}
  	}
  	ret = ksz_write8(dev, kirq->reg_mask, masked);
-@@ -2743,6 +2856,10 @@ static irqreturn_t ksz_irq_thread_fn(int
- 		ret = ksz_write8(dev, kirq->reg_status, data);
+@@ -2746,8 +2859,12 @@ static irqreturn_t ksz_irq_thread_fn(int
  		if (ret)
  			goto out;
-+
+ 
 +		/* Simulate port interrupts for KSZ8463. */
 +		if (ksz_is_ksz8463(dev) && (data & KSZ8463_INTR))
 +			data = 0x03;
+ 		/* Only process simulated port interrupts. */
+-		data &= dsa_user_ports(ds);
++		else
++			data &= dsa_user_ports(ds);
  	}
  
  	for (n = 0; n < kirq->nirqs; ++n) {
-@@ -2819,6 +2936,7 @@ static int ksz_parse_drive_strength(stru
+@@ -2824,6 +2941,7 @@ static int ksz_parse_drive_strength(stru
  static int ksz_setup(struct dsa_switch *ds)
  {
  	struct ksz_device *dev = ds->priv;
@@ -627,7 +641,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  	bool have_port_irq = false;
  	struct dsa_port *dp;
  	struct ksz_port *p;
-@@ -2849,10 +2967,14 @@ static int ksz_setup(struct dsa_switch *
+@@ -2854,10 +2972,14 @@ static int ksz_setup(struct dsa_switch *
  	}
  
  	/* set broadcast storm protection 10% rate */
@@ -645,7 +659,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  
  	dev->dev_ops->config_cpu_port(ds);
  
-@@ -3407,6 +3529,7 @@ static enum dsa_tag_protocol ksz_get_tag
+@@ -3412,6 +3534,7 @@ static enum dsa_tag_protocol ksz_get_tag
  		proto = DSA_TAG_PROTO_KSZ8795;
  
  	if (dev->chip_id == KSZ88X3_CHIP_ID ||
@@ -653,7 +667,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  	    dev->chip_id == KSZ8563_CHIP_ID ||
  	    dev->chip_id == KSZ9893_CHIP_ID ||
  	    dev->chip_id == KSZ9563_CHIP_ID)
-@@ -3519,6 +3642,7 @@ static int ksz_max_mtu(struct dsa_switch
+@@ -3524,6 +3647,7 @@ static int ksz_max_mtu(struct dsa_switch
  	case KSZ8794_CHIP_ID:
  	case KSZ8765_CHIP_ID:
  		return KSZ8795_HUGE_PACKET_SIZE - VLAN_ETH_HLEN - ETH_FCS_LEN;
@@ -661,7 +675,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  	case KSZ88X3_CHIP_ID:
  	case KSZ8864_CHIP_ID:
  	case KSZ8895_CHIP_ID:
-@@ -3867,6 +3991,9 @@ static int ksz_switch_detect(struct ksz_
+@@ -3872,6 +3996,9 @@ static int ksz_switch_detect(struct ksz_
  	id2 = FIELD_GET(SW_CHIP_ID_M, id16);
  
  	switch (id1) {
@@ -671,7 +685,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  	case KSZ87_FAMILY_ID:
  		if (id2 == KSZ87_CHIP_ID_95) {
  			u8 val;
-@@ -4108,6 +4235,17 @@ static int ksz_ets_band_to_queue(struct
+@@ -4113,6 +4240,17 @@ static int ksz_ets_band_to_queue(struct
  	return p->bands - 1 - band;
  }
  
@@ -689,7 +703,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  /**
   * ksz88x3_tc_ets_add - Configure ETS (Enhanced Transmission Selection)
   *                      for a port on KSZ88x3 switch
-@@ -4143,6 +4281,8 @@ static int ksz88x3_tc_ets_add(struct ksz
+@@ -4148,6 +4286,8 @@ static int ksz88x3_tc_ets_add(struct ksz
  		 * port/queue
  		 */
  		reg = KSZ8873_TXQ_SPLIT_CTRL_REG(port, queue);
@@ -698,7 +712,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  
  		/* Clear WFQ enable bit to select strict priority scheduling */
  		ret = ksz_rmw8(dev, reg, KSZ8873_TXQ_WFQ_ENABLE, 0);
-@@ -4178,6 +4318,8 @@ static int ksz88x3_tc_ets_del(struct ksz
+@@ -4183,6 +4323,8 @@ static int ksz88x3_tc_ets_del(struct ksz
  		 * port/queue
  		 */
  		reg = KSZ8873_TXQ_SPLIT_CTRL_REG(port, queue);
@@ -707,7 +721,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  
  		/* Set WFQ enable bit to revert back to default scheduling
  		 * mode
-@@ -4324,7 +4466,7 @@ static int ksz_tc_setup_qdisc_ets(struct
+@@ -4329,7 +4471,7 @@ static int ksz_tc_setup_qdisc_ets(struct
  	struct ksz_device *dev = ds->priv;
  	int ret;
  
@@ -716,7 +730,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  		return -EOPNOTSUPP;
  
  	if (qopt->parent != TC_H_ROOT) {
-@@ -4338,13 +4480,13 @@ static int ksz_tc_setup_qdisc_ets(struct
+@@ -4343,13 +4485,13 @@ static int ksz_tc_setup_qdisc_ets(struct
  		if (ret)
  			return ret;
  
@@ -732,7 +746,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  			return ksz88x3_tc_ets_del(dev, port);
  		else
  			return ksz_tc_ets_del(dev, port);
-@@ -4687,7 +4829,16 @@ int ksz_switch_macaddr_get(struct dsa_sw
+@@ -4692,7 +4834,16 @@ int ksz_switch_macaddr_get(struct dsa_sw
  
  	/* Program the switch MAC address to hardware */
  	for (i = 0; i < ETH_ALEN; i++) {
@@ -750,7 +764,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  		if (ret)
  			goto macaddr_drop;
  	}
-@@ -5296,6 +5447,9 @@ int ksz_switch_register(struct ksz_devic
+@@ -5301,6 +5452,9 @@ int ksz_switch_register(struct ksz_devic
  						&dev->ports[port_num].interface);
  
  				ksz_parse_rgmii_delay(dev, port_num, port);
@@ -771,7 +785,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  	KSZ8563,
  	KSZ8567,
  	KSZ8795,
-@@ -486,6 +487,11 @@ static inline struct regmap *ksz_regmap_
+@@ -487,6 +488,11 @@ static inline struct regmap *ksz_regmap_
  	return dev->regmap[KSZ_REGMAP_32];
  }
  
@@ -783,7 +797,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  static inline int ksz_read8(struct ksz_device *dev, u32 reg, u8 *val)
  {
  	unsigned int value;
-@@ -711,12 +717,13 @@ static inline bool ksz_is_8895_family(st
+@@ -712,12 +718,13 @@ static inline bool ksz_is_8895_family(st
  static inline bool is_ksz8(struct ksz_device *dev)
  {
  	return ksz_is_ksz87xx(dev) || ksz_is_ksz88x3(dev) ||
@@ -799,7 +813,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  }
  
  static inline bool is_ksz9477(struct ksz_device *dev)
-@@ -773,6 +780,7 @@ static inline bool ksz_is_sgmii_port(str
+@@ -774,6 +781,7 @@ static inline bool ksz_is_sgmii_port(str
  #define REG_CHIP_ID0			0x00
  
  #define SW_FAMILY_ID_M			GENMASK(15, 8)
@@ -807,7 +821,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  #define KSZ87_FAMILY_ID			0x87
  #define KSZ88_FAMILY_ID			0x88
  #define KSZ8895_FAMILY_ID		0x95
-@@ -843,6 +851,8 @@ static inline bool ksz_is_sgmii_port(str
+@@ -844,6 +852,8 @@ static inline bool ksz_is_sgmii_port(str
  #define PORT_SRC_PHY_INT		1
  #define PORT_SRC_PTP_INT		2
  
@@ -816,7 +830,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  #define KSZ8795_HUGE_PACKET_SIZE	2000
  #define KSZ8863_HUGE_PACKET_SIZE	1916
  #define KSZ8863_NORMAL_PACKET_SIZE	1536
-@@ -951,4 +961,29 @@ static inline bool ksz_is_sgmii_port(str
+@@ -952,4 +962,29 @@ static inline bool ksz_is_sgmii_port(str
  		[KSZ_REGMAP_32] = KSZ_REGMAP_ENTRY(32, swp, (regbits), (regpad), (regalign)), \
  	}
  
