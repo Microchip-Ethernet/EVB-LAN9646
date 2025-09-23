@@ -39,7 +39,7 @@ create_br_dev() {
         ETHDEV=lan
         START=1
         p=2
-        while [ -e "sys/class/net/lan$p" ]; do
+        while [ -e "/sys/class/net/lan$p" ]; do
             let p=$p+1
         done
         PORTS=$p
