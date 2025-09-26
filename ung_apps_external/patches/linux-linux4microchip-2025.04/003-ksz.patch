@@ -19208,8 +19208,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_d
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_hsr_6_1.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_hsr_6_1.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	2025-08-18 16:36:00.113424450 -0700
-@@ -0,0 +1,4441 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_hsr_6_1.c	2025-09-25 17:47:46.283014858 -0700
+@@ -0,0 +1,4446 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright 2011-2014 Autronica Fire and Security AS
 + *
@@ -21867,6 +21867,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_h
 +
 +	/* Not unicast frame addressed to host. */
 +	if (!frame->is_local_exclusive) {
++		struct ksz_sw *sw = info->sw_dev;
 +
 +		/* May need to change address for lane B. */
 +		frame->node_dst = hsr_addr_chk_dest(port->hsr, skb);
@@ -21892,6 +21893,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_h
 +			if (frame->is_supervision)
 +				frame->is_hsr_exclusive = true;
 +		}
++
++		/* Do not forward PTP messages to Redbox. */
++		if (get_rx_tag_ptp(&sw->tag))
++			frame->is_hsr_exclusive = true;
 +
 +		/* Forward to Redbox if supported. */
 +		if (port->type != HSR_PT_INTERLINK &&
@@ -23710,7 +23715,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_h
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_hsr.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_hsr.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_hsr.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_hsr.c	2025-08-18 16:36:00.114424428 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_hsr.c	2025-09-25 17:50:56.001968112 -0700
 @@ -0,0 +1,2646 @@
 +/**
 + * Microchip HSR code
@@ -25791,7 +25796,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_h
 +		from = hsr_port_get_hsr(&info->hsr, pt);
 +		return hsr_forward_skb(skb, from);
 +	}
-+	return 2;
++	return 1;
 +}  /* hsr_rcv */
 +#endif
 +
@@ -47710,8 +47715,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_m
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c	2025-09-22 15:14:22.440193799 -0700
-@@ -0,0 +1,8586 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c	2025-09-25 17:42:47.981094742 -0700
+@@ -0,0 +1,8599 @@
 +/**
 + * Microchip PTP common code
 + *
@@ -50983,6 +50988,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +	ptp->overrides &= ~PTP_USE_DEFAULT_PORT;
 +	ptp->tx_en = ptp->rx_en = 0;
 +	ptp->tx_en_ports = ptp->rx_en_ports = 0;
++	ptp->tx_en_cnt = ptp->rx_en_cnt = 0;
 +	ptp->need_sync_tx_ts = false;
 +	ptp->need_resp_tx_ts = false;
 +	ptp->check_1_step_req_help = false;
@@ -51337,7 +51343,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +
 +	switch (config->tx_type) {
 +	case HWTSTAMP_TX_OFF:
-+		ptp->tx_en_ports &= ~ports;
++		if (ptp->tx_en_cnt)
++			--ptp->tx_en_cnt;
++		else
++			ptp->tx_en_ports &= ~ports;
 +		if (!ptp->tx_en_ports)
 +			ptp->tx_en &= ~7;
 +		if (!(ptp->tx_en & 1))
@@ -51387,7 +51396,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +		/* Default is to include tx latency in tx timestamp. */
 +		if (!(ptp->tx_en & 1))
 +			ptp->tx_en |= (1 << 8);
-+		ptp->tx_en_ports |= ports;
++		if (ptp->tx_en_ports == ports)
++			++ptp->tx_en_cnt;
++		else
++			ptp->tx_en_ports |= ports;
 +		ptp->tx_en |= 1;
 +
 +		/* eth0 is used when child devices are present. */
@@ -51398,7 +51410,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +
 +	switch (config->rx_filter) {
 +	case HWTSTAMP_FILTER_NONE:
-+		ptp->rx_en_ports &= ~ports;
++		if (ptp->rx_en_cnt)
++			--ptp->rx_en_cnt;
++		else
++			ptp->rx_en_ports &= ~ports;
 +		if (!ptp->rx_en_ports)
 +			ptp->rx_en &= ~1;
 +		if (!(ptp->rx_en & 1))
@@ -51425,7 +51440,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +		/* Default is to include rx latency in rx timestamp. */
 +		if (!(ptp->rx_en & 1))
 +			ptp->rx_en |= (1 << 8);
-+		ptp->rx_en_ports |= ports;
++		if (ptp->rx_en_ports == ports)
++			++ptp->rx_en_cnt;
++		else
++			ptp->rx_en_ports |= ports;
 +		ptp->rx_en |= 1;
 +		break;
 +	}
@@ -56300,8 +56318,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.h	2025-09-22 15:13:18.463548945 -0700
-@@ -0,0 +1,1196 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.h	2025-09-25 17:43:11.744212100 -0700
+@@ -0,0 +1,1198 @@
 +/**
 + * Microchip PTP common header
 + *
@@ -57303,6 +57321,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +	int tx_en;
 +	u16 rx_en_ports;
 +	u16 tx_en_ports;
++	u8 rx_en_cnt;
++	u8 tx_en_cnt;
 +	int utc_offset;
 +
 +	u32 clk_divider;
@@ -57500,8 +57520,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp.c	2025-09-22 15:17:28.940328229 -0700
-@@ -0,0 +1,5719 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp.c	2025-09-25 17:43:48.715838853 -0700
+@@ -0,0 +1,5732 @@
 +/**
 + * Microchip PTP common code
 + *
@@ -59636,6 +59656,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +	ptp->offset_changed = 0;
 +	ptp->tx_en = ptp->rx_en = 0;
 +	ptp->tx_en_ports = ptp->rx_en_ports = 0;
++	ptp->tx_en_cnt = ptp->rx_en_cnt = 0;
 +	ptp->need_1_step_resp_help = false;
 +	ptp->need_p2p_tc_set_help = false;
 +	ptp->need_peer_delay_set_help = false;
@@ -60088,7 +60109,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +
 +	switch (config->tx_type) {
 +	case HWTSTAMP_TX_OFF:
-+		ptp->tx_en_ports &= ~ports;
++		if (ptp->tx_en_cnt)
++			--ptp->tx_en_cnt;
++		else
++			ptp->tx_en_ports &= ~ports;
 +		if (!ptp->tx_en_ports)
 +			ptp->tx_en &= ~7;
 +		if (!(ptp->tx_en & 1))
@@ -60131,7 +60155,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +		/* Default is to include tx latency in tx timestamp. */
 +		if (!(ptp->tx_en & 1))
 +			ptp->tx_en |= (1 << 8);
-+		ptp->tx_en_ports |= ports;
++		if (ptp->tx_en_ports == ports)
++			++ptp->tx_en_cnt;
++		else
++			ptp->tx_en_ports |= ports;
 +		ptp->tx_en |= 1;
 +
 +		/* eth0 is used when child devices are present. */
@@ -60142,7 +60169,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +
 +	switch (config->rx_filter) {
 +	case HWTSTAMP_FILTER_NONE:
-+		ptp->rx_en_ports &= ~ports;
++		if (ptp->rx_en_cnt)
++			--ptp->rx_en_cnt;
++		else
++			ptp->rx_en_ports &= ~ports;
 +		if (!ptp->rx_en_ports)
 +			ptp->rx_en &= ~1;
 +		if (!(ptp->rx_en & 1))
@@ -60169,7 +60199,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +		/* Default is to include rx latency in rx timestamp. */
 +		if (!(ptp->rx_en & 1))
 +			ptp->rx_en |= (1 << 8);
-+		ptp->rx_en_ports |= ports;
++		if (ptp->rx_en_ports == ports)
++			++ptp->rx_en_cnt;
++		else
++			ptp->rx_en_ports |= ports;
 +		ptp->rx_en |= 1;
 +		break;
 +	}
@@ -63223,8 +63256,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp.h	2025-09-22 15:12:21.990627864 -0700
-@@ -0,0 +1,1126 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp.h	2025-09-25 17:43:28.645584326 -0700
+@@ -0,0 +1,1128 @@
 +/**
 + * Microchip PTP common header
 + *
@@ -64168,6 +64201,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +	int tx_en;
 +	u16 rx_en_ports;
 +	u16 tx_en_ports;
++	u8 rx_en_cnt;
++	u8 tx_en_cnt;
 +	int utc_offset;
 +
 +	u32 clk_divider;
@@ -95826,8 +95861,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-09-10 15:53:42.698024844 -0700
-@@ -0,0 +1,20476 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-09-25 17:48:26.725512704 -0700
+@@ -0,0 +1,20508 @@
 +/**
 + * Microchip gigabit switch common code
 + *
@@ -109852,6 +109887,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	int forward = 0;
 +
 +	/* Already set for PTP message. */
++	/* This causes PTP message received from Redbox not to forward. */
 +	if (sw->info->forward)
 +		return;
 +
@@ -110350,16 +110386,29 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		/* It is an HSR frame or consumed. */
 +		if (ret < 2)
 +			return ret;
++
++		/* Drop PTP message from Redbox. */
++		if (get_rx_tag_ptp(&sw->tag)) {
++			dev_kfree_skb_irq(skb);
++			return 0;
++		}
 +#else
 +		ret = hsr_rcv(&sw->info->hsr, skb, port);
 +
 +		/* It is an HSR frame or consumed. */
 +		if (ret < 2)
 +			return ret;
++
 +		if (sw->features & HSR_REDBOX) {
 +			ret = hsr_chk(&sw->info->hsr, skb, port);
 +			if (ret < 2)
 +				return ret;
++
++			/* Drop PTP message from Redbox. */
++			if (get_rx_tag_ptp(&sw->tag)) {
++				dev_kfree_skb_irq(skb);
++				return 0;
++			}
 +		}
 +#endif
 +	}
@@ -110641,6 +110690,22 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	uint p;
 +	int i;
 +
++#ifdef CONFIG_1588_PTP
++	struct ptp_msg *msg = NULL;
++
++	if (sw->features & PTP_HW) {
++		struct ptp_info *ptp = &sw->ptp_hw;
++
++		if (ptp->tx_msg_parsed) {
++			msg = ptp->tx_msg;
++		} else {
++			msg = check_ptp_msg(skb->data, NULL);
++			ptp->tx_msg_parsed = true;
++			ptp->tx_msg = msg;
++		}
++	}
++#endif
++
 +	p = sw->priv_port;
 +	i = sw->info->port_cfg[p].index;
 +
@@ -110679,6 +110744,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	/* Internal forwarding when Redbox is up. */
 +	if (info->redbox_up && info->redbox_fwd) {
 +		struct net_device **dev = (struct net_device **)skb->cb;
++		bool ptp_msg = false;
++
++#ifdef CONFIG_1588_PTP
++		if (msg)
++			ptp_msg = true;
++#endif
 +
 +		/* Destination is Redbox. */
 +		if (info->redbox && *dev == info->redbox) {
@@ -110694,7 +110765,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		}
 +
 +		/* Using eth0 to send and not forwarding from eth0. */
-+		if (*dev != info->dev) {
++		if (*dev != info->dev && !ptp_msg) {
 +			int forward = hsr_fwd(info, skb);
 +
 +			/* Unicast frame to eth1 so get VLAN for eth1. */
@@ -110716,27 +110787,23 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct hsr_port *from =
 +			hsr_port_get_hsr(&info->hsr, HSR_PT_MASTER);
 +#endif
-+#ifdef CONFIG_1588_PTP
-+		struct ptp_info *ptp = &sw->ptp_hw;
-+		struct ptp_msg *msg;
 +
-+		if (ptp->tx_msg_parsed) {
-+			msg = ptp->tx_msg;
-+		} else {
-+			msg = check_ptp_msg(skb->data, NULL);
-+			ptp->tx_msg_parsed = true;
-+			ptp->tx_msg = msg;
-+		}
++#ifdef CONFIG_1588_PTP
 +		if (msg) {
 +			if (!info->hsr_up) {
 +				dev_kfree_skb_irq(skb);
 +				return NULL;
 +			}
++
++			/* Expect these PTP messages sent by child device. */
 +			if (msg->hdr.messageType != SYNC_MSG &&
 +			    msg->hdr.messageType != MANAGEMENT_MSG &&
 +			    msg->hdr.messageType != SIGNALING_MSG &&
-+			    msg->hdr.messageType != ANNOUNCE_MSG)
++			    msg->hdr.messageType != ANNOUNCE_MSG) {
++				set_tag_ports(sw, tag, info->member, false,
++					      false);
 +				return skb;
++			}
 +			if (ports_not_matched(sw, tag, (1 << info->ports[0]))) {
 +				dev_kfree_skb_irq(skb);
 +				return NULL;
