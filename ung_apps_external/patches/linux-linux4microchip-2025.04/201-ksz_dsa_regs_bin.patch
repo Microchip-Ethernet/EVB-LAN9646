@@ -45,8 +45,8 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz8.c l
  
 diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz9477.c
 --- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.c	2025-08-29 19:05:31.487469070 -0700
-+++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz9477.c	2025-09-02 15:53:44.187804442 -0700
-@@ -1475,6 +1475,18 @@ int ksz9477_enable_stp_addr(struct ksz_d
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz9477.c	2025-10-07 12:44:01.370541969 -0700
+@@ -1881,6 +1881,18 @@ int ksz9477_enable_stp_addr(struct ksz_d
  	return 0;
  }
  
@@ -65,9 +65,9 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.
  int ksz9477_setup(struct dsa_switch *ds)
  {
  	struct ksz_device *dev = ds->priv;
-@@ -1509,6 +1521,11 @@ int ksz9477_setup(struct dsa_switch *ds)
- 	/* enable global MIB counter freeze function */
- 	ksz_cfg(dev, REG_SW_MAC_CTRL_6, SW_MIB_COUNTER_FREEZE, true);
+@@ -1924,6 +1936,11 @@ int ksz9477_setup(struct dsa_switch *ds)
+ 	}
+ #endif
  
 +	dev->regs_size = KSZ9477_REGS_SIZE;
 +	ret = sysfs_create_bin_file(&dev->dev->kobj,
@@ -77,9 +77,9 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.
  	/* Make sure PME (WoL) is not enabled. If requested, it will
  	 * be enabled by ksz_wol_pre_shutdown(). Otherwise, some PMICs
  	 * do not like PME events changes before shutdown.
-@@ -1623,6 +1640,7 @@ void ksz9477_switch_exit(struct ksz_devi
- 			p->xpcs = NULL;
- 		}
+@@ -2043,6 +2060,7 @@ void ksz9477_switch_exit(struct ksz_devi
+ 			cancel_delayed_work_sync(&dev->sgmii_check);
+ #endif
  	}
 +	sysfs_remove_bin_file(&dev->dev->kobj, &ksz9477_registers_attr);
  	ksz9477_reset_switch(dev);
@@ -87,8 +87,8 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz9477.
  
 diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c
 --- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.c	2025-08-29 19:27:32.579543319 -0700
-+++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c	2025-09-02 15:55:45.868150757 -0700
-@@ -5023,6 +5023,98 @@ static const struct dsa_switch_ops ksz_s
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.c	2025-10-06 16:21:20.448897767 -0700
+@@ -5052,6 +5052,98 @@ static const struct dsa_switch_ops ksz_s
  	.port_set_apptrust	= ksz_port_set_apptrust,
  };
  
@@ -189,8 +189,8 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  	struct dsa_switch *ds;
 diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.h linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.h
 --- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_common.h	2025-08-29 19:27:32.580543281 -0700
-+++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.h	2025-09-02 15:56:38.449139791 -0700
-@@ -170,6 +170,7 @@ struct ksz_device {
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_common.h	2025-10-06 16:13:23.335497606 -0700
+@@ -184,6 +184,7 @@ struct ksz_device {
  
  	struct device *dev;
  	struct regmap *regmap[__KSZ_NUM_REGMAPS];
@@ -198,7 +198,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  
  	void *priv;
  	int irq;
-@@ -472,6 +473,13 @@ void ksz_switch_macaddr_put(struct dsa_s
+@@ -495,6 +496,13 @@ void ksz_switch_macaddr_put(struct dsa_s
  void ksz_switch_shutdown(struct ksz_device *dev);
  int ksz_handle_wake_reason(struct ksz_device *dev, int port);
  
@@ -212,3 +212,45 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_comm
  /* Common register access functions */
  static inline struct regmap *ksz_regmap_8(struct ksz_device *dev)
  {
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/lan937x_main.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/lan937x_main.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/lan937x_main.c	2025-05-26 04:26:53.000000000 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/lan937x_main.c	2025-10-07 13:01:52.573272440 -0700
+@@ -615,6 +615,18 @@ int lan937x_switch_init(struct ksz_devic
+ 	return 0;
+ }
+ 
++#define LAN937X_REGS_SIZE		0x8000
++
++static struct bin_attribute lan937x_registers_attr = {
++	.attr = {
++		.name	= "registers",
++		.mode	= 00600,
++	},
++	.size	= LAN937X_REGS_SIZE,
++	.read	= ksz_registers_read,
++	.write	= ksz_registers_write,
++};
++
+ int lan937x_setup(struct dsa_switch *ds)
+ {
+ 	struct ksz_device *dev = ds->priv;
+@@ -650,6 +662,11 @@ int lan937x_setup(struct dsa_switch *ds)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	dev->regs_size = LAN937X_REGS_SIZE;
++	ret = sysfs_create_bin_file(&dev->dev->kobj,
++				    &lan937x_registers_attr);
++	(void)ret;
++
+ 	/* Disable global VPHY support. Related to CPU interface only? */
+ 	return ksz_rmw32(dev, REG_SW_CFG_STRAP_OVR, SW_VPHY_DISABLE,
+ 			 SW_VPHY_DISABLE);
+@@ -662,6 +679,7 @@ void lan937x_teardown(struct dsa_switch
+ 
+ void lan937x_switch_exit(struct ksz_device *dev)
+ {
++	sysfs_remove_bin_file(&dev->dev->kobj, &lan937x_registers_attr);
+ 	lan937x_reset_switch(dev);
+ }
+ 
