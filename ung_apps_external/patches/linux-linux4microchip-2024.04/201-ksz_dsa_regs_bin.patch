@@ -45,8 +45,8 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.
  
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c	2024-09-24 14:06:28.015208847 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2025-10-07 12:16:45.420460317 -0700
-@@ -1804,6 +1804,18 @@ int ksz9477_enable_stp_addr(struct ksz_d
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2025-10-07 15:03:42.654174199 -0700
+@@ -1805,6 +1805,18 @@ int ksz9477_enable_stp_addr(struct ksz_d
  	return 0;
  }
  
@@ -65,7 +65,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  int ksz9477_setup(struct dsa_switch *ds)
  {
  	struct ksz_device *dev = ds->priv;
-@@ -1842,6 +1854,11 @@ int ksz9477_setup(struct dsa_switch *ds)
+@@ -1843,6 +1855,11 @@ int ksz9477_setup(struct dsa_switch *ds)
  	}
  #endif
  
@@ -77,7 +77,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
  	return 0;
  }
  
-@@ -1880,6 +1897,7 @@ void ksz9477_switch_exit(struct ksz_devi
+@@ -1881,6 +1898,7 @@ void ksz9477_switch_exit(struct ksz_devi
  			cancel_delayed_work_sync(&dev->sgmii_check);
  #endif
  	}
