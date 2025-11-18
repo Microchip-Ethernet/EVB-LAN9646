@@ -528,12 +528,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/hsr_m
 +#endif /*  __HSR_PRIVATE_H */
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/i2c-ksz8863.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/i2c-ksz8863.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/i2c-ksz8863.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/i2c-ksz8863.c	2025-08-18 16:36:00.108424559 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/i2c-ksz8863.c	2025-11-14 17:29:57.344112158 -0800
 @@ -0,0 +1,472 @@
 +/**
 + * Microchip KSZ8863 I2C driver
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + * Copyright (c) 2010-2015 Micrel, Inc.
 + *
 + * Copyright 2009 Simtec Electronics
@@ -593,8 +593,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/i2c-k
 +#endif
 +
 +
-+#define SW_DRV_RELDATE			"Mar 25, 2023"
-+#define SW_DRV_VERSION			"1.2.3"
++#define SW_DRV_RELDATE			"Nov 13, 2025"
++#define SW_DRV_VERSION			"1.2.4"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -29983,7 +29983,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_i
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_mac.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_mac.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac.c	2025-09-23 14:20:54.124903033 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac.c	2025-11-10 16:36:24.031738566 -0800
 @@ -0,0 +1,1324 @@
 +
 +
@@ -30023,12 +30023,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_m
 +#elif defined(CONFIG_HAVE_KSZ8463)
 +#include "ksz_sw_sysfs.c"
 +#elif defined(CONFIG_HAVE_LAN937X)
-+#include "../microchip/lan937x_sw_sysfs.c"
++#include "../microchip/lan937x/lan937x_sw_sysfs.c"
 +#endif
 +
 +#ifdef CONFIG_1588_PTP
-+#ifdef CONFIG_HAVE_LAN937X
-+#include "../microchip/lan937x_ptp_sysfs.c"
++#ifdef USE_LAN937X
++#include "../microchip/lan937x/lan937x_ptp_sysfs.c"
 +#else
 +#include "ksz_ptp_sysfs.c"
 +#endif
@@ -31311,7 +31311,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_m
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_mac.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_mac.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac.h	2025-06-23 15:24:29.259371483 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac.h	2025-11-10 16:36:39.642807594 -0800
 @@ -0,0 +1,59 @@
 +
 +
@@ -31329,12 +31329,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_m
 +#elif defined(CONFIG_HAVE_KSZ8463)
 +#include "ksz_cfg_8463.h"
 +#elif defined(CONFIG_HAVE_LAN937X)
-+#include "../microchip/lan937x_cfg.h"
++#include "../microchip/lan937x/lan937x_cfg.h"
 +#endif
 +
 +#ifndef CONFIG_KSZ_SWITCH_EMBEDDED
-+#ifdef CONFIG_HAVE_LAN937X
-+#include "../microchip/lan937x_dev.h"
++#ifdef USE_LAN937X
++#include "../microchip/lan937x/lan937x_dev.h"
 +#else
 +#include "ksz_spi_net.h"
 +#endif
@@ -31374,8 +31374,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_m
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_mac_pre.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac_pre.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_mac_pre.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac_pre.c	2025-08-18 16:36:00.115424406 -0700
-@@ -0,0 +1,66 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_mac_pre.c	2025-11-10 16:36:57.902233804 -0800
+@@ -0,0 +1,69 @@
 +
 +
 +#ifndef KSZ_MAC_PRE
@@ -31391,6 +31391,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_m
 +
 +#if defined(CONFIG_IBA_KSZ9897) || defined(CONFIG_IBA_LAN937X)
 +#define CONFIG_KSZ_IBA_ONLY
++#endif
++#if !defined(CONFIG_KSZ_SMI) && defined(CONFIG_LAN937X_SMI)
++#define CONFIG_KSZ_SMI
 +#endif
 +
 +#ifdef CONFIG_KSZ_SWITCH_EMBEDDED
@@ -31430,11 +31433,11 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_m
 +#elif defined(CONFIG_HAVE_KSZ8863)
 +#include "i2c-ksz8863.c"
 +#elif defined(CONFIG_IBA_LAN937X)
-+#include "../microchip/iba-lan937x.c"
++#include "../microchip/lan937x/iba-lan937x.c"
 +#elif defined(CONFIG_SMI_LAN937X)
-+#include "../microchip/smi-lan937x.c"
++#include "../microchip/lan937x/smi-lan937x.c"
 +#elif defined(CONFIG_HAVE_LAN937X)
-+#include "../microchip/spi-lan937x.c"
++#include "../microchip/lan937x/spi-lan937x.c"
 +#endif
 +#endif
 +
@@ -66040,8 +66043,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_stp.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_stp.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_stp.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_stp.c	2025-08-18 16:36:00.122424253 -0700
-@@ -0,0 +1,5034 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_stp.c	2025-11-13 19:11:44.895839751 -0800
+@@ -0,0 +1,5043 @@
 +/**
 + * Microchip RSTP code
 + *
@@ -66646,6 +66649,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	dbg_msg("%c", reRoot ? 'R' : '.');
 +	dbg_msg("%c", tcProp ? 'T' : '.');
 +	dbg_msg("%c", rcvdTc ? 'C' : '.');
++	dbg_msg(" %u:%u:%u", fdWhile, rrWhile, tcWhile);
 +	dbg_msg("  ");
 +	for (rx = 0; rx < NUM_OF_PORT_STATE_MACHINES; rx++)
 +		dbg_msg("%2d", p->states[rx]);
@@ -69038,6 +69042,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	if (mrp_10_1_8a_hack)
 +		rrWhile = to_stp_timer(4);
 +#endif
++	/* The hack used to pass MRP_10_1_8a uses 4 seconds, but maybe the
++	 * HelloTime should be used here like fdWhile.
++	 */
++	rrWhile = forwardDelay();
 +}  /* stp_role_tr_root_p_init */
 +
 +static void stp_role_tr_root_p_next(struct ksz_stp_port *p,
@@ -69049,6 +69057,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	if (mrp_10_1_8a_hack)
 +		delay = to_stp_timer(4);
 +#endif
++	/* The hack used to pass MRP_10_1_8a uses 4 seconds, but maybe the
++	 * HelloTime should be used here like fdWhile.
++	 */
++	delay = forwardDelay();
 +
 +	stp_change_state(state,
 +		((proposed && !agree) && canChange),
@@ -71429,7 +71441,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-09-10 15:54:11.087979732 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-11-14 16:42:13.324784158 -0800
 @@ -0,0 +1,12357 @@
 +/**
 + * Microchip KSZ8795 switch common code
@@ -74638,23 +74650,21 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	int learn_disable[TOTAL_PORT_NUM];
 +
 +	if (port < sw->port_cnt) {
-+		first = get_log_port(sw, port);
++		first = port;
 +		cnt = first + 1;
 +	} else {
 +		first = 0;
 +		cnt = sw->mib_port_cnt + 1;
 +	}
 +	for (index = first; index < cnt; index++) {
-+		port = get_phy_port(sw, index);
-+		learn_disable[port] = port_chk_dis_learn(sw, port);
-+		if (!learn_disable[port])
-+			port_cfg_dis_learn(sw, port, 1);
++		learn_disable[index] = port_chk_dis_learn(sw, index);
++		if (!learn_disable[index])
++			port_cfg_dis_learn(sw, index, 1);
 +	}
 +	sw_cfg(sw, S_FLUSH_TABLE_CTRL, SW_FLUSH_DYN_MAC_TABLE, 1);
 +	for (index = first; index < cnt; index++) {
-+		port = get_phy_port(sw, index);
-+		if (!learn_disable[port])
-+			port_cfg_dis_learn(sw, port, 0);
++		if (!learn_disable[index])
++			port_cfg_dis_learn(sw, index, 0);
 +	}
 +}  /* sw_flush_dyn_mac_table */
 +
@@ -80769,8 +80779,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +				name = of_get_property(port, "label", NULL);
 +				if (name)
 +dbg_msg(" name: %s\n", name);
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +				/* Save the device node. */
 +				sw->devnode[reg] = port;
++#endif
 +				cnt++;
 +			}
 +		}
@@ -82442,9 +82454,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->netport[i] = port;
 +	port->netdev = dev;
 +	port->phydev = sw->phy[phy_id];
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	if (phy_id)
 +		port->dn = sw->devnode[phy_id - 1];
-+#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	setup_phylink(port);
 +#endif
 +	if (sw->dev_count > 1 && i && !(sw->features & DIFF_MAC_ADDR)) {
@@ -83790,7 +83802,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.h	2025-08-18 16:36:00.125424188 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.h	2025-11-14 16:40:56.283142922 -0800
 @@ -0,0 +1,1017 @@
 +/**
 + * Microchip KSZ8795 switch common header
@@ -83814,7 +83826,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define KSZ_SW_8795_H
 +
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +#include <linux/phylink.h>
 +#endif
 +
@@ -84427,7 +84439,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_port *main_port;
 +	struct net_device *netdev[TOTAL_PORT_NUM];
 +	struct ksz_port *netport[TOTAL_PORT_NUM];
-+	struct device_node *devnode[TOTAL_PORT_NUM];
 +	struct phy_device phy_map[TOTAL_PORT_NUM + 1];
 +	struct phy_device *phy[TOTAL_PORT_NUM + 1];
 +	struct phy_priv phydata[TOTAL_PORT_NUM + 1];
@@ -84444,7 +84455,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_counter_info *counter;
 +	struct delayed_work *link_read;
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	struct device_node *devnode[TOTAL_PORT_NUM];
 +	const struct phylink_mac_ops *phylink_ops;
 +#endif
 +
@@ -84544,8 +84556,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct delayed_work link_update;
 +	struct net_device *netdev;
 +	struct phy_device *phydev;
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct device_node *dn;
-+#ifdef CONFIG_PHYLINK
 +	struct phylink *pl;
 +	struct phylink_config pl_config;
 +	struct phylink_link_state pl_state;
@@ -84811,7 +84823,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-09-10 15:54:29.293309543 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-11-14 16:42:30.534256653 -0800
 @@ -0,0 +1,10137 @@
 +/**
 + * Microchip KSZ8895 switch common code
@@ -86799,23 +86811,21 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	int learn_disable[TOTAL_PORT_NUM];
 +
 +	if (port < sw->port_cnt) {
-+		first = get_log_port(sw, port);
++		first = port;
 +		cnt = first + 1;
 +	} else {
 +		first = 0;
 +		cnt = sw->mib_port_cnt + 1;
 +	}
 +	for (index = first; index < cnt; index++) {
-+		port = get_phy_port(sw, index);
-+		learn_disable[port] = port_chk_dis_learn(sw, port);
-+		if (!learn_disable[port])
-+			port_cfg_dis_learn(sw, port, 1);
++		learn_disable[index] = port_chk_dis_learn(sw, index);
++		if (!learn_disable[index])
++			port_cfg_dis_learn(sw, index, 1);
 +	}
 +	sw_cfg(sw, S_FLUSH_TABLE_CTRL, SW_FLUSH_DYN_MAC_TABLE, 1);
 +	for (index = first; index < cnt; index++) {
-+		port = get_phy_port(sw, index);
-+		if (!learn_disable[port])
-+			port_cfg_dis_learn(sw, port, 0);
++		if (!learn_disable[index])
++			port_cfg_dis_learn(sw, index, 0);
 +	}
 +}  /* sw_flush_dyn_mac_table */
 +
@@ -92171,8 +92181,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +				name = of_get_property(port, "label", NULL);
 +				if (name)
 +dbg_msg(" name: %s\n", name);
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +				/* Save the device node. */
 +				sw->devnode[reg] = port;
++#endif
 +				cnt++;
 +			}
 +		}
@@ -93738,9 +93750,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->netport[i] = port;
 +	port->netdev = dev;
 +	port->phydev = sw->phy[phy_id];
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	if (phy_id)
 +		port->dn = sw->devnode[phy_id - 1];
-+#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	setup_phylink(port);
 +#endif
 +	if (sw->dev_count > 1 && i && !(sw->features & DIFF_MAC_ADDR)) {
@@ -94952,7 +94964,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.h	2025-08-18 16:36:00.126424166 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.h	2025-11-14 16:41:19.754853326 -0800
 @@ -0,0 +1,905 @@
 +/**
 + * Microchip KSZ8895 switch common header
@@ -94976,7 +94988,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define KSZ_SW_8895_H
 +
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +#include <linux/phylink.h>
 +#endif
 +
@@ -95521,7 +95533,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_port *main_port;
 +	struct net_device *netdev[TOTAL_PORT_NUM];
 +	struct ksz_port *netport[TOTAL_PORT_NUM];
-+	struct device_node *devnode[TOTAL_PORT_NUM];
 +	struct phy_device phy_map[TOTAL_PORT_NUM + 1];
 +	struct phy_device *phy[TOTAL_PORT_NUM + 1];
 +	struct phy_priv phydata[TOTAL_PORT_NUM + 1];
@@ -95538,7 +95549,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_counter_info *counter;
 +	struct delayed_work *link_read;
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	struct device_node *devnode[TOTAL_PORT_NUM];
 +	const struct phylink_mac_ops *phylink_ops;
 +#endif
 +
@@ -95638,8 +95650,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct delayed_work link_update;
 +	struct net_device *netdev;
 +	struct phy_device *phydev;
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct device_node *dn;
-+#ifdef CONFIG_PHYLINK
 +	struct phylink *pl;
 +	struct phylink_config pl_config;
 +	struct phylink_link_state pl_state;
@@ -95861,8 +95873,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-09-25 17:48:26.725512704 -0700
-@@ -0,0 +1,20508 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-11-14 16:49:33.638776768 -0800
+@@ -0,0 +1,20531 @@
 +/**
 + * Microchip gigabit switch common code
 + *
@@ -95932,6 +95944,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	PROC_SET_BROADCAST_STORM,
 +	PROC_SET_MULTICAST_STORM,
 +	PROC_SET_TX_RATE_QUEUE_BASED,
++	PROC_USE_DIFFSERV_MAP,
 +	PROC_SET_DIFFSERV,
 +	PROC_SET_802_1P,
 +
@@ -102058,8 +102071,13 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			table[5].override = true;
 +			table[5].ports = sw->HOST_MASK;
 +		} else {
++#if 0
 +			table[4].ports = sw->PORT_MASK;
 +			table[5].ports = sw->PORT_MASK;
++#else
++			table[4].ports = sw->PORT_MASK & ~sw->HOST_MASK;
++			table[5].ports = sw->PORT_MASK & ~sw->HOST_MASK;
++#endif
 +		}
 +		table[6].override = true;
 +		table[6].ports = sw->HOST_MASK;
@@ -104858,6 +104876,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	/* Unknown multicast forwarding will not be used. */
 +	if (sw->features & AVB_SUPPORT)
 +		sw_setup_multi(sw);
++	else
++		sw->info->multi_sys = STP_ENTRY;
 +#ifdef CONFIG_KSZ_STP
 +	sw->ops->release(sw);
 +	sw_setup_stp(sw);
@@ -106421,6 +106441,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	case PROC_SET_VLAN_FILTERING_STATIC:
 +		chk = sw_chk(sw, REG_SW_LUE_CTRL_2, SW_EGRESS_VLAN_FILTER_STA);
 +		break;
++	case PROC_USE_DIFFSERV_MAP:
++		chk = sw_chk(sw, REG_SW_MAC_TOS_CTRL, SW_TOS_DSCP_REMAP);
++		break;
 +	default:
 +		return len;
 +	}
@@ -106589,6 +106612,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	case PROC_SET_TX_RATE_QUEUE_BASED:
 +		sw_cfg(sw, REG_SW_MAC_CTRL_5, SW_OUT_RATE_LIMIT_QUEUE_BASED,
 +			num);
++		break;
++	case PROC_USE_DIFFSERV_MAP:
++		sw_cfg(sw, REG_SW_MAC_TOS_CTRL, SW_TOS_DSCP_REMAP, num);
 +		break;
 +	case PROC_SET_DIFFSERV:
 +		count = sscanf(buf, "%d=%x", (unsigned int *) &num, &val);
@@ -111743,8 +111769,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +				name = of_get_property(port, "label", NULL);
 +				if (name)
 +dbg_msg(" name: %s\n", name);
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +				/* Save the device node. */
 +				sw->devnode[reg] = port;
++#endif
 +				cnt++;
 +
 +				err = of_property_read_u32(port, "mode", &mode);
@@ -113521,10 +113549,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->netport[i] = port;
 +	port->netdev = dev;
 +	port->phydev = sw->phy[phy_id];
-+
-+	/* Cannot point to host port that uses fixed-link. */
-+	if (phy_id)
-+		port->dn = sw->devnode[phy_id - 1];
 +	if (dev->phydev && phy_is_internal(dev->phydev)) {
 +		__ETHTOOL_DECLARE_LINK_MODE_MASK(supported);
 +	
@@ -113549,6 +113573,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		dev->phydev->mdio.addr = phy_id;
 +	}
 +#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	/* Cannot point to host port that uses fixed-link. */
++	if (phy_id)
++		port->dn = sw->devnode[phy_id - 1];
 +	setup_phylink(port);
 +#endif
 +	if (sw->dev_count > 1 && i && !(sw->features & DIFF_MAC_ADDR)) {
@@ -115789,16 +115816,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			sgmii = 1;
 +	}
 +	sw->sgmii_mode = sgmii;
-+	sw->interface = PHY_INTERFACE_MODE_MII;
-+	sw->multi_dev |= multi_dev;
-+	if (setup_device_node(sw)) {
-+		ret = -ENODEV;
-+		goto err_platform;
-+	}
-+
-+#ifdef DEBUG_MSG
-+	flush_work(&db.dbg_print);
-+#endif
 +
 +	for (pi = 0; pi < phy_port_count; pi++) {
 +		/*
@@ -115815,8 +115832,23 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		info->phy = true;
 +		info->interface = PHY_INTERFACE_MODE_RGMII;
 +	}
-+	sw->ops->acquire(sw);
 +	for (; pi < mib_port_count; pi++) {
++		info = get_port_info(sw, pi);
++		info->interface = PHY_INTERFACE_MODE_MII;
++	}
++	sw->interface = PHY_INTERFACE_MODE_MII;
++	sw->multi_dev |= multi_dev;
++	if (setup_device_node(sw)) {
++		ret = -ENODEV;
++		goto err_platform;
++	}
++
++#ifdef DEBUG_MSG
++	flush_work(&db.dbg_print);
++#endif
++
++	sw->ops->acquire(sw);
++	for (pi = phy_port_count; pi < mib_port_count; pi++) {
 +		u16 data;
 +		u16 orig;
 +		u8 *data_lo;
@@ -115925,7 +115957,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			info->set_link_speed = sgmii_port_set_speed;
 +			info->phy = port_sgmii_detect(sw, pi);
 +		}
-+		info->interface = phy;
++
++		/* Only set when not overrode by device tree. */
++		if (info->interface == PHY_INTERFACE_MODE_MII)
++			info->interface = phy;
 +
 +		/* Switch interface is not set through device tree. */
 +		if (sw->HOST_PORT == pi &&
@@ -116373,8 +116408,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.h	2025-08-18 16:36:00.130424079 -0700
-@@ -0,0 +1,1475 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.h	2025-11-14 16:41:33.630916292 -0800
+@@ -0,0 +1,1476 @@
 +/**
 + * Microchip KSZ9897 switch common header
 + *
@@ -117247,7 +117282,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_port *main_port;
 +	struct net_device *netdev[TOTAL_PORT_NUM];
 +	struct ksz_port *netport[TOTAL_PORT_NUM];
-+	struct device_node *devnode[TOTAL_PORT_NUM];
 +	struct phy_device phy_map[TOTAL_PORT_NUM + 1];
 +	struct phy_device *phy[TOTAL_PORT_NUM + 1];
 +	struct phy_priv phydata[TOTAL_PORT_NUM + 1];
@@ -117268,6 +117302,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct delayed_work *link_read;
 +
 +#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	struct device_node *devnode[TOTAL_PORT_NUM];
 +	const struct phylink_mac_ops *phylink_ops;
 +#endif
 +
@@ -117403,8 +117438,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct delayed_work link_update;
 +	struct net_device *netdev;
 +	struct phy_device *phydev;
-+	struct device_node *dn;
 +#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	struct device_node *dn;
 +	struct phylink *pl;
 +	struct phylink_config pl_config;
 +	struct phylink_link_state pl_state;
@@ -117508,6 +117543,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	int bcast_per;
 +	int mcast_storm;
 +	int tx_queue_based;
++	int use_diffserv_map;
 +	int diffserv_map;
 +	int p_802_1p_map;
 +	int vlan;
@@ -117930,8 +117966,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.c	2025-09-22 15:12:54.950414527 -0700
-@@ -0,0 +1,10506 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.c	2025-11-14 16:42:50.052365538 -0800
+@@ -0,0 +1,10476 @@
 +/**
 + * Microchip switch common code
 + *
@@ -118156,54 +118192,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +dbg_msg("  ??? %s %d\n", __func__, p);
 +	return sw->port_info[p].log_p;
 +}
-+
-+#if 0
-+static uint get_log_port_zero(struct ksz_sw *sw, uint p)
-+{
-+	uint n;
-+
-+	n = get_log_port(sw, p);
-+	if (n)
-+		n--;
-+	else
-+		n = sw->mib_port_cnt;
-+	return n;
-+}
-+#endif
-+
-+#if 0
-+static uint get_phy_mask_from_log(struct ksz_sw *sw, uint log_m)
-+{
-+	struct ksz_port_info *info;
-+	uint n;
-+	uint p;
-+	uint phy_m = 0;
-+
-+	for (n = 0; n <= sw->mib_port_cnt; n++) {
-+		info = &sw->port_info[n];
-+		p = info->phy_p;
-+		if (log_m & sw->port_info[p].log_m)
-+			phy_m |= info->phy_m;
-+	}
-+	return phy_m;
-+}
-+
-+static uint get_log_mask_from_phy(struct ksz_sw *sw, uint phy_m)
-+{
-+	struct ksz_port_info *info;
-+	uint n;
-+	uint p;
-+	uint log_m = 0;
-+
-+	for (n = 0; n <= sw->mib_port_cnt; n++) {
-+		info = &sw->port_info[n];
-+		p = info->phy_p;
-+		if (phy_m & info->phy_m)
-+			log_m |= sw->port_info[p].log_m;
-+	}
-+	return log_m;
-+}
-+#endif
 +
 +static uint get_sysfs_port(struct ksz_sw *sw, uint n)
 +{
@@ -119752,6 +119740,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +static void hw_cfg_tx_prio_rate(struct ksz_sw *sw, uint port, int prio,
 +	uint rate)
 +{
++	/* KSZ8863/KSZ8873 has a bug where enabling tail tagging will cause
++	 * the egress rate to double.
++	 */
 +	hw_cfg_prio_rate(sw, port, prio, rate,
 +#ifdef PORT_OUT_RATE_ADDR
 +		REG_PORT_1_OUT_RATE_0,
@@ -119797,14 +119788,13 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#ifdef PORT_OUT_RATE_ADDR
 +	u32 addr;
 +	u32 rate_addr;
-+	u32 out_rate;
 +
 +	PORT_OUT_RATE_ADDR(port, addr);
 +	rate_addr = addr + REG_PORT_OUT_RATE_0;
-+	out_rate = sw->reg->r32(sw, rate_addr);
-+	return (out_rate) != 0;
++	return sw_chk(sw, rate_addr, SWITCH_OUT_RATE_ENABLE);
 +#else
-+	return port_chk(sw, port, REG_PORT_OUT_RATE_0, 0x80);
++	return port_chk(sw, port, REG_PORT_OUT_RATE_0,
++			PORT_EGRESS_LIMIT_FLOW_EN);
 +#endif
 +}  /* sw_chk_tx_prio_rate */
 +
@@ -119839,13 +119829,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	PORT_OUT_RATE_ADDR(port, addr);
 +	rate_addr = addr + REG_PORT_OUT_RATE_0;
-+	sw->reg->w32(sw, rate_addr, 0);
++	sw_cfg(sw, rate_addr, SWITCH_OUT_RATE_ENABLE, 0);
 +#else
-+	u8 data;
-+
-+	port_r8(sw, port, REG_PORT_OUT_RATE_0, &data);
-+	data &= ~0x80;
-+	port_w8(sw, port, REG_PORT_OUT_RATE_0, data);
++	port_cfg(sw, port, REG_PORT_OUT_RATE_0, PORT_EGRESS_LIMIT_FLOW_EN, 0);
 +#endif
 +}  /* sw_dis_tx_prio_rate */
 +
@@ -119874,19 +119860,15 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 + */
 +static void sw_ena_tx_prio_rate(struct ksz_sw *sw, uint port)
 +{
-+	int prio;
++#ifdef PORT_OUT_RATE_ADDR
++	u32 addr;
++	u32 rate_addr;
 +
-+	for (prio = 0; prio < PRIO_QUEUES; prio++)
-+		hw_cfg_tx_prio_rate(sw, port, prio,
-+			sw->info->port_cfg[port].tx_rate[prio]);
-+#ifndef PORT_OUT_RATE_ADDR
-+	do {
-+		u8 data;
-+
-+		port_r8(sw, port, REG_PORT_OUT_RATE_0, &data);
-+		data |= 0x80;
-+		port_w8(sw, port, REG_PORT_OUT_RATE_0, data);
-+	} while (0);
++	PORT_OUT_RATE_ADDR(port, addr);
++	rate_addr = addr + REG_PORT_OUT_RATE_0;
++	sw_cfg(sw, rate_addr, SWITCH_OUT_RATE_ENABLE, 1);
++#else
++	port_cfg(sw, port, REG_PORT_OUT_RATE_0, PORT_EGRESS_LIMIT_FLOW_EN, 1);
 +#endif
 +}  /* sw_ena_tx_prio_rate */
 +
@@ -120020,16 +120002,14 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		cnt = TOTAL_PORT_NUM;
 +	}
 +	for (index = first; index < cnt; index++) {
-+		port = get_phy_port(sw, index);
-+		learn_disable[port] = port_chk_dis_learn(sw, port);
-+		if (!learn_disable[port])
-+			port_cfg_dis_learn(sw, port, 1);
++		learn_disable[index] = port_chk_dis_learn(sw, index);
++		if (!learn_disable[index])
++			port_cfg_dis_learn(sw, index, 1);
 +	}
 +	sw_cfg(sw, S_FLUSH_TABLE_CTRL, SWITCH_FLUSH_DYN_MAC_TABLE, 1);
 +	for (index = first; index < cnt; index++) {
-+		port = get_phy_port(sw, index);
-+		if (!learn_disable[port])
-+			port_cfg_dis_learn(sw, port, 0);
++		if (!learn_disable[index])
++			port_cfg_dis_learn(sw, index, 0);
 +	}
 +}
 +
@@ -123549,6 +123529,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +			memset((void *) mib->counter, 0, sizeof(u64) *
 +				TOTAL_SWITCH_COUNTER_NUM);
++			mib->rate[0].last = mib->rate[1].last = 0;
++			mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
++			mib->rate[0].peak = mib->rate[1].peak = 0;
 +		}
 +		break;
 +	case PROC_SET_SW_REG:
@@ -124046,6 +124029,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +		memset((void *) mib->counter, 0, sizeof(u64) *
 +			TOTAL_SWITCH_COUNTER_NUM);
++		mib->rate[0].last = mib->rate[1].last = 0;
++		mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
++		mib->rate[0].peak = mib->rate[1].peak = 0;
 +		break;
 +	}
 +	case PROC_ENABLE_BROADCAST_STORM:
@@ -124687,10 +124673,25 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	if ((*id & SWITCH_CHIP_ID_MASK) != CHIP_ID_63)
 +		return -ENODEV;
 +	sw->chip_id = KSZ8863_SW_CHIP;
++
++	/* KSZ8863 MLL: 0x43
++	 * KSZ8863 RLL: 0x53
++	 * KSZ8863 FLL: 0x41
++	 * KSZ8873 MLL: 0x03
++	 * KSZ8873 RLL: 0x13
++	 * KSZ8873 FLL: 0x00
++	 */
 +	mode = sw->reg->r8(sw, REG_MODE_INDICATOR);
-+	if (!(mode & (PORT_1_COPPER | PORT_2_COPPER)) ||
-+	    !(mode & MODE_2_PHY))
++	if (!(mode & MODE_2_PHY))
 +		sw->chip_id = KSZ8873_SW_CHIP;
++
++	/* Check if PHYs are powered down by DSA driver. */
++	mode = sw->reg->r8(sw, REG_PORT_1_CTRL_13);
++	if (mode & PORT_POWER_DOWN)
++		sw->reg->w8(sw, REG_PORT_1_CTRL_13, mode & ~PORT_POWER_DOWN);
++	mode = sw->reg->r8(sw, REG_PORT_2_CTRL_13);
++	if (mode & PORT_POWER_DOWN)
++		sw->reg->w8(sw, REG_PORT_2_CTRL_13, mode & ~PORT_POWER_DOWN);
 +	return 2;
 +}
 +#endif
@@ -125223,6 +125224,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			consume_skb(org_skb);
 +		}
 +#if 1
++		/* Switch does send out minimum frame after removing VLAN tag,
++		 * so no need to pad for minimum VLAN frame.
++		 */
 +		if (padlen) {
 +			if (__skb_put_padto(skb, skb->len + padlen, false))
 +				return NULL;
@@ -125900,8 +125904,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +				if (fb)
 +					fiber |= 1 << reg;
 +
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +				/* Save the device node. */
 +				sw->devnode[reg] = port;
++#endif
 +				cnt++;
 +			}
 +		}
@@ -127226,9 +127232,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw->netport[i] = port;
 +	port->netdev = dev;
 +	port->phydev = sw->phy[phy_id];
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	if (phy_id)
 +		port->dn = sw->devnode[phy_id - 1];
-+#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	setup_phylink(port);
 +#endif
 +
@@ -128440,7 +128446,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.h	2025-08-18 16:36:00.132424035 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.h	2025-11-14 16:40:30.563076911 -0800
 @@ -0,0 +1,896 @@
 +/**
 + * Microchip switch common header
@@ -128464,7 +128470,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define KSZ_SW_H
 +
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +#include <linux/phylink.h>
 +#endif
 +
@@ -129020,7 +129026,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_port *main_port;
 +	struct net_device *netdev[TOTAL_PORT_NUM];
 +	struct ksz_port *netport[TOTAL_PORT_NUM];
-+	struct device_node *devnode[TOTAL_PORT_NUM];
 +	struct phy_device phy_map[TOTAL_PORT_NUM + 1];
 +	struct phy_device *phy[TOTAL_PORT_NUM + 1];
 +	struct phy_priv phydata[TOTAL_PORT_NUM + 1];
@@ -129037,7 +129042,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_counter_info *counter;
 +	struct delayed_work *link_read;
 +
-+#ifdef CONFIG_PHYLINK
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
++	struct device_node *devnode[TOTAL_PORT_NUM];
 +	const struct phylink_mac_ops *phylink_ops;
 +#endif
 +
@@ -129140,8 +129146,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct delayed_work link_update;
 +	struct net_device *netdev;
 +	struct phy_device *phydev;
++#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct device_node *dn;
-+#ifdef CONFIG_PHYLINK
 +	struct phylink *pl;
 +	struct phylink_config pl_config;
 +	struct phylink_link_state pl_state;
@@ -137327,12 +137333,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/mvrp.
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/smi-ksz8863.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/smi-ksz8863.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/smi-ksz8863.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/smi-ksz8863.c	2025-08-18 16:36:00.135423969 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/smi-ksz8863.c	2025-11-14 17:30:11.706732088 -0800
 @@ -0,0 +1,254 @@
 +/**
 + * Microchip KSZ8863 SMI driver
 + *
-+ * Copyright (c) 2018-2023 Microchip Technology Inc.
++ * Copyright (c) 2018-2025 Microchip Technology Inc.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -137368,8 +137374,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/smi-k
 +#include "ksz_common.c"
 +#include "ksz_req.c"
 +
-+#define SW_DRV_RELDATE			"Mar 25, 2023"
-+#define SW_DRV_VERSION			"1.2.3"
++#define SW_DRV_RELDATE			"Nov 13, 2025"
++#define SW_DRV_VERSION			"1.2.4"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -137585,12 +137591,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/smi-k
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/smi-ksz8895.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/smi-ksz8895.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/smi-ksz8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/smi-ksz8895.c	2025-08-18 16:36:00.135423969 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/smi-ksz8895.c	2025-11-14 17:48:54.534235059 -0800
 @@ -0,0 +1,292 @@
 +/**
 + * Microchip KSZ8895 SMI driver
 + *
-+ * Copyright (c) 2018-2023 Microchip Technology Inc.
++ * Copyright (c) 2018-2025 Microchip Technology Inc.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -137625,8 +137631,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/smi-k
 +#include "ksz_common.c"
 +#include "ksz_req.c"
 +
-+#define SW_DRV_RELDATE			"Mar 25, 2023"
-+#define SW_DRV_VERSION			"1.2.3"
++#define SW_DRV_RELDATE			"Nov 14, 2025"
++#define SW_DRV_VERSION			"1.2.4"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -137881,7 +137887,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/smi-k
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-ksz8463.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8463.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-ksz8463.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8463.c	2025-08-18 16:36:00.135423969 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8463.c	2025-11-14 17:30:43.257386289 -0800
 @@ -0,0 +1,507 @@
 +/**
 + * Microchip KSZ8463 SPI driver
@@ -137949,7 +137955,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-k
 +#define KS8463MLI_DEV0			"ksz8463"
 +#define KS8463MLI_DEV2			"ksz8463_2"
 +
-+#define SW_DRV_RELDATE			"Jan 8, 2025"
++#define SW_DRV_RELDATE			"Nov 13, 2025"
 +#define SW_DRV_VERSION			"1.2.4"
 +
 +/* -------------------------------------------------------------------------- */
@@ -138392,12 +138398,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-k
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-ksz8795.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8795.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-ksz8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8795.c	2025-08-18 16:36:00.135423969 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8795.c	2025-11-14 17:49:10.234628621 -0800
 @@ -0,0 +1,577 @@
 +/**
 + * Microchip KSZ8795 SPI driver
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + * Copyright (c) 2010-2015 Micrel, Inc.
 + *
 + * Copyright 2009 Simtec Electronics
@@ -138481,8 +138487,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-k
 +
 +#define KS8795_DEV			"ksz8795"
 +
-+#define SW_DRV_RELDATE			"Mar 25, 2023"
-+#define SW_DRV_VERSION			"1.2.4"
++#define SW_DRV_RELDATE			"Nov 14, 2025"
++#define SW_DRV_VERSION			"1.2.5"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -138973,12 +138979,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-k
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-ksz8863.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8863.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-ksz8863.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8863.c	2025-08-18 16:36:00.135423969 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8863.c	2025-11-14 17:30:24.911315229 -0800
 @@ -0,0 +1,525 @@
 +/**
 + * Microchip KSZ8863 SPI driver
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + * Copyright (c) 2010-2015 Micrel, Inc.
 + *
 + * Copyright 2009 Simtec Electronics
@@ -139041,8 +139047,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-k
 +#define KS8863MLI_DEV0			"ksz8863"
 +#define KS8863MLI_DEV2			"ksz8863_2"
 +
-+#define SW_DRV_RELDATE			"Mar 25, 2023"
-+#define SW_DRV_VERSION			"1.2.3"
++#define SW_DRV_RELDATE			"Nov 13, 2025"
++#define SW_DRV_VERSION			"1.2.4"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -139502,12 +139508,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-k
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-ksz8895.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8895.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-ksz8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8895.c	2025-08-18 16:36:00.135423969 -0700
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/spi-ksz8895.c	2025-11-14 17:49:25.178876864 -0800
 @@ -0,0 +1,531 @@
 +/**
 + * Microchip KSZ8895 SPI driver
 + *
-+ * Copyright (c) 2015-2023 Microchip Technology Inc.
++ * Copyright (c) 2015-2025 Microchip Technology Inc.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -139564,8 +139570,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/spi-k
 +
 +#define KS8895_DEV			"ksz8895"
 +
-+#define SW_DRV_RELDATE			"Mar 25, 2023"
-+#define SW_DRV_VERSION			"1.2.3"
++#define SW_DRV_RELDATE			"Nov 14, 2025"
++#define SW_DRV_VERSION			"1.2.4"
 +
 +/* -------------------------------------------------------------------------- */
 +
