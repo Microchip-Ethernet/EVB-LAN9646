@@ -743,8 +743,8 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/dts/at91-sama5d3_xplai
 +};
 diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/spi_ksz.c u-boot-at91-linux4sam-2020.10.1/cmd/spi_ksz.c
 --- u-boot-at91-linux4sam-2020.10.1-orig/cmd/spi_ksz.c	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-at91-linux4sam-2020.10.1/cmd/spi_ksz.c	2024-02-29 15:33:38.079343129 -0800
-@@ -0,0 +1,440 @@
++++ u-boot-at91-linux4sam-2020.10.1/cmd/spi_ksz.c	2025-11-11 19:42:33.601450722 -0800
+@@ -0,0 +1,515 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * (C) Copyright 2002
@@ -783,8 +783,6 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/spi_ksz.c u-boot-at91-linux
 +static uchar 		dout[MAX_SPI_BYTES];
 +static uchar 		din[MAX_SPI_BYTES];
 +
-+#ifdef CONFIG_HAVE_KSZ9897
-+
 +/* SPI frame opcodes */
 +#define KS_SPIOP_RD			3
 +#define KS_SPIOP_WR			2
@@ -793,54 +791,38 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/spi_ksz.c u-boot-at91-linux
 +#define SPI_ADDR_MASK			((1 << SPI_ADDR_SHIFT) - 1)
 +#define SPI_TURNAROUND_SHIFT		5
 +
-+static int spi_cmd(uint addr, int len, int read)
++enum {
++	KSZ9897_MODE,
++	KSZ8463_MODE
++};
++
++static int spi_addr_shift = SPI_ADDR_SHIFT;
++static int spi_addr_mask = SPI_ADDR_MASK;
++static int spi_turnaround = SPI_TURNAROUND_SHIFT;
++static int spi_cmd_len = 4;
++static int spi_ksz_mode = KSZ9897_MODE;
++
++static int ksz9897_spi_cmd(uint addr, int len, int read)
 +{
 +	int j;
 +	uint op = KS_SPIOP_WR;
 +
 +	if (read)
 +		op = KS_SPIOP_RD;
-+	addr &= SPI_ADDR_MASK;
-+	addr |= op << SPI_ADDR_SHIFT;
-+	addr <<= SPI_TURNAROUND_SHIFT;
-+	for (j = 0; j < 4; j++) {
-+		dout[3 - j] = (uchar) addr;
++	addr &= spi_addr_mask;
++	addr |= op << spi_addr_shift;
++	addr <<= spi_turnaround;
++	for (j = 0; j < spi_cmd_len; j++) {
++		dout[spi_cmd_len - 1 - j] = (uchar) addr;
 +		addr >>= 8;
 +	}
 +	return j;
 +}
 +
-+static int spi_def_size(void)
-+{
-+	return 1;
-+}
++#define SPI_BYTE_ENABLE_SHIFT		4
++#define SPI_ADDR_ENABLE_SHIFT		2
 +
-+static int spi_little(void)
-+{
-+	return 0;
-+}
-+
-+static int spi_burst(void)
-+{
-+	return 1;
-+}
-+#endif
-+
-+#ifdef CONFIG_HAVE_KSZ8851
-+
-+/* SPI frame opcodes */
-+#define KS_SPIOP_RD			(0x00)
-+#define KS_SPIOP_WR			(0x40)
-+#define KS_SPIOP_RXFIFO			(0x80)
-+#define KS_SPIOP_TXFIFO			(0xC0)
-+
-+/* shift for byte-enable data */
-+#define BYTE_EN(x)			((x) << 2)
-+
-+/* turn register number and byte-enable mask into data for start of packet */
-+#define MK_OP(byteen, reg)  (BYTE_EN(byteen) | (reg) << (8 + 2) | (reg) >> 6)
-+
-+static int spi_cmd(uint addr, int len, int read)
++static int ksz8463_spi_cmd(uint addr, int len, int read)
 +{
 +	int bit;
 +
@@ -854,30 +836,113 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/spi_ksz.c u-boot-at91-linux
 +	default:
 +		bit = addr & 2 ? 0xc : 0x3;
 +	}
-+	addr = MK_OP(bit, addr);
 +	if (!read)
-+		addr |= KS_SPIOP_WR;
-+	dout[0] = (uchar) addr;
-+	addr >>= 8;
++		addr |= (1 << spi_addr_shift);
++	addr >>= SPI_ADDR_ENABLE_SHIFT;
++	addr <<= SPI_BYTE_ENABLE_SHIFT;
++	addr |= bit;
++	addr <<= spi_turnaround;
 +	dout[1] = (uchar) addr;
++	addr >>= 8;
++	dout[0] = (uchar) addr;
 +	return 2;
++}
++
++static int spi_cmd(uint addr, int len, int read)
++{
++	int ret;
++
++	switch (spi_ksz_mode) {
++	case KSZ8463_MODE:
++		ret = ksz8463_spi_cmd(addr, len, read);
++		break;
++	default:
++		ret = ksz9897_spi_cmd(addr, len, read);
++		break;
++	}
++	return ret;
++}
++
++static void spi_set_cmd(int mode)
++{
++	spi_ksz_mode = KSZ9897_MODE;
++	switch (mode) {
++	case 1:
++		/* KSZ8795 */
++		spi_addr_shift = 12;
++		spi_addr_mask = ((1 << 12) - 1);
++		spi_turnaround = 1;
++		spi_cmd_len = 2;
++		break;
++	case 2:
++		/* KSZ8863/KSZ8895 */
++		spi_addr_shift = 8;
++		spi_addr_mask = ((1 << 8) - 1);
++		spi_turnaround = 0;
++		spi_cmd_len = 2;
++		break;
++	case 3:
++		/* KSZ8463 */
++		spi_ksz_mode = KSZ8463_MODE;
++		spi_addr_shift = 11;
++		spi_addr_mask = ((1 << 11) - 1);
++		spi_turnaround = 2;
++		spi_cmd_len = 2;
++		break;
++	default:
++		/* KSZ9897 */
++		spi_addr_shift = SPI_ADDR_SHIFT;
++		spi_addr_mask = SPI_ADDR_MASK;
++		spi_turnaround = SPI_TURNAROUND_SHIFT;
++		spi_cmd_len = 4;
++		break;
++	}
 +}
 +
 +static int spi_def_size(void)
 +{
-+	return 2;
++	int ret;
++
++	switch (spi_ksz_mode) {
++	case KSZ8463_MODE:
++		ret = 2;
++		break;
++	default:
++		ret = 1;
++		break;
++	}
++	return ret;
 +}
 +
 +static int spi_little(void)
 +{
-+	return 1;
++	int ret;
++
++	switch (spi_ksz_mode) {
++	case KSZ8463_MODE:
++		ret = 1;
++		break;
++	default:
++		ret = 0;
++		break;
++	}
++	return ret;
 +}
 +
 +static int spi_burst(void)
 +{
-+	return 0;
++	int ret;
++
++	switch (spi_ksz_mode) {
++	case KSZ8463_MODE:
++		ret = 0;
++		break;
++	default:
++		ret = 1;
++		break;
++	}
++	return ret;
 +}
-+#endif
 +
 +static int spi_data(char *param, uchar *val, int max, int cap, int size,
 +	int num)
@@ -1146,6 +1211,8 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/spi_ksz.c u-boot-at91-linux
 +
 +	if ((flag & CMD_FLAG_REPEAT) == 0)
 +	{
++		if (argc < 2)
++			return CMD_RET_USAGE;
 +		if (argc >= 2) {
 +			cs = simple_strtoul(argv[1], &cp, 10);
 +			if (*cp == ':') {
@@ -1155,8 +1222,14 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/spi_ksz.c u-boot-at91-linux
 +			if (*cp == '.')
 +				mode = simple_strtoul(cp+1, NULL, 10);
 +		}
-+		if (argc >= 3)
-+			speed = simple_strtoul(argv[2], NULL, 10);
++		if (argc >= 3) {
++			int mode = simple_strtoul(argv[2], &cp, 10);
++
++			if (mode > 100000)
++				speed = mode;
++			else
++				spi_set_cmd(mode);
++		}
 +	}
 +
 +	return 0;
@@ -1179,21 +1252,22 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/cmd/spi_ksz.c u-boot-at91-linux
 +U_BOOT_CMD(
 +	ks,	3,	1,	do_cfg_spi,
 +	"SPI config command",
-+	"[<bus>:]<cs>[.<mode>] [<speed>] - Configure bus, cs, and mode\n"
++	"[<bus>:]<cs>[.<mode>] [<freq>] [<ksz>] - Configure bus, cs, and mode\n"
 +	"<bus>     - Identifies the SPI bus\n"
 +	"<cs>      - Identifies the chip select\n"
 +	"<mode>    - Identifies the SPI mode to use\n"
-+	"<speed>   - Identifies the SPI speed to use"
++	"<freq>    - Identifies the SPI speed to use\n"
++	"<ksz>     - Identifies the KSZ switch:\n"
++	"            0=9897 1=8795 2=8895/8863 3=8463"
 +);
 diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung8071_mmc_defconfig u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8071_mmc_defconfig
 --- u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung8071_mmc_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8071_mmc_defconfig	2024-02-29 17:03:22.063040128 -0800
-@@ -0,0 +1,83 @@
++++ u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8071_mmc_defconfig	2025-11-17 16:51:14.989892316 -0800
+@@ -0,0 +1,82 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_CPU_INIT=y
 +CONFIG_ARCH_AT91=y
 +CONFIG_SYS_TEXT_BASE=0x26f00000
-+CONFIG_HAVE_KSZ9897=y
 +CONFIG_TARGET_SAMA5D3_XPLAINED_DEV=y
 +CONFIG_SYS_MALLOC_F_LEN=0x2000
 +CONFIG_ENV_SIZE=0x4000
@@ -1274,13 +1348,12 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung807
 +# CONFIG_EFI_LOADER is not set
 diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung8071_nandflash_defconfig u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8071_nandflash_defconfig
 --- u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung8071_nandflash_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8071_nandflash_defconfig	2024-02-29 17:03:22.063040128 -0800
-@@ -0,0 +1,85 @@
++++ u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8071_nandflash_defconfig	2025-11-17 16:51:21.016659225 -0800
+@@ -0,0 +1,84 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_CPU_INIT=y
 +CONFIG_ARCH_AT91=y
 +CONFIG_SYS_TEXT_BASE=0x26f00000
-+CONFIG_HAVE_KSZ9897=y
 +CONFIG_TARGET_SAMA5D3_XPLAINED_DEV=y
 +CONFIG_SYS_MALLOC_F_LEN=0x2000
 +CONFIG_ENV_OFFSET=0x100000
@@ -1363,13 +1436,12 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung807
 +# CONFIG_EFI_LOADER is not set
 diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung8087_mmc_defconfig u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8087_mmc_defconfig
 --- u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung8087_mmc_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8087_mmc_defconfig	2024-05-07 11:16:42.473324907 -0700
-@@ -0,0 +1,83 @@
++++ u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8087_mmc_defconfig	2025-11-17 16:51:26.422450158 -0800
+@@ -0,0 +1,82 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_CPU_INIT=y
 +CONFIG_ARCH_AT91=y
 +CONFIG_SYS_TEXT_BASE=0x26f00000
-+CONFIG_HAVE_KSZ9897=y
 +CONFIG_TARGET_SAMA5D3_XPLAINED_DEV=y
 +CONFIG_SYS_MALLOC_F_LEN=0x2000
 +CONFIG_ENV_SIZE=0x4000
@@ -1450,13 +1522,12 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung808
 +# CONFIG_EFI_LOADER is not set
 diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung8087_nandflash_defconfig u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8087_nandflash_defconfig
 --- u-boot-at91-linux4sam-2020.10.1-orig/configs/sama5d3_xplained_ung8087_nandflash_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8087_nandflash_defconfig	2024-05-07 11:26:27.420851224 -0700
-@@ -0,0 +1,85 @@
++++ u-boot-at91-linux4sam-2020.10.1/configs/sama5d3_xplained_ung8087_nandflash_defconfig	2025-11-17 16:51:41.234384767 -0800
+@@ -0,0 +1,84 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_CPU_INIT=y
 +CONFIG_ARCH_AT91=y
 +CONFIG_SYS_TEXT_BASE=0x26f00000
-+CONFIG_HAVE_KSZ9897=y
 +CONFIG_TARGET_SAMA5D3_XPLAINED_DEV=y
 +CONFIG_SYS_MALLOC_F_LEN=0x2000
 +CONFIG_ENV_OFFSET=0x100000

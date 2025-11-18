@@ -14,36 +14,21 @@ diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/dts/Makefile u-boot-at
  
 diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/mach-at91/Kconfig u-boot-at91-linux4sam-2020.10.1/arch/arm/mach-at91/Kconfig
 --- u-boot-at91-linux4sam-2020.10.1-orig/arch/arm/mach-at91/Kconfig	2021-01-14 23:11:03.000000000 -0800
-+++ u-boot-at91-linux4sam-2020.10.1/arch/arm/mach-at91/Kconfig	2024-02-29 16:57:26.386504882 -0800
-@@ -56,6 +56,14 @@ config SAMA5D3
- 	bool
- 	select CPU_V7A
- 
-+config HAVE_KSZ9897
-+	bool "KSZ9897 SPI support"
-+	depends on SAMA5D3
-+
-+config HAVE_KSZ8851
-+	bool "KSZ8851 SPI support"
-+	depends on SAMA5D3 && !HAVE_KSZ9897
-+
- config SAMA5D4
- 	bool
- 	select CPU_V7A
-@@ -224,6 +232,13 @@ config TARGET_SAMA5D3_XPLAINED
- 	select BOARD_EARLY_INIT_F
- 	select SAMA5D3
++++ u-boot-at91-linux4sam-2020.10.1/arch/arm/mach-at91/Kconfig	2025-11-17 16:50:52.313769323 -0800
+@@ -226,6 +226,13 @@ config TARGET_SAMA5D3_XPLAINED
  	select SUPPORT_SPL
-+	select BOARD_LATE_INIT
-+
+ 	select BOARD_LATE_INIT
+ 
 +config TARGET_SAMA5D3_XPLAINED_DEV
 +	bool "SAMA5D3 Xplained dev board"
 +	select BOARD_EARLY_INIT_F
 +	select SAMA5D3
 +	select SUPPORT_SPL
- 	select BOARD_LATE_INIT
- 
++	select BOARD_LATE_INIT
++
  config TARGET_SAMA5D3XEK
+ 	bool "SAMA5D3X-EK board"
+ 	select BOARD_EARLY_INIT_F
 diff -Napur u-boot-at91-linux4sam-2020.10.1-orig/board/atmel/sama5d3_xplained/Kconfig u-boot-at91-linux4sam-2020.10.1/board/atmel/sama5d3_xplained/Kconfig
 --- u-boot-at91-linux4sam-2020.10.1-orig/board/atmel/sama5d3_xplained/Kconfig	2021-01-14 23:11:03.000000000 -0800
 +++ u-boot-at91-linux4sam-2020.10.1/board/atmel/sama5d3_xplained/Kconfig	2024-02-29 16:57:26.386504882 -0800
