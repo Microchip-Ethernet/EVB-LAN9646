@@ -1004,7 +1004,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/i2c-k
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/i2c-ksz9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/i2c-ksz9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/i2c-ksz9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/i2c-ksz9897.c	2025-04-15 03:20:12.149076624 -0700
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/i2c-ksz9897.c	2025-11-18 18:47:01.015890737 -0800
 @@ -0,0 +1,652 @@
 +/**
 + * Microchip KSZ9897 I2C driver
@@ -1103,8 +1103,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/i2c-k
 +#endif
 +
 +
-+#define SW_DRV_RELDATE			"Apr 15, 2025"
-+#define SW_DRV_VERSION			"1.2.10"
++#define SW_DRV_RELDATE			"Nov 18, 2025"
++#define SW_DRV_VERSION			"1.2.11"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -1660,7 +1660,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/i2c-k
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/iba-ksz9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/iba-ksz9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/iba-ksz9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/iba-ksz9897.c	2025-04-15 03:20:21.984690934 -0700
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/iba-ksz9897.c	2025-11-18 18:47:14.483721423 -0800
 @@ -0,0 +1,98 @@
 +/**
 + * Microchip KSZ9897 IBA driver
@@ -1741,8 +1741,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/iba-k
 +
 +#define KS9897MLI_DEV0			"ksz9897"
 +
-+#define SW_DRV_RELDATE			"Apr 15, 2025"
-+#define SW_DRV_VERSION			"1.2.10"
++#define SW_DRV_RELDATE			"Nov 18, 2025"
++#define SW_DRV_VERSION			"1.2.11"
 +
 +/* -------------------------------------------------------------------------- */
 +
@@ -130940,8 +130940,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	2025-05-20 18:06:15.098093568 -0700
-@@ -0,0 +1,1142 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	2025-11-18 18:31:00.427966963 -0800
+@@ -0,0 +1,1144 @@
 +/**
 + * Microchip gigabit switch common sysfs code
 + *
@@ -131267,6 +131267,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +NETLAN_WR_ENTRY(bcast_per);
 +NETLAN_WR_ENTRY(mcast_storm);
 +NETLAN_WR_ENTRY(tx_queue_based);
++NETLAN_WR_ENTRY(use_diffserv_map);
 +NETLAN_WR_ENTRY(diffserv_map);
 +NETLAN_WR_ENTRY(p_802_1p_map);
 +NETLAN_WR_ENTRY(vlan);
@@ -131633,6 +131634,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	&lan_attr_bcast_per.attr,
 +	&lan_attr_mcast_storm.attr,
 +	&lan_attr_tx_queue_based.attr,
++	&lan_attr_use_diffserv_map.attr,
 +	&lan_attr_diffserv_map.attr,
 +	&lan_attr_p_802_1p_map.attr,
 +	&lan_attr_vlan.attr,
@@ -140220,7 +140222,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-k
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-ksz9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-ksz9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz9897.c	2025-04-15 03:20:35.364166270 -0700
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz9897.c	2025-11-18 18:47:32.850490522 -0800
 @@ -0,0 +1,688 @@
 +/**
 + * Microchip KSZ9897 SPI driver
@@ -140325,8 +140327,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-k
 +
 +#define KS9897MLI_DEV0			"ksz9897"
 +
-+#define SW_DRV_RELDATE			"Apr 15, 2025"
-+#define SW_DRV_VERSION			"1.2.10"
++#define SW_DRV_RELDATE			"Nov 18, 2025"
++#define SW_DRV_VERSION			"1.2.11"
 +
 +/* -------------------------------------------------------------------------- */
 +
