@@ -11891,8 +11891,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_c
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8795.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_cfg_8795.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_cfg_8795.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_cfg_8795.h	2025-08-18 16:36:00.111424494 -0700
-@@ -0,0 +1,34 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_cfg_8795.h	2026-01-12 15:20:03.816686805 -0800
+@@ -0,0 +1,38 @@
 +/**
 + * This file contains shared configurations between the network and switch
 + * drivers.
@@ -11911,6 +11911,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_c
 +#endif
 +/* Can be defined if KSZ9897 driver is included also. */
 +#undef CONFIG_KSZ_HSR
++
++#ifdef CONFIG_KSZ_DLR
++#define MAX_REQUEST_SIZE	80
++#endif
 +
 +#if defined(CONFIG_SOC_SAM9X7)
 +/* Switch interrupt does not work properly in SAM9X75 when starting early. */
@@ -12064,12 +12068,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_c
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_common.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_common.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_common.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_common.c	2025-08-18 16:46:41.393413482 -0700
-@@ -0,0 +1,498 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_common.c	2026-01-10 11:45:38.000000000 -0800
+@@ -0,0 +1,500 @@
 +/**
 + * Microchip Ethernet driver common code
 + *
-+ * Copyright (c) 2015-2020 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2009-2011 Micrel, Inc.
@@ -12196,6 +12200,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_c
 +	struct file_dev_info *dev_info;
 +	uint notify = 0;
 +
++	if (!info->notifications[mod])
++		return;
 +	dev_info = list;
 +	while (dev_info) {
 +		if (dev_info != info)
@@ -47720,12 +47726,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_m
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c	2025-09-25 17:42:47.981094742 -0700
-@@ -0,0 +1,8599 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c	2026-01-30 16:40:28.311000648 -0800
+@@ -0,0 +1,8702 @@
 +/**
 + * Microchip PTP common code
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2009-2015 Micrel, Inc.
@@ -49436,6 +49442,31 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +	ts->timestamp = ts->t.nsec;
 +}  /* add_tx_delay */
 +
++static int proc_dev_get_timestamp(struct file_dev_info *info, uint port,
++				  struct ptp_tx_ts *tx)
++{
++	struct ptp_info *ptp = info->dev;
++	struct ksz_sw *sw = ptp->parent;
++	u8 buf[sizeof(struct ptp_msg_options) + 2];
++	struct ptp_msg_options *opt = (struct ptp_msg_options *) &buf[2];
++	int len;
++
++	buf[0] = PTP_CMD_GET_MSG | PTP_CMD_RESP;
++	buf[1] = 0;
++	len = sizeof(buf);
++	memcpy(&opt->id, &tx->hdr.sourcePortIdentity,
++	       sizeof(struct ptp_port_identity));
++	opt->msg = tx->hdr.messageType;
++	opt->seqid = tx->hdr.sequenceId;
++	opt->domain = tx->hdr.domainNumber;
++	opt->reserved[0] = tx->hdr.transportSpecific;
++	opt->port = get_log_port(sw, port);
++	opt->ts = tx->ts;
++	tx->req_time = 0;
++	file_dev_setup_msg(info, buf, len, NULL, NULL);
++	return 0;
++}  /* proc_dev_get_timestamp */
++
 +static void save_tx_ts(struct ptp_info *ptp, struct ptp_tx_ts *tx,
 +	struct ptp_hw_ts *htx, int delay, uint port)
 +{
@@ -49518,16 +49549,31 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +		tx->skb = NULL;
 +	}
 +	htx->sending = false;
++	if (ptp->notify_dev && tx->dev) {
++		proc_dev_get_timestamp(tx->dev, port, tx);
++		tx->dev = NULL;
++		tx->hdr.reserved1 = 0;
++	}
 +}  /* save_tx_ts */
 +
-+static int get_speed_index(struct ptp_info *ptp, uint port)
++static int get_link_speed(struct ptp_info *ptp, uint port, bool *half)
 +{
-+	int index;
 +	struct ksz_sw *sw = ptp->parent;
 +	struct ksz_port_info *info = get_port_info(sw, port);
 +	int speed = (media_connected == info->state) ?
 +		info->tx_rate / TX_RATE_UNIT : 0;
 +
++	if (half)
++		*half = (info->duplex == 1);
++	return speed;
++}  /* get_link_speed */
++
++static int get_speed_index(struct ptp_info *ptp, uint port)
++{
++	int index;
++	int speed;
++
++	speed = get_link_speed(ptp, port, NULL);
 +	if (speed == 1000)
 +		index = 0;
 +	else if (speed == 100)
@@ -50391,6 +50437,34 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +	ptp->ops->release(ptp);
 +}  /* adj_clock */
 +
++static void notify_link(struct ptp_info *ptp, uint p)
++{
++	struct file_dev_info *info = ptp->notify_dev;
++	struct ksz_sw *sw = ptp->parent;
++	int speed;
++	bool half;
++	u8 buf[4];
++
++	if (!info)
++		return;
++	speed = get_link_speed(ptp, p, &half);
++
++	buf[0] = PTP_CMD_GET_LINK | PTP_CMD_RESP;
++	buf[1] = 0;
++	buf[2] = (u8) get_log_port(sw, p);
++	if (speed == 10)
++		buf[3] = 0x1;
++	else if (speed == 100)
++		buf[3] = 0x2;
++	else if (speed == 1000)
++		buf[3] = 0x4;
++	else
++		buf[3] = 0;
++	if (half)
++		buf[3] |= 0x80;
++	file_dev_setup_msg(info, buf, 4, NULL, NULL);
++}  /* notify_link */
++
 +static void set_latency(struct work_struct *work)
 +{
 +	struct ptp_info *ptp = container_of(work, struct ptp_info, set_latency);
@@ -50411,6 +50485,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +			index = get_speed_index(ptp, p);
 +			set_ptp_ingress(ptp, p, ptp->rx_latency[p][index]);
 +			set_ptp_egress(ptp, p, ptp->tx_latency[p][index]);
++			if (ptp->notifications & 1) {
++				notify_link(ptp, p);
++			}
 +		}
 +	}
 +	ptp->ops->release(ptp);
@@ -51947,6 +52024,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +	case ANNOUNCE_MSG:
 +	case SIGNALING_MSG:
 +	case PDELAY_RESP_FOLLOW_UP_MSG:
++		if (ptp->notify_dev)
++			info = kzalloc(sizeof(struct ptp_msg_info), GFP_KERNEL);
 +		break;
 +	case MANAGEMENT_MSG:
 +	{
@@ -52184,7 +52263,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +			/* Try to use same hardware port so that the peer will
 +			 * not complain.
 +			 */
-+			if (!p)
++			if (!p && found == 1)
 +				p = tx_msg.port + 1;
 +			if (p && ntohs(*loc) != p) {
 +				int check = ntohs(*loc);
@@ -52324,6 +52403,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +			tx = &xtx[p];
 +			memcpy(&tx->hdr, &msg->hdr,
 +				sizeof(struct ptp_msg_hdr));
++			if (ptp->notify_dev) {
++				tx->dev = ptp->notify_dev;
++				tx->hdr.reserved2 = p;
++			}
 +
 +			/* Clear previous timestamp if any exists. */
 +			tx->ts.timestamp = 0;
@@ -55292,6 +55375,28 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +				file_dev_setup_msg(dev, data, 4, NULL, NULL);
 +			file_dev_setup_msg(info, data, 4, NULL, NULL);
 +			break;
++		case DEV_INFO_NOTIFY:
++			if (len >= 4) {
++				struct file_dev_info *dev_info = info;
++				uint *notify = (uint *) data;
++
++				_chk_ioctl_size(len, 4, 0, &req_size, &result,
++					       &req->param, data, info);
++				dev_info->notifications[DEV_MOD_PTP] = *notify;
++				ptp->notifications |= *notify;
++				ptp->notify_dev = dev_info;
++
++				if ((ptp->notifications & 1)) {
++					struct ksz_sw *sw = ptp->parent;
++					uint n, p;
++
++					for (n = 1; n <= ptp->ports; n++) {
++						p = get_phy_port(sw, n);
++						notify_link(ptp, p);
++					}
++				}
++			}
++			break;
 +		case DEV_INFO_RESET:
 +			if (output < 3) {
 +				result = proc_ptp_hw_access(ptp,
@@ -55880,6 +55985,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +		}
 +		if (ptp->gps_dev == info)
 +			ptp->gps_dev = NULL;
++		if (ptp->notify_dev == info)
++			ptp->notify_dev = NULL;
++		file_dev_clear_notify(ptp->dev[minor], info, DEV_MOD_PTP,
++				      &ptp->notifications);
 +		file_gen_dev_release(info, &ptp->dev[minor]);
 +	}
 +}  /* free_dev_info */
@@ -56323,12 +56432,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.h	2025-09-25 17:43:11.744212100 -0700
-@@ -0,0 +1,1198 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_ptp_9897.h	2026-01-12 17:55:39.455975488 -0800
+@@ -0,0 +1,1201 @@
 +/**
 + * Microchip PTP common header
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -56839,6 +56948,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +
 +#define PTP_CMD_RESP			0x01
 +#define PTP_CMD_GET_MSG			0x00
++#define PTP_CMD_GET_LINK		0x10
 +#define PTP_CMD_GET_OUTPUT		0xE0
 +#define PTP_CMD_GET_EVENT		0xF0
 +
@@ -57315,9 +57425,11 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_p
 +	u8 cascade_total;
 +	u8 cascade_tso;
 +	int dev_major;
++	uint notifications;
 +	struct file_dev_info *dev[2];
 +	struct file_dev_info *tsi_dev[MAX_TIMESTAMP_UNIT];
 +	struct file_dev_info *tso_dev[MAX_TRIG_UNIT];
++	struct file_dev_info *notify_dev;
 +	char dev_name[2][20];
 +	wait_queue_head_t wait_ts[MAX_PTP_PORT];
 +	wait_queue_head_t wait_intr;
