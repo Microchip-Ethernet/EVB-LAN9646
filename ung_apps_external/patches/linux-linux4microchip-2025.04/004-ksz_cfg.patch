@@ -24157,8 +24157,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sam9x75_curiosit
 +CONFIG_DEBUG_USER=y
 diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sam9x75_curiosity_ksz_dsa_defconfig linux-linux4microchip-2025.04/arch/arm/configs/sam9x75_curiosity_ksz_dsa_defconfig
 --- linux-linux4microchip-2025.04-orig/arch/arm/configs/sam9x75_curiosity_ksz_dsa_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/arch/arm/configs/sam9x75_curiosity_ksz_dsa_defconfig	2025-05-29 18:04:14.538273620 -0700
-@@ -0,0 +1,304 @@
++++ linux-linux4microchip-2025.04/arch/arm/configs/sam9x75_curiosity_ksz_dsa_defconfig	2026-02-09 17:39:55.759558063 -0800
+@@ -0,0 +1,295 @@
 +CONFIG_SYSVIPC=y
 +CONFIG_NO_HZ_IDLE=y
 +CONFIG_HIGH_RES_TIMERS=y
@@ -24269,14 +24269,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sam9x75_curiosit
 +CONFIG_KS8842=m
 +CONFIG_KS8851=m
 +CONFIG_KS8851_MLL=m
-+CONFIG_KSZ_SWITCHES=y
-+CONFIG_SPI_KSZ8463=y
-+CONFIG_I2C_KSZ8863=y
-+CONFIG_SPI_KSZ8863=y
-+CONFIG_SPI_KSZ8795=y
-+CONFIG_SPI_KSZ8895=y
-+CONFIG_I2C_KSZ9897=y
-+CONFIG_SPI_KSZ9897=y
 +CONFIG_ENC28J60=m
 +CONFIG_ENCX24J600=m
 +# CONFIG_NET_VENDOR_MICROSOFT is not set
@@ -24300,7 +24292,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sam9x75_curiosit
 +CONFIG_CAN_M_CAN_PLATFORM=y
 +CONFIG_MDIO_BITBANG=m
 +CONFIG_MDIO_MSCC_MIIM=m
-+CONFIG_PCS_XPCS=y
 +CONFIG_USB_LAN78XX=m
 +CONFIG_MWIFIEX=m
 +CONFIG_MWIFIEX_SDIO=m
@@ -24978,9 +24969,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sama5_ksz_dsa_de
 +CONFIG_DEBUG_USER=y
 diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sama7_ksz_defconfig linux-linux4microchip-2025.04/arch/arm/configs/sama7_ksz_defconfig
 --- linux-linux4microchip-2025.04-orig/arch/arm/configs/sama7_ksz_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/arch/arm/configs/sama7_ksz_defconfig	2025-05-28 17:50:34.225487738 -0700
-@@ -0,0 +1,298 @@
++++ linux-linux4microchip-2025.04/arch/arm/configs/sama7_ksz_defconfig	2026-02-10 17:24:22.818510456 -0800
+@@ -0,0 +1,299 @@
 +CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
 +CONFIG_GENERIC_IRQ_DEBUGFS=y
 +CONFIG_NO_HZ_IDLE=y
 +CONFIG_HIGH_RES_TIMERS=y
@@ -25280,9 +25272,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sama7_ksz_defcon
 +# CONFIG_RUNTIME_TESTING_MENU is not set
 diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sama7_ksz_dsa_defconfig linux-linux4microchip-2025.04/arch/arm/configs/sama7_ksz_dsa_defconfig
 --- linux-linux4microchip-2025.04-orig/arch/arm/configs/sama7_ksz_dsa_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/arch/arm/configs/sama7_ksz_dsa_defconfig	2025-05-29 18:05:04.296220101 -0700
++++ linux-linux4microchip-2025.04/arch/arm/configs/sama7_ksz_dsa_defconfig	2026-02-10 17:25:13.063829035 -0800
 @@ -0,0 +1,299 @@
 +CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
 +CONFIG_GENERIC_IRQ_DEBUGFS=y
 +CONFIG_NO_HZ_IDLE=y
 +CONFIG_HIGH_RES_TIMERS=y
@@ -25439,7 +25432,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/arch/arm/configs/sama7_ksz_dsa_de
 +CONFIG_CAN_M_CAN_PLATFORM=y
 +CONFIG_CAN_DEBUG_DEVICES=y
 +CONFIG_MDIO_BITBANG=y
-+CONFIG_PCS_XPCS=y
 +CONFIG_USB_LAN78XX=m
 +# CONFIG_WLAN is not set
 +CONFIG_INPUT_EVDEV=y
