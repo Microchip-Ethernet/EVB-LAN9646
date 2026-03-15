@@ -1,3 +1,164 @@
+diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/avtpdu_1722.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/avtpdu_1722.h
+--- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/avtpdu_1722.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/avtpdu_1722.h	2026-02-23 18:37:35.819273154 -0800
+@@ -0,0 +1,157 @@
++
++#ifndef AVTPDU_1722_H
++#define AVTPDU_1722_H
++
++
++#define AVTPDU_PROTO			0x22F0
++
++struct avtpdu_stream_hdr {
++	u8 subtype;
++#ifdef __BIG_ENDIAN_BITFIELD
++	u8 h_specific:1;
++	u8 version:3;
++	u8 mr:1;
++	u8 f_s_d:2;
++	u8 tv:1;
++#else
++	u8 tv:1;
++	u8 f_s_d:2;
++	u8 mr:1;
++	u8 version:3;
++	u8 h_specific:1;
++#endif
++	u8 sequence_num;
++#ifdef __BIG_ENDIAN_BITFIELD
++	u8 format_specific_data_1:7;
++	u8 tu:1;
++#else
++	u8 tu:1;
++	u8 format_specific_data_1:7;
++#endif
++	union {
++		u8 id[8];
++		struct {
++			u8 mac_addr[6];
++			u16 unique_id;
++		} __packed addr;
++	} __packed stream_id;
++	u32 avtp_timestamp;
++	u32 format_specific_data_2;
++	u16 stream_data_len;
++	u16 format_specific_data_3;
++} __packed;
++
++struct avtpdu_ctrl_hdr {
++	u8 subtype;
++#ifdef __BIG_ENDIAN_BITFIELD
++	u8 h_specific:1;
++	u8 version:3;
++	u8 format_specific_data:4;
++	u16 specific:5;
++	u16 ctrl_data_len:11;
++#else
++	u8 format_specific_data:4;
++	u8 version:3;
++	u8 h_specific:1;
++	union {
++		struct {
++			u16 ctrl_data_len:11;
++			u16 specific:5;
++		} __packed data_len;
++		u16 data;
++	} __packed len;
++#endif
++	union {
++		u8 id[8];
++		struct {
++			u8 mac_addr[6];
++			u16 unique_id;
++		} __packed addr;
++	} __packed stream_id;
++} __packed;
++
++struct iec_61883 {
++	struct avtpdu_stream_hdr hdr;
++};
++
++#define IEEE_1722_1_AECP		0xFB
++
++#define IEEE_1722_1_GET_COUNTERS	0x0029
++
++#define AED_TEST_STATUS_LEN		148
++
++#define AED_DESC_TYPE_STREAM_INPUT	0x0005
++#define AED_DESC_TYPE_STREAM_OUTPUT	0x0006
++#define AED_DESC_TYPE_AVB_INTERFACE	0x0009
++#define AED_DESC_TYPE_AVB_INTERFACE	0x0009
++
++#define AED_STATE_RESERVED_0		0x00
++#define AED_STATE_ETHERNET_READY	0x01
++#define AED_STATE_AVB_SYNC		0x02
++#define AED_STATE_AVB_MEDIA_READY	0x03
++#define AED_STATE_RESERVED_4		0x04
++#define AED_STATE_USER_DEFINED		0x20
++#define AED_STATE_EXPERIMENTAL		0xF0
++
++#define AED_COUNTER_LINK_UP		0
++#define AED_COUNTER_LINK_DOWN		1
++#define AED_COUNTER_FRAMES_TX		2
++#define AED_COUNTER_FRAMES_RX		3
++#define AED_COUNTER_RX_CRC_ERR		4
++#define AED_COUNTER_GPTP_GM_CHANGED	5
++#define AED_COUNTER_MESSAGE_TIMESTAMP	24
++
++struct aed_test_status {
++	u8 subtype;
++#ifdef __BIG_ENDIAN_BITFIELD
++	u8 sv:1;
++	u8 version:3;
++	u8 ctrl_data:4;
++	u16 status:5;
++	u16 ctrl_data_len:11;
++#else
++	u8 ctrl_data:4;
++	u8 version:3;
++	u8 sv:1;
++	union {
++		struct {
++			u16 ctrl_data_len:11;
++			u16 status:5;
++		} __packed data_len;
++		u16 data;
++	} __packed len;
++#endif
++	union {
++		u8 id[8];
++		struct {
++			u8 mac_addr[6];
++			u16 unique_id;
++		} __packed addr;
++	} __packed target_entity_id;
++	u64 controller_entity_id;
++	u16 sequence_id;
++#ifdef __BIG_ENDIAN_BITFIELD
++	u16 u:1;
++	u16 cmd_type:15;
++#else
++	union {
++		struct {
++			u16 cmd_type:15;
++			u16 u:1;
++		} __packed cmd;
++		u16 data;
++	} __packed type;
++#endif
++	u16 desc_type;
++	u16 desc_index;
++	u32 counters_valid;
++	u32 counters[32];
++} __packed;
++
++struct aed_test_status_specific {
++	u64 message_timestamp;
++	u8 station_state;
++	u8 station_state_specific_data[3];
++} __packed;
++
++#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/hsr_main_6_1.h linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/hsr_main_6_1.h
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/hsr_main_6_1.h	1969-12-31 16:00:00.000000000 -0800
 +++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/hsr_main_6_1.h	2024-08-28 11:44:00.817718849 -0700
@@ -96066,12 +96227,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2025-11-14 16:48:39.565865370 -0800
-@@ -0,0 +1,20581 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2026-02-25 14:59:27.378242694 -0800
+@@ -0,0 +1,20614 @@
 +/**
 + * Microchip gigabit switch common code
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -98663,6 +98824,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +#ifdef CONFIG_1588_PTP
 +#include "ksz_ptp_9897.c"
++#include "avtpdu_1722.h"
 +#endif
 +
 +/* -------------------------------------------------------------------------- */
@@ -111244,8 +111406,40 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	port = get_tx_tag_ports(sw, &tx_tag);
 +
 +#ifdef CONFIG_1588_PTP
-+	if (ptp && ptp->started)
-+		ptp_set_tx_info(ptp, skb->data, &tx_tag);
++	if (ptp && ptp->started) {
++		u8 *data = skb->data;
++		u8 avtpdu[80];
++
++		if (skb->protocol == htons(AVTPDU_PROTO)) {
++			struct aed_test_status *aed = (struct aed_test_status *)
++				&skb->data[14];
++			u16 ctrl_data_len = ntohs(aed->len.data);
++			u16 cmd_type = ntohs(aed->type.data);
++
++			/* Simulate PTP message to send out the AVTPDU to
++			 * specific port.
++			 */
++			if (aed->subtype == IEEE_1722_1_AECP &&
++			    (cmd_type & 0x7FFF) == IEEE_1722_1_GET_COUNTERS &&
++			    (ctrl_data_len & ((1 << 11) - 1)) ==
++			    AED_TEST_STATUS_LEN) {
++				struct ptp_msg_hdr *hdr = (struct ptp_msg_hdr *)
++					&avtpdu[14];
++				u16 *proto = (u16 *)&avtpdu[12];
++
++				*proto = htons(0x88F7);
++				hdr->messageType = 5;
++				hdr->domainNumber = 0;
++				hdr->sequenceId = aed->sequence_id;
++				memcpy(&hdr->sourcePortIdentity.clockIdentity,
++				       &aed->target_entity_id, 8);
++				hdr->sourcePortIdentity.port = 0;
++				hdr->versionPTP = 2;
++				data = avtpdu;
++			}
++		}
++		ptp_set_tx_info(ptp, data, &tx_tag);
++	}
 +#endif
 +	if (!port) {
 +		/* Used to get VLAN for which device to send. */
