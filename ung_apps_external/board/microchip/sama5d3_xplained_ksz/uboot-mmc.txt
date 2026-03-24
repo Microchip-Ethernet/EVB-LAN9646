@@ -44,3 +44,4 @@ dev2_proto=${_drvname}.eth2_proto=${eth2_proto}
 dev3_ports=${_drvname}.eth3_ports=${eth3_ports}
 dev3_vlan=${_drvname}.eth3_vlan=${eth3_vlan}
 dev3_proto=${_drvname}.eth3_proto=${eth3_proto}
+setup_ksz9563=kw 3301 5b; kw.w 104 8042
