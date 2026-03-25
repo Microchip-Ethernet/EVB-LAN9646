@@ -212,7 +212,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_d
 +CONFIG_MCHP_PIT64B_TIMER=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8071_mmc_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_mmc_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8071_mmc_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_mmc_defconfig	2026-03-23 17:14:01.712471671 -0700
++++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_mmc_defconfig	2026-03-25 09:28:55.542322702 -0700
 @@ -0,0 +1,122 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -262,8 +262,8 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_SYS_SPL_MALLOC=y
 +CONFIG_SYS_SPL_MALLOC_SIZE=0x80000
 +CONFIG_HUSH_PARSER=y
-+CONFIG_SYS_CBSIZE=256
-+CONFIG_SYS_PBSIZE=276
++CONFIG_SYS_CBSIZE=362
++CONFIG_SYS_PBSIZE=382
 +CONFIG_CMD_BOOTZ=y
 +# CONFIG_CMD_FLASH is not set
 +CONFIG_CMD_I2C=y
@@ -338,7 +338,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_W1_EEPROM_DS24XXX=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8071_nandflash_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_nandflash_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8071_nandflash_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_nandflash_defconfig	2026-03-23 17:14:11.376102552 -0700
++++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_nandflash_defconfig	2026-03-25 09:29:18.757582910 -0700
 @@ -0,0 +1,125 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -388,8 +388,8 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_SPL_NAND_DRIVERS=y
 +CONFIG_SPL_NAND_BASE=y
 +CONFIG_HUSH_PARSER=y
-+CONFIG_SYS_CBSIZE=256
-+CONFIG_SYS_PBSIZE=276
++CONFIG_SYS_CBSIZE=362
++CONFIG_SYS_PBSIZE=382
 +CONFIG_CMD_BOOTZ=y
 +# CONFIG_CMD_FLASH is not set
 +CONFIG_CMD_I2C=y
@@ -467,7 +467,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_W1_EEPROM_DS24XXX=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8087_mmc_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_mmc_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8087_mmc_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_mmc_defconfig	2026-03-23 17:14:18.815818382 -0700
++++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_mmc_defconfig	2026-03-25 09:29:36.293973022 -0700
 @@ -0,0 +1,121 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -517,8 +517,8 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_SYS_SPL_MALLOC=y
 +CONFIG_SYS_SPL_MALLOC_SIZE=0x80000
 +CONFIG_HUSH_PARSER=y
-+CONFIG_SYS_CBSIZE=256
-+CONFIG_SYS_PBSIZE=276
++CONFIG_SYS_CBSIZE=362
++CONFIG_SYS_PBSIZE=382
 +CONFIG_CMD_BOOTZ=y
 +# CONFIG_CMD_FLASH is not set
 +CONFIG_CMD_I2C=y
@@ -592,7 +592,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_W1_EEPROM_DS24XXX=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8087_nandflash_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_nandflash_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8087_nandflash_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_nandflash_defconfig	2026-03-23 17:14:26.706634783 -0700
++++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_nandflash_defconfig	2026-03-25 09:29:56.694263530 -0700
 @@ -0,0 +1,124 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -642,8 +642,8 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_SPL_NAND_DRIVERS=y
 +CONFIG_SPL_NAND_BASE=y
 +CONFIG_HUSH_PARSER=y
-+CONFIG_SYS_CBSIZE=256
-+CONFIG_SYS_PBSIZE=276
++CONFIG_SYS_CBSIZE=362
++CONFIG_SYS_PBSIZE=382
 +CONFIG_CMD_BOOTZ=y
 +# CONFIG_CMD_FLASH is not set
 +CONFIG_CMD_I2C=y
