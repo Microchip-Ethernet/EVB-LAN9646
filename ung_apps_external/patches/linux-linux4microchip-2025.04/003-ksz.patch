@@ -66320,12 +66320,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_stp.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_stp.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_stp.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_stp.c	2025-12-19 14:14:29.446817622 -0800
-@@ -0,0 +1,5044 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_stp.c	2026-03-29 15:24:20.404133103 -0700
+@@ -0,0 +1,5064 @@
 +/**
 + * Microchip RSTP code
 + *
-+ * Copyright (c) 2016-2025 Microchip Technology Inc.
++ * Copyright (c) 2016-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -67554,7 +67554,11 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		return -ENOMEM;
 +
 +	memcpy(skb->data, stp->tx_frame, len);
++#ifdef HAVE_INC_MAC_ADDR
++	inc_mac_addr(&skb->data[6], info->mac_addr, port + 1);
++#else
 +	memcpy(&skb->data[6], info->mac_addr, ETH_ALEN);
++#endif
 +	skb_reset_mac_header(skb);
 +	skb_set_network_header(skb, ETH_HLEN);
 +
@@ -70291,9 +70295,16 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		schedule_work(&stp->state_machine);
 +}  /* invoke_state_machines */
 +
-+static void stp_br_init(struct ksz_stp_port *p)
++static void stp_br_prio_init(struct ksz_stp_port *p)
 +{
 +	BridgeIdentifier.prio = htons(0x8000);
++}
++
++static void stp_br_init(struct ksz_stp_port *p)
++{
++#if 0
++	BridgeIdentifier.prio = htons(0x8000);
++#endif
 +	BridgePriority.prio.root.prio =
 +	BridgePriority.prio.bridge_id.prio =
 +		BridgeIdentifier.prio;
@@ -70311,9 +70322,16 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	p->br->hack_5_2 = 0;
 +}  /* stp_br_init */
 +
-+static void stp_port_init(struct ksz_stp_port *p)
++static void stp_port_prio_init(struct ksz_stp_port *p)
 +{
 +	portId.prio = 0x80;
++}
++
++static void stp_port_init(struct ksz_stp_port *p)
++{
++#if 0
++	portId.prio = 0x80;
++#endif
 +	adminPointToPointMAC = ADMIN_P2P_AUTO;
 +	AdminPortPathCost = 0;
 +	AdminEdge = FALSE;
@@ -71318,6 +71336,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		skb_queue_head_init(&p->rxq);
 +		p->port_index = i;
 +		p->br = br;
++		stp_port_prio_init(p);
 +		stp_port_init(p);
 +	}
 +
@@ -71344,6 +71363,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	p = &br->ports[0];
 +	ZERO(BridgePriority);
++	stp_br_prio_init(p);
 +	stp_br_init(p);
 +
 +#if defined(HAVE_VID2FID)
@@ -71719,12 +71739,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2025-11-14 16:42:13.324784158 -0800
-@@ -0,0 +1,12357 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2026-03-29 14:41:52.950084180 -0700
+@@ -0,0 +1,12442 @@
 +/**
 + * Microchip KSZ8795 switch common code
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -73007,6 +73027,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			mib->rate[0].last = mib->rate[1].last = 0;
 +			mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +			mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++			sw->mib_flow_ctrl[port].rx = 0;
++			sw->mib_flow_ctrl[port].tx = 0;
++#endif
 +		}
 +}  /* sw_cfg_mib_counter_ctrl */
 +
@@ -73047,6 +73071,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	mib->rate[0].last = mib->rate[1].last = 0;
 +	mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +	mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++	sw->mib_flow_ctrl[port].rx = 0;
++	sw->mib_flow_ctrl[port].tx = 0;
++#endif
 +}  /* port_init_cnt */
 +
 +/* -------------------------------------------------------------------------- */
@@ -78079,6 +78107,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			PAUSE_FLOW_CTRL);
 +		len += sprintf(buf + len, "\t%08x = fast aging\n",
 +			FAST_AGING);
++		len += sprintf(buf + len, "\t%08x = no sw reset\n",
++			NO_SW_RESET);
 +		len += sprintf(buf + len, "\t%08x = ACL intr monitor\n",
 +			ACL_INTR_MONITOR);
 +		len += sprintf(buf + len, "\t%08x = tag is removed\n",
@@ -80298,8 +80328,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#ifdef CONFIG_KSZ_STP
 +	if (sw->features & STP_SUPPORT) {
 +		ret = stp_rcv(&sw->info->rstp, skb, port);
-+		if (!ret)
++		if (!ret) {
++			schedule_work(&sw->chk_flow_ctrl_work);
 +			return ret;
++		}
 +	}
 +#endif
 +#ifdef PROC_MRP
@@ -80633,6 +80665,67 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	return skb;
 +}  /* sw_final_skb */
 +
++#ifdef CONFIG_KSZ_STP
++static void stop_stp(struct ksz_sw *sw)
++{
++	struct ksz_stp_info *stp = &sw->info->rstp;
++	uint i, p;
++
++	stp_stop(stp, true);
++	sw->ops->acquire(sw);
++	for (i = 1; i <= sw->mib_cnt; i++) {
++		p = get_phy_port(sw, i);
++		sw_cfg_port_base_vlan(sw, p, sw->PORT_MASK);
++		port_cfg_rx(sw, p, 1);
++		port_cfg_tx(sw, p, 1);
++	}
++	sw_flush_dyn_mac_table(sw, TOTAL_PORT_NUM);
++	sw->ops->release(sw);
++	sw_clr_sta_mac_table(sw);
++}
++
++static void ksz_start_sw_work(struct work_struct *work)
++{
++	struct delayed_work *dwork = to_delayed_work(work);
++	struct ksz_sw *sw = container_of(dwork, struct ksz_sw, start_sw_work);
++
++	sw->ops->acquire(sw);
++	sw_cfg(sw, REG_CHIP_ID1, SW_START, 1);
++	sw->ops->release(sw);
++}
++
++static void ksz_chk_flow_ctrl_work(struct work_struct *work)
++{
++	struct ksz_sw *sw = container_of(work, struct ksz_sw,
++					 chk_flow_ctrl_work);
++	struct ksz_port_mib *mib;
++	u64 rx_pause, tx_mcast;
++	bool stop_sw = false;
++	uint p;
++
++	for (p = 0; p < sw->port_cnt; p++) {
++		mib = get_port_mib(sw, p);
++		if (mib->counter[MIB_RX_PAUSE] > sw->mib_flow_ctrl[p].rx) {
++			rx_pause = mib->counter[MIB_RX_PAUSE] -
++				sw->mib_flow_ctrl[p].rx;
++			tx_mcast = mib->counter[MIB_TX_MULTICAST] -
++				sw->mib_flow_ctrl[p].tx;
++			if (rx_pause > 20 && !tx_mcast)
++				stop_sw = true;
++		}
++		sw->mib_flow_ctrl[p].rx = mib->counter[MIB_RX_PAUSE];
++		sw->mib_flow_ctrl[p].tx = mib->counter[MIB_TX_MULTICAST];
++	}
++	if (!stop_sw)
++		return;
++
++	sw->ops->acquire(sw);
++	sw_cfg(sw, REG_CHIP_ID1, SW_START, 0);
++	sw->ops->release(sw);
++	schedule_delayed_work(&sw->start_sw_work, msecs_to_jiffies(500));
++}
++#endif
++
 +#ifdef CONFIG_DELAY_REQUEST_INTR
 +static int sw_start_interrupt(struct sw_priv *ks, const char *name);
 +#endif
@@ -80790,6 +80883,13 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct mrp_info *mrp = &sw->mrp;
 +
 +		mrp_stop(mrp);
++	}
++#endif
++
++#ifdef CONFIG_KSZ_STP
++	if ((sw->features & STP_SUPPORT) && (sw->overrides & NO_SW_RESET)) {
++		stop_stp(sw);
++		return 0;
 +	}
 +#endif
 +
@@ -83939,6 +84039,11 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +	sema_init(&ks->proc_sem, 1);
 +
++#ifdef CONFIG_KSZ_STP
++	INIT_WORK(&sw->chk_flow_ctrl_work, ksz_chk_flow_ctrl_work);
++	INIT_DELAYED_WORK(&sw->start_sw_work, ksz_start_sw_work);
++#endif
++
 +	INIT_WORK(&ks->mib_read, ksz8795_mib_read_work);
 +
 +	/* 500 ms timeout */
@@ -84080,12 +84185,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.h	2025-11-14 16:40:56.283142922 -0800
-@@ -0,0 +1,1017 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8795.h	2026-03-29 14:26:16.307184722 -0700
+@@ -0,0 +1,1027 @@
 +/**
 + * Microchip KSZ8795 switch common header
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -84642,6 +84747,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define UPDATE_CSUM			(1 << 2)
 +#define HAVE_MORE_THAN_2_PORTS		(1 << 3)
 +#define NO_TX_LOCK			(1 << 8)
++#define NO_SW_RESET			(1 << 9)
 +
 +#define ACL_INTR_MONITOR		(1 << 17)
 +#define SYSFS_PHY_PORT			(1 << 18)
@@ -84732,6 +84838,15 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_timer_info *monitor_timer_info;
 +	struct ksz_counter_info *counter;
 +	struct delayed_work *link_read;
++
++#ifdef CONFIG_KSZ_STP
++	struct {
++		u64 rx;
++		u64 tx;
++	} mib_flow_ctrl[TOTAL_PORT_NUM];
++	struct delayed_work start_sw_work;
++	struct work_struct chk_flow_ctrl_work;
++#endif
 +
 +#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct device_node *devnode[TOTAL_PORT_NUM];
@@ -85101,12 +85216,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2025-11-14 16:42:30.534256653 -0800
-@@ -0,0 +1,10137 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.c	2026-03-29 14:33:46.518339601 -0700
+@@ -0,0 +1,10231 @@
 +/**
 + * Microchip KSZ8895 switch common code
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -85126,6 +85241,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +#if 0
 +#define USE_SAME_ADDR
++#endif
++#if 0
++#define USE_10_MBIT
 +#endif
 +
 +enum {
@@ -86211,6 +86329,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			mib->rate[0].last = mib->rate[1].last = 0;
 +			mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +			mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++			sw->mib_flow_ctrl[port].rx = 0;
++			sw->mib_flow_ctrl[port].tx = 0;
++#endif
 +		}
 +}  /* sw_cfg_mib_counter_ctrl */
 +
@@ -86251,6 +86373,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	mib->rate[0].last = mib->rate[1].last = 0;
 +	mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +	mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++	sw->mib_flow_ctrl[port].rx = 0;
++	sw->mib_flow_ctrl[port].tx = 0;
++#endif
 +}  /* port_init_cnt */
 +
 +/* -------------------------------------------------------------------------- */
@@ -88051,6 +88177,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	/* Enable switch MII flow control. */
 +	data = SW_R(sw, S_REPLACE_VID_CTRL);
 +	data |= SW_FLOW_CTRL;
++#ifdef USE_10_MBIT
++	data |= SW_10_MBIT;
++#endif
 +
 +	SW_W(sw, S_REPLACE_VID_CTRL, data);
 +
@@ -90108,6 +90237,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			PAUSE_FLOW_CTRL);
 +		len += sprintf(buf + len, "\t%08x = fast aging\n",
 +			FAST_AGING);
++		len += sprintf(buf + len, "\t%08x = no sw reset\n",
++			NO_SW_RESET);
 +		len += sprintf(buf + len, "\t%08x = tag is removed\n",
 +			TAG_REMOVE);
 +		len += sprintf(buf + len, "\t%08x = tail tagging\n",
@@ -91747,8 +91878,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#ifdef CONFIG_KSZ_STP
 +	if (sw->features & STP_SUPPORT) {
 +		ret = stp_rcv(&sw->info->rstp, skb, port);
-+		if (!ret)
++		if (!ret) {
++			schedule_work(&sw->chk_flow_ctrl_work);
 +			return ret;
++		}
 +	}
 +#endif
 +#ifdef PROC_MRP
@@ -92067,6 +92200,67 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	return skb;
 +}  /* sw_final_skb */
 +
++#ifdef CONFIG_KSZ_STP
++static void stop_stp(struct ksz_sw *sw)
++{
++	struct ksz_stp_info *stp = &sw->info->rstp;
++	uint i, p;
++
++	stp_stop(stp, true);
++	sw->ops->acquire(sw);
++	for (i = 1; i <= sw->mib_cnt; i++) {
++		p = get_phy_port(sw, i);
++		sw_cfg_port_base_vlan(sw, p, sw->PORT_MASK);
++		port_cfg_rx(sw, p, 1);
++		port_cfg_tx(sw, p, 1);
++	}
++	sw_flush_dyn_mac_table(sw, TOTAL_PORT_NUM);
++	sw->ops->release(sw);
++	sw_clr_sta_mac_table(sw);
++}
++
++static void ksz_start_sw_work(struct work_struct *work)
++{
++	struct delayed_work *dwork = to_delayed_work(work);
++	struct ksz_sw *sw = container_of(dwork, struct ksz_sw, start_sw_work);
++
++	sw->ops->acquire(sw);
++	sw_cfg(sw, REG_CHIP_ID1, SW_START, 1);
++	sw->ops->release(sw);
++}
++
++static void ksz_chk_flow_ctrl_work(struct work_struct *work)
++{
++	struct ksz_sw *sw = container_of(work, struct ksz_sw,
++					 chk_flow_ctrl_work);
++	struct ksz_port_mib *mib;
++	u64 rx_pause, tx_mcast;
++	bool stop_sw = false;
++	uint p;
++
++	for (p = 0; p < sw->port_cnt; p++) {
++		mib = get_port_mib(sw, p);
++		if (mib->counter[MIB_RX_PAUSE] > sw->mib_flow_ctrl[p].rx) {
++			rx_pause = mib->counter[MIB_RX_PAUSE] -
++				sw->mib_flow_ctrl[p].rx;
++			tx_mcast = mib->counter[MIB_TX_MULTICAST] -
++				sw->mib_flow_ctrl[p].tx;
++			if (rx_pause > 20 && !tx_mcast)
++				stop_sw = true;
++		}
++		sw->mib_flow_ctrl[p].rx = mib->counter[MIB_RX_PAUSE];
++		sw->mib_flow_ctrl[p].tx = mib->counter[MIB_TX_MULTICAST];
++	}
++	if (!stop_sw)
++		return;
++
++	sw->ops->acquire(sw);
++	sw_cfg(sw, REG_CHIP_ID1, SW_START, 0);
++	sw->ops->release(sw);
++	schedule_delayed_work(&sw->start_sw_work, msecs_to_jiffies(500));
++}
++#endif
++
 +#ifdef CONFIG_DELAY_REQUEST_INTR
 +static int sw_start_interrupt(struct sw_priv *ks, const char *name);
 +#endif
@@ -92214,6 +92408,13 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		struct mrp_info *mrp = &sw->mrp;
 +
 +		mrp_stop(mrp);
++	}
++#endif
++
++#ifdef CONFIG_KSZ_STP
++	if ((sw->features & STP_SUPPORT) && (sw->overrides & NO_SW_RESET)) {
++		stop_stp(sw);
++		return 0;
 +	}
 +#endif
 +
@@ -95051,6 +95252,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	pi = sw->HOST_PORT;
 +	info = get_port_info(sw, pi);
 +	info->tx_rate = 100 * TX_RATE_UNIT;
++#ifdef USE_10_MBIT
++	info->tx_rate = 10 * TX_RATE_UNIT;
++#endif
 +	info->duplex = 2;
 +	info->flow_ctrl = 0x33;
 +	info->lpa = 0x05e1;
@@ -95111,6 +95315,11 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		&kszsw_registers_attr);
 +#endif
 +	sema_init(&ks->proc_sem, 1);
++
++#ifdef CONFIG_KSZ_STP
++	INIT_WORK(&sw->chk_flow_ctrl_work, ksz_chk_flow_ctrl_work);
++	INIT_DELAYED_WORK(&sw->start_sw_work, ksz_start_sw_work);
++#endif
 +
 +	INIT_WORK(&ks->mib_read, ksz8895_mib_read_work);
 +
@@ -95242,12 +95451,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_8895.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.h	2025-11-14 16:41:19.754853326 -0800
-@@ -0,0 +1,905 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_8895.h	2026-03-29 14:22:20.865608163 -0700
+@@ -0,0 +1,915 @@
 +/**
 + * Microchip KSZ8895 switch common header
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -95739,6 +95948,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define UPDATE_CSUM			(1 << 2)
 +#define HAVE_MORE_THAN_2_PORTS		(1 << 3)
 +#define NO_TX_LOCK			(1 << 8)
++#define NO_SW_RESET			(1 << 9)
 +
 +#define SYSFS_PHY_PORT			(1 << 18)
 +
@@ -95826,6 +96036,15 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_timer_info *monitor_timer_info;
 +	struct ksz_counter_info *counter;
 +	struct delayed_work *link_read;
++
++#ifdef CONFIG_KSZ_STP
++	struct {
++		u64 rx;
++		u64 tx;
++	} mib_flow_ctrl[TOTAL_PORT_NUM];
++	struct delayed_work start_sw_work;
++	struct work_struct chk_flow_ctrl_work;
++#endif
 +
 +#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct device_node *devnode[TOTAL_PORT_NUM];
@@ -96151,8 +96370,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2026-02-25 15:04:20.661589156 -0800
-@@ -0,0 +1,20564 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.c	2026-03-29 14:29:29.417787049 -0700
+@@ -0,0 +1,20690 @@
 +/**
 + * Microchip gigabit switch common code
 + *
@@ -96214,6 +96433,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	PROC_STATIC,
 +	PROC_VLAN,
 +	PROC_HSR,
++	PROC_SET_RESV_MCAST,
 +
 +	PROC_SET_AGING,
 +	PROC_SET_FAST_AGING,
@@ -96945,6 +97165,46 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +/* Switch functions */
 +
++/**
++ * sw_chk - check switch register bits
++ * @sw:		The switch instance.
++ * @addr:	The address of the switch register.
++ * @bits:	The data bits to check.
++ *
++ * This function checks whether the specified bits of the switch register are
++ * set or not.
++ *
++ * Return 0 if the bits are not set.
++ */
++static int sw_chk(struct ksz_sw *sw, u32 addr, SW_D bits)
++{
++	SW_D data;
++
++	data = SW_R(sw, addr);
++	return (data & bits) == bits;
++}  /* sw_chk */
++
++/**
++ * sw_cfg - set switch register bits
++ * @sw:		The switch instance.
++ * @addr:	The address of the switch register.
++ * @bits:	The data bits to set.
++ * @set:	The flag indicating whether the bits are to be set or not.
++ *
++ * This function sets or resets the specified bits of the switch register.
++ */
++static void sw_cfg(struct ksz_sw *sw, u32 addr, SW_D bits, bool set)
++{
++	SW_D data;
++
++	data = SW_R(sw, addr);
++	if (set)
++		data |= bits;
++	else
++		data &= ~bits;
++	SW_W(sw, addr, data);
++}  /* sw_cfg */
++
 +#ifndef CONFIG_KSZ_IBA_ONLY
 +/**
 + * sw_r_mac_table - read from MAC table
@@ -97571,8 +97831,17 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	u16 ports;
 +	struct ksz_mac_table *mac;
 +	struct ksz_mac_table table[8];
-+	int first_static = true;
++	int first_static = false;
++	int reserv;
 +
++	/* Do not need to display reserved multicast table if not enabled. */
++	sw_acquire(sw);
++	reserv = sw_chk(sw, REG_SW_LUE_CTRL_0, SW_RESV_MCAST_ENABLE);
++	sw_release(sw);
++	if (!reserv)
++		goto d_sta_mac;
++
++	first_static = true;
 +	for (j = 0; j < 8; j++)
 +		addr[j] = get_mcast_reserved_addr(j);
 +	sw_r_m_sta_mac_table(sw, addr, 1, 8, table);
@@ -97615,6 +97884,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		len += sprintf(buf + len, ">");
 +		slen += sprintf(sbuf + slen, "%s"NL, buf);
 +	}
++
++d_sta_mac:
 +	i = 0;
 +	do {
 +		for (j = 0; j < MAX_IBA_MAC_ENTRIES; j++)
@@ -98673,46 +98944,6 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	data |= (val & mask) << shift;
 +	port_w32(sw, p, reg, data);
 +}
-+
-+/**
-+ * sw_chk - check switch register bits
-+ * @sw:		The switch instance.
-+ * @addr:	The address of the switch register.
-+ * @bits:	The data bits to check.
-+ *
-+ * This function checks whether the specified bits of the switch register are
-+ * set or not.
-+ *
-+ * Return 0 if the bits are not set.
-+ */
-+static int sw_chk(struct ksz_sw *sw, u32 addr, SW_D bits)
-+{
-+	SW_D data;
-+
-+	data = SW_R(sw, addr);
-+	return (data & bits) == bits;
-+}  /* sw_chk */
-+
-+/**
-+ * sw_cfg - set switch register bits
-+ * @sw:		The switch instance.
-+ * @addr:	The address of the switch register.
-+ * @bits:	The data bits to set.
-+ * @set:	The flag indicating whether the bits are to be set or not.
-+ *
-+ * This function sets or resets the specified bits of the switch register.
-+ */
-+static void sw_cfg(struct ksz_sw *sw, u32 addr, SW_D bits, bool set)
-+{
-+	SW_D data;
-+
-+	data = SW_R(sw, addr);
-+	if (set)
-+		data |= bits;
-+	else
-+		data &= ~bits;
-+	SW_W(sw, addr, data);
-+}  /* sw_cfg */
 +
 +static SW_D sw_r_shift(struct ksz_sw *sw, u32 addr, u32 mask,
 +	u32 shift)
@@ -99894,6 +100125,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	mib->rate[0].last = mib->rate[1].last = 0;
 +	mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +	mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++	sw->mib_flow_ctrl[port].rx = 0;
++	sw->mib_flow_ctrl[port].tx = 0;
++#endif
 +	sw->ops->release(sw);
 +}  /* port_init_cnt */
 +
@@ -102254,6 +102489,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	}
 +}  /* sw_init_vlan */
 +
++#define HAVE_INC_MAC_ADDR
 +static void inc_mac_addr(u8 *dst, const u8 *src, u8 inc)
 +{
 +#ifdef USE_SAME_ADDR
@@ -106493,6 +106729,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			UPDATE_CSUM);
 +		len += sprintf(buf + len, "\t%08lx = delay update link"NL,
 +			DELAY_UPDATE_LINK);
++		len += sprintf(buf + len, "\t%08lx = no sw reset"NL,
++			NO_SW_RESET);
 +#ifdef CONFIG_KSZ_IBA
 +		len += sprintf(buf + len, "\t%08lx = IBA test"NL,
 +			IBA_TEST);
@@ -106543,6 +106781,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 +	note[0] = '\0';
 +	switch (proc_num) {
++	case PROC_SET_RESV_MCAST:
++		chk = sw_chk(sw, REG_SW_LUE_CTRL_0, SW_RESV_MCAST_ENABLE);
++		break;
 +	case PROC_SET_AGING:
 +		chk = sw_chk(sw, REG_SW_LUE_CTRL_1, SW_AGING_ENABLE);
 +		break;
@@ -106791,6 +107032,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			mib->rate[0].last = mib->rate[1].last = 0;
 +			mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +			mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++			sw->mib_flow_ctrl[p].rx = 0;
++			sw->mib_flow_ctrl[p].tx = 0;
++#endif
 +		}
 +		break;
 +	case PROC_SET_SW_REG:
@@ -106871,6 +107116,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		break;
 +	case PROC_STATIC:
 +		sw_clr_sta_mac_table(sw);
++		break;
++	case PROC_SET_RESV_MCAST:
++		sw_cfg(sw, REG_SW_LUE_CTRL_0, SW_RESV_MCAST_ENABLE, num);
 +		break;
 +	case PROC_SET_AGING:
 +		sw_cfg(sw, REG_SW_LUE_CTRL_1, SW_AGING_ENABLE, num);
@@ -107924,6 +108172,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		mib->rate[0].last = mib->rate[1].last = 0;
 +		mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +		mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++		sw->mib_flow_ctrl[port].rx = 0;
++		sw->mib_flow_ctrl[port].tx = 0;
++#endif
 +		break;
 +	}
 +	case PROC_ENABLE_BROADCAST_STORM:
@@ -110659,8 +110911,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#ifdef CONFIG_KSZ_STP
 +	if (sw->features & STP_SUPPORT) {
 +		ret = stp_rcv(&sw->info->rstp, skb, port);
-+		if (!ret)
++		if (!ret) {
++			schedule_work(&sw->chk_flow_ctrl_work);
 +			return ret;
++		}
 +	}
 +#endif
 +#ifdef CONFIG_KSZ_MRP
@@ -111529,6 +111783,83 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	return skb;
 +}  /* sw_final_skb */
 +
++#ifdef CONFIG_KSZ_STP
++static void stop_stp(struct ksz_sw *sw)
++{
++	struct ksz_stp_info *stp = &sw->info->rstp;
++	uint i, p;
++
++	stp_stop(stp, true);
++	sw->ops->acquire(sw);
++	for (i = 1; i <= sw->mib_cnt; i++) {
++		p = get_phy_port(sw, i);
++		sw_cfg_port_base_vlan(sw, p, sw->PORT_MASK);
++		port_cfg_rx(sw, p, 1);
++		port_cfg_tx(sw, p, 1);
++	}
++	sw_cfg(sw, REG_SW_LUE_CTRL_0, SW_RESV_MCAST_ENABLE, 0);
++	sw_clr_sta_mac_table(sw);
++	sw_flush_dyn_mac_table(sw, sw->port_cnt);
++	sw->ops->release(sw);
++}
++
++static void ksz_start_sw_work(struct work_struct *work)
++{
++	struct delayed_work *dwork = to_delayed_work(work);
++	struct ksz_sw *sw = container_of(dwork, struct ksz_sw, start_sw_work);
++
++	sw->ops->acquire(sw);
++	sw_cfg(sw, REG_SW_OPERATION, SW_START, 1);
++	sw->ops->release(sw);
++#ifdef CONFIG_KSZ_IBA
++	if (sw->features & IBA_SUPPORT)
++		schedule_delayed_work(&sw->set_ops, 1);
++#endif
++}
++
++static void ksz_chk_flow_ctrl_work(struct work_struct *work)
++{
++	struct ksz_sw *sw = container_of(work, struct ksz_sw,
++					 chk_flow_ctrl_work);
++	struct ksz_port_mib *mib;
++	u64 rx_pause, tx_mcast;
++	bool stop_sw = false;
++	uint p;
++
++	for (p = 0; p < sw->port_cnt; p++) {
++		mib = get_port_mib(sw, p);
++		if (mib->counter[MIB_RX_PAUSE] > sw->mib_flow_ctrl[p].rx) {
++			rx_pause = mib->counter[MIB_RX_PAUSE] -
++				sw->mib_flow_ctrl[p].rx;
++			tx_mcast = mib->counter[MIB_TX_MULTICAST] -
++				sw->mib_flow_ctrl[p].tx;
++			if (rx_pause > 20 && !tx_mcast)
++				stop_sw = true;
++		}
++		sw->mib_flow_ctrl[p].rx = mib->counter[MIB_RX_PAUSE];
++		sw->mib_flow_ctrl[p].tx = mib->counter[MIB_TX_MULTICAST];
++	}
++	if (!stop_sw)
++		return;
++
++#ifdef CONFIG_KSZ_IBA
++	if ((sw->features & IBA_SUPPORT) && !iba_stopped(sw)) {
++		mutex_lock(&sw->lock);
++		mutex_lock(sw->hwlock);
++		mutex_lock(sw->reglock);
++		sw_set_spi(sw, &sw->info->iba);
++		mutex_unlock(sw->reglock);
++		mutex_unlock(sw->hwlock);
++		mutex_unlock(&sw->lock);
++	}
++#endif
++	sw->ops->acquire(sw);
++	sw_cfg(sw, REG_SW_OPERATION, SW_START, 0);
++	sw->ops->release(sw);
++	schedule_delayed_work(&sw->start_sw_work, msecs_to_jiffies(500));
++}
++#endif
++
 +#ifdef CONFIG_DELAY_REQUEST_INTR
 +static int sw_start_interrupt(struct sw_priv *ks, const char *name);
 +#endif
@@ -111552,7 +111883,9 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw_setup_pause(sw);
 +
 +	/* STP has its own mechanism to handle looping. */
++#ifndef HAVE_INC_MAC_ADDR
 +	if (!(sw->features & STP_SUPPORT))
++#endif
 +		sw_cfg_src_filter(sw, true);
 +	if (sw->features & (PTP_HW | DLR_HW | HSR_HW))
 +		need_tail_tag = true;
@@ -111764,6 +112097,13 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			sw->ops->release(sw);
 +		}
 +		return reset;
++	}
++#endif
++
++#ifdef CONFIG_KSZ_STP
++	if ((sw->features & STP_SUPPORT) && (sw->overrides & NO_SW_RESET)) {
++		stop_stp(sw);
++		return 0;
 +	}
 +#endif
 +
@@ -116427,6 +116767,11 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	INIT_WORK(&sw->tx_fwd, sw_tx_fwd);
 +	skb_queue_head_init(&sw->txq);
 +
++#ifdef CONFIG_KSZ_STP
++	INIT_WORK(&sw->chk_flow_ctrl_work, ksz_chk_flow_ctrl_work);
++	INIT_DELAYED_WORK(&sw->start_sw_work, ksz_start_sw_work);
++#endif
++
 +	INIT_WORK(&ks->mib_read, ksz9897_mib_read_work);
 +
 +	/* 500 ms timeout */
@@ -116719,12 +117064,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_9897.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.h	2025-11-14 16:41:33.630916292 -0800
-@@ -0,0 +1,1476 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_9897.h	2026-03-27 18:58:35.145514218 -0700
+@@ -0,0 +1,1487 @@
 +/**
 + * Microchip KSZ9897 switch common header
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2013-2015 Micrel, Inc.
@@ -117498,6 +117843,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#define UPDATE_CSUM			BIT(6)
 +#define DELAY_UPDATE_LINK		BIT(7)
 +#define NO_TX_LOCK			BIT(8)
++#define NO_SW_RESET			BIT(9)
 +
 +#define IBA_TEST			BIT(16)
 +#define ACL_INTR_MONITOR		BIT(17)
@@ -117611,6 +117957,15 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_timer_info *monitor_timer_info;
 +	struct ksz_counter_info *counter;
 +	struct delayed_work *link_read;
++
++#ifdef CONFIG_KSZ_STP
++	struct {
++		u64 rx;
++		u64 tx;
++	} mib_flow_ctrl[TOTAL_PORT_NUM];
++	struct delayed_work start_sw_work;
++	struct work_struct chk_flow_ctrl_work;
++#endif
 +
 +#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct device_node *devnode[TOTAL_PORT_NUM];
@@ -117848,6 +118203,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	int static_table;
 +	int vlan_table;
 +	int hsr_table;
++	int resv_mcast;
 +	int aging;
 +	int fast_aging;
 +	int link_aging;
@@ -118277,8 +118633,8 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.c	2026-03-17 15:40:56.867443840 -0700
-@@ -0,0 +1,10469 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.c	2026-03-29 14:49:48.183800262 -0700
+@@ -0,0 +1,10535 @@
 +/**
 + * Microchip switch common code
 + *
@@ -119299,6 +119655,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	mib->rate[0].last = mib->rate[1].last = 0;
 +	mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +	mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++	sw->mib_flow_ctrl[port].rx = 0;
++	sw->mib_flow_ctrl[port].tx = 0;
++#endif
 +	mutex_unlock(&sw->lock);
 +}  /* port_init_cnt */
 +
@@ -123836,6 +124196,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			mib->rate[0].last = mib->rate[1].last = 0;
 +			mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +			mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++			sw->mib_flow_ctrl[count].rx = 0;
++			sw->mib_flow_ctrl[count].tx = 0;
++#endif
 +		}
 +		break;
 +	case PROC_SET_SW_REG:
@@ -124336,6 +124700,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +		mib->rate[0].last = mib->rate[1].last = 0;
 +		mib->rate[0].last_cnt = mib->rate[1].last_cnt = 0;
 +		mib->rate[0].peak = mib->rate[1].peak = 0;
++#ifdef CONFIG_KSZ_STP
++		sw->mib_flow_ctrl[port].rx = 0;
++		sw->mib_flow_ctrl[port].tx = 0;
++#endif
 +		break;
 +	}
 +	case PROC_ENABLE_BROADCAST_STORM:
@@ -125339,8 +125707,10 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#ifdef CONFIG_KSZ_STP
 +	if (sw->features & STP_SUPPORT) {
 +		ret = stp_rcv(&sw->info->rstp, skb, port);
-+		if (!ret)
++		if (!ret) {
++			schedule_work(&sw->chk_flow_ctrl_work);
 +			return ret;
++		}
 +	}
 +#endif
 +#ifdef CONFIG_KSZ_DLR
@@ -125804,6 +126174,53 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	sw_unlock_tx(sw);
 +	return skb;
 +}  /* sw_final_skb */
++
++#ifdef CONFIG_KSZ_STP
++#ifdef CONFIG_HAVE_KSZ8463
++#define REG_CHIP_ID1	REG_SWITCH_SIDER
++#endif
++
++static void ksz_start_sw_work(struct work_struct *work)
++{
++	struct delayed_work *dwork = to_delayed_work(work);
++	struct ksz_sw *sw = container_of(dwork, struct ksz_sw, start_sw_work);
++
++	sw->ops->acquire(sw);
++	sw_cfg(sw, REG_CHIP_ID1, SWITCH_START, 1);
++	sw->ops->release(sw);
++}
++
++static void ksz_chk_flow_ctrl_work(struct work_struct *work)
++{
++	struct ksz_sw *sw = container_of(work, struct ksz_sw,
++					 chk_flow_ctrl_work);
++	struct ksz_port_mib *mib;
++	u64 rx_pause, tx_mcast;
++	bool stop_sw = false;
++	uint p;
++
++	for (p = 0; p < sw->port_cnt; p++) {
++		mib = get_port_mib(sw, p);
++		if (mib->counter[MIB_RX_PAUSE] > sw->mib_flow_ctrl[p].rx) {
++			rx_pause = mib->counter[MIB_RX_PAUSE] -
++				sw->mib_flow_ctrl[p].rx;
++			tx_mcast = mib->counter[MIB_TX_MULTICAST] -
++				sw->mib_flow_ctrl[p].tx;
++			if (rx_pause > 20 && !tx_mcast)
++				stop_sw = true;
++		}
++		sw->mib_flow_ctrl[p].rx = mib->counter[MIB_RX_PAUSE];
++		sw->mib_flow_ctrl[p].tx = mib->counter[MIB_TX_MULTICAST];
++	}
++	if (!stop_sw)
++		return;
++
++	sw->ops->acquire(sw);
++	sw_cfg(sw, REG_CHIP_ID1, SWITCH_START, 0);
++	sw->ops->release(sw);
++	schedule_delayed_work(&sw->start_sw_work, msecs_to_jiffies(500));
++}
++#endif
 +
 +#ifdef CONFIG_DELAY_REQUEST_INTR
 +static int sw_start_interrupt(struct sw_priv *ks, const char *name);
@@ -128389,6 +128806,11 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 +	sema_init(&ks->proc_sem, 1);
 +
++#ifdef CONFIG_KSZ_STP
++	INIT_WORK(&sw->chk_flow_ctrl_work, ksz_chk_flow_ctrl_work);
++	INIT_DELAYED_WORK(&sw->start_sw_work, ksz_start_sw_work);
++#endif
++
 +	INIT_WORK(&ks->mib_read, ksz_mib_read_work);
 +
 +	/* 500 ms timeout */
@@ -128750,12 +129172,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw.h linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.h
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.h	2025-11-14 16:40:30.563076911 -0800
-@@ -0,0 +1,896 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw.h	2026-03-27 18:57:39.425475988 -0700
+@@ -0,0 +1,905 @@
 +/**
 + * Microchip switch common header
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2010-2015 Micrel, Inc.
@@ -129345,6 +129767,15 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	struct ksz_timer_info *monitor_timer_info;
 +	struct ksz_counter_info *counter;
 +	struct delayed_work *link_read;
++
++#ifdef CONFIG_KSZ_STP
++	struct {
++		u64 rx;
++		u64 tx;
++	} mib_flow_ctrl[TOTAL_PORT_NUM];
++	struct delayed_work start_sw_work;
++	struct work_struct chk_flow_ctrl_work;
++#endif
 +
 +#if defined(CONFIG_PHYLINK) || defined(CONFIG_PHYLINK_MODULE)
 +	struct device_node *devnode[TOTAL_PORT_NUM];
@@ -131067,12 +131498,12 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +
 diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c
 --- linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	2025-11-19 16:06:02.849113577 -0800
-@@ -0,0 +1,1144 @@
++++ linux-linux4microchip-2025.04/drivers/net/ethernet/micrel/ksz_sw_sysfs_9897.c	2026-03-26 16:58:39.614044017 -0700
+@@ -0,0 +1,1146 @@
 +/**
 + * Microchip gigabit switch common sysfs code
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + *	Tristram Ha <Tristram.Ha@microchip.com>
 + *
 + * Copyright (c) 2011-2014 Micrel, Inc.
@@ -131388,6 +131819,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +NETLAN_WR_ENTRY(static_table);
 +NETLAN_RD_ENTRY(vlan_table);
 +NETLAN_RD_ENTRY(hsr_table);
++NETLAN_WR_ENTRY(resv_mcast);
 +NETLAN_WR_ENTRY(aging);
 +NETLAN_WR_ENTRY(fast_aging);
 +NETLAN_WR_ENTRY(link_aging);
@@ -131755,6 +132187,7 @@ diff -Napur linux-linux4microchip-2025.04-orig/drivers/net/ethernet/micrel/ksz_s
 +	&lan_attr_static_table.attr,
 +	&lan_attr_vlan_table.attr,
 +	&lan_attr_hsr_table.attr,
++	&lan_attr_resv_mcast.attr,
 +	&lan_attr_aging.attr,
 +	&lan_attr_fast_aging.attr,
 +	&lan_attr_link_aging.attr,
