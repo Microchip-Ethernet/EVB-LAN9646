@@ -71741,8 +71741,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_sw_8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2026-04-06 18:34:25.247091526 -0700
-@@ -0,0 +1,12477 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_sw_8795.c	2026-04-14 18:19:07.924539327 -0700
+@@ -0,0 +1,12489 @@
 +/**
 + * Microchip KSZ8795 switch common code
 + *
@@ -81188,6 +81188,18 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +					if (name && !strcmp(name, "rmii"))
 +						sw->interface =
 +							PHY_INTERFACE_MODE_RMII;
++					else if (name && !strcmp(name, "rgmii"))
++						sw->interface =
++							PHY_INTERFACE_MODE_RGMII;
++					else if (name && !strcmp(name, "rgmii-txid"))
++						sw->interface =
++							PHY_INTERFACE_MODE_RGMII_TXID;
++					else if (name && !strcmp(name, "rgmii-rxid"))
++						sw->interface =
++							PHY_INTERFACE_MODE_RGMII_RXID;
++					else if (name && !strcmp(name, "rgmii-id"))
++						sw->interface =
++							PHY_INTERFACE_MODE_RGMII_ID;
 +				}
 +				name = of_get_property(port, "label", NULL);
 +				if (name)
@@ -83980,7 +83992,7 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_s
 +			phy = PHY_INTERFACE_MODE_RGMII;
 +			if (data & PORT_RGMII_ID_IN_ENABLE)
 +				phy = PHY_INTERFACE_MODE_RGMII_RXID;
-+			if (data & PORT_RGMII_ID_IN_ENABLE) {
++			if (data & PORT_RGMII_ID_OUT_ENABLE) {
 +				if (PHY_INTERFACE_MODE_RGMII_RXID == phy)
 +					phy = PHY_INTERFACE_MODE_RGMII_ID;
 +				else
@@ -139322,12 +139334,12 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-k
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-ksz8795.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz8795.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-ksz8795.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz8795.c	2025-11-14 17:43:40.766354523 -0800
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/spi-ksz8795.c	2026-04-14 17:22:40.842495452 -0700
 @@ -0,0 +1,577 @@
 +/**
 + * Microchip KSZ8795 SPI driver
 + *
-+ * Copyright (c) 2015-2025 Microchip Technology Inc.
++ * Copyright (c) 2015-2026 Microchip Technology Inc.
 + * Copyright (c) 2010-2015 Micrel, Inc.
 + *
 + * Copyright 2009 Simtec Electronics
@@ -139411,8 +139423,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/spi-k
 +
 +#define KS8795_DEV			"ksz8795"
 +
-+#define SW_DRV_RELDATE			"Nov 14, 2025"
-+#define SW_DRV_VERSION			"1.2.5"
++#define SW_DRV_RELDATE			"Apr 14, 2026"
++#define SW_DRV_VERSION			"1.2.6"
 +
 +/* -------------------------------------------------------------------------- */
 +
