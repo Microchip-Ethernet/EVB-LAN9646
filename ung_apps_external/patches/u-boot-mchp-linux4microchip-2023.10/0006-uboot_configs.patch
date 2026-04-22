@@ -1,3 +1,50 @@
+diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/arch/arm/mach-at91/armv7/Makefile u-boot-mchp-linux4microchip-2023.10/arch/arm/mach-at91/armv7/Makefile
+--- u-boot-mchp-linux4microchip-2023.10-orig/arch/arm/mach-at91/armv7/Makefile	2023-12-18 02:10:05.000000000 -0800
++++ u-boot-mchp-linux4microchip-2023.10/arch/arm/mach-at91/armv7/Makefile	2026-04-17 17:40:59.782440335 -0700
+@@ -11,6 +11,9 @@ obj-$(CONFIG_SAMA5D3)	+= sama5d3_devices
+ obj-$(CONFIG_SAMA5D4)	+= sama5d4_devices.o clock.o
+ obj-$(CONFIG_SAMA7G5)	+= sama7g5_devices.o
+ obj-y += cpu.o
++ifneq ($(CONFIG_SYSRESET),y)
++obj-y += reset.o
++endif
+ ifneq ($(CONFIG_ATMEL_TCB_TIMER),y)
+ ifneq ($(CONFIG_ATMEL_PIT_TIMER),y)
+ ifneq ($(CONFIG_MCHP_PIT64B_TIMER),y)
+diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/arch/arm/mach-at91/armv7/reset.c u-boot-mchp-linux4microchip-2023.10/arch/arm/mach-at91/armv7/reset.c
+--- u-boot-mchp-linux4microchip-2023.10-orig/arch/arm/mach-at91/armv7/reset.c	1969-12-31 16:00:00.000000000 -0800
++++ u-boot-mchp-linux4microchip-2023.10/arch/arm/mach-at91/armv7/reset.c	2021-01-14 23:11:03.000000000 -0800
+@@ -0,0 +1,30 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * (C) Copyright 2007-2008
++ * Stelian Pop <stelian@popies.net>
++ * Lead Tech Design <www.leadtechdesign.com>
++ *
++ * (C) Copyright 2013
++ * Bo Shen <voice.shen@atmel.com>
++ */
++
++#include <common.h>
++#include <asm/io.h>
++#include <asm/arch/hardware.h>
++#include <asm/arch/at91_rstc.h>
++
++/* Reset the cpu by telling the reset controller to do so */
++void reset_cpu(ulong ignored)
++{
++	at91_rstc_t *rstc = (at91_rstc_t *)ATMEL_BASE_RSTC;
++
++	writel(AT91_RSTC_KEY
++		| AT91_RSTC_CR_PROCRST	/* Processor Reset */
++		| AT91_RSTC_CR_PERRST	/* Peripheral Reset */
++#ifdef CONFIG_AT91RESET_EXTRST
++		| AT91_RSTC_CR_EXTRST	/* External Reset (assert nRST pin) */
++#endif
++		, &rstc->cr);
++	/* never reached */
++	do { } while (1);
++}
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_dev_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_dev_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_dev_defconfig	1969-12-31 16:00:00.000000000 -0800
 +++ u-boot-mchp-linux4microchip-2023.10/configs/sam9x75_curiosity_dev_defconfig	2026-03-23 17:14:48.497684640 -0700
@@ -212,11 +259,12 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sam9x75_curiosity_d
 +CONFIG_MCHP_PIT64B_TIMER=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8071_mmc_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_mmc_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8071_mmc_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_mmc_defconfig	2026-03-25 09:28:55.542322702 -0700
-@@ -0,0 +1,122 @@
++++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_mmc_defconfig	2026-04-17 17:55:08.478897570 -0700
+@@ -0,0 +1,120 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_ARCH_CPU_INIT=y
++CONFIG_SYS_THUMB_BUILD=y
 +CONFIG_ARCH_AT91=y
 +CONFIG_TEXT_BASE=0x26f00000
 +CONFIG_TARGET_SAMA5D3_XPLAINED=y
@@ -320,9 +368,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_ATMEL_USART=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
-+CONFIG_SYSRESET=y
-+CONFIG_SPL_SYSRESET=y
-+CONFIG_SYSRESET_AT91=y
 +CONFIG_TIMER=y
 +CONFIG_SPL_TIMER=y
 +CONFIG_ATMEL_PIT_TIMER=y
@@ -338,11 +383,12 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_W1_EEPROM_DS24XXX=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8071_nandflash_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_nandflash_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8071_nandflash_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_nandflash_defconfig	2026-03-25 09:29:18.757582910 -0700
-@@ -0,0 +1,125 @@
++++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8071_nandflash_defconfig	2026-04-17 19:33:57.653546678 -0700
+@@ -0,0 +1,124 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_ARCH_CPU_INIT=y
++CONFIG_SYS_THUMB_BUILD=y
 +CONFIG_ARCH_AT91=y
 +CONFIG_TEXT_BASE=0x26f00000
 +CONFIG_TARGET_SAMA5D3_XPLAINED=y
@@ -353,6 +399,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_NR_DRAM_BANKS=1
 +CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
 +CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x20003ef0
++CONFIG_ENV_OFFSET=0x120000
 +CONFIG_DM_GPIO=y
 +CONFIG_DEFAULT_DEVICE_TREE="at91-sama5d3_xplained_dev"
 +CONFIG_SPL_TEXT_BASE=0x300000
@@ -449,9 +496,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_ATMEL_USART=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
-+CONFIG_SYSRESET=y
-+CONFIG_SPL_SYSRESET=y
-+CONFIG_SYSRESET_AT91=y
 +CONFIG_TIMER=y
 +CONFIG_SPL_TIMER=y
 +CONFIG_ATMEL_PIT_TIMER=y
@@ -467,11 +511,12 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_W1_EEPROM_DS24XXX=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8087_mmc_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_mmc_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8087_mmc_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_mmc_defconfig	2026-03-25 09:29:36.293973022 -0700
-@@ -0,0 +1,121 @@
++++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_mmc_defconfig	2026-04-17 17:55:24.086299115 -0700
+@@ -0,0 +1,119 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_ARCH_CPU_INIT=y
++CONFIG_SYS_THUMB_BUILD=y
 +CONFIG_ARCH_AT91=y
 +CONFIG_TEXT_BASE=0x26f00000
 +CONFIG_TARGET_SAMA5D3_XPLAINED=y
@@ -574,9 +619,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_ATMEL_USART=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
-+CONFIG_SYSRESET=y
-+CONFIG_SPL_SYSRESET=y
-+CONFIG_SYSRESET_AT91=y
 +CONFIG_TIMER=y
 +CONFIG_SPL_TIMER=y
 +CONFIG_ATMEL_PIT_TIMER=y
@@ -592,11 +634,12 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_W1_EEPROM_DS24XXX=y
 diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8087_nandflash_defconfig u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_nandflash_defconfig
 --- u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_ung8087_nandflash_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_nandflash_defconfig	2026-03-25 09:29:56.694263530 -0700
-@@ -0,0 +1,124 @@
++++ u-boot-mchp-linux4microchip-2023.10/configs/sama5d3_xplained_ung8087_nandflash_defconfig	2026-04-17 19:36:23.710929762 -0700
+@@ -0,0 +1,123 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_ARCH_CPU_INIT=y
++CONFIG_SYS_THUMB_BUILD=y
 +CONFIG_ARCH_AT91=y
 +CONFIG_TEXT_BASE=0x26f00000
 +CONFIG_TARGET_SAMA5D3_XPLAINED=y
@@ -607,6 +650,7 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_NR_DRAM_BANKS=1
 +CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
 +CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x20003ef0
++CONFIG_ENV_OFFSET=0x120000
 +CONFIG_DM_GPIO=y
 +CONFIG_DEFAULT_DEVICE_TREE="at91-sama5d3_xplained_emac"
 +CONFIG_SPL_TEXT_BASE=0x300000
@@ -702,9 +746,6 @@ diff -Napur u-boot-mchp-linux4microchip-2023.10-orig/configs/sama5d3_xplained_un
 +CONFIG_ATMEL_USART=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
-+CONFIG_SYSRESET=y
-+CONFIG_SPL_SYSRESET=y
-+CONFIG_SYSRESET_AT91=y
 +CONFIG_TIMER=y
 +CONFIG_SPL_TIMER=y
 +CONFIG_ATMEL_PIT_TIMER=y
