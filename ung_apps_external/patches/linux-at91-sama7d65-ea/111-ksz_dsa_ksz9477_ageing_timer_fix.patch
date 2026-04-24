@@ -1,17 +1,19 @@
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c	2024-09-13 18:49:45.891650759 -0700
 +++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2024-09-16 16:52:12.560639393 -0700
-@@ -914,26 +914,46 @@ void ksz9477_get_caps(struct ksz_device
+@@ -914,26 +914,51 @@ void ksz9477_get_caps(struct ksz_device
  int ksz9477_set_ageing_time(struct ksz_device *dev, unsigned int msecs)
  {
  	u32 secs = msecs / 1000;
 -	u8 value;
 -	u8 data;
 +	u8 data, mult, value;
++	u32 max_val;
  	int ret;
  
 -	value = FIELD_GET(SW_AGE_PERIOD_7_0_M, secs);
--
++#define MAX_TIMER_VAL	((1 << 8) - 1)
+ 
 -	ret = ksz_write8(dev, REG_SW_LUE_CTRL_3, value);
 -	if (ret < 0)
 -		return ret;
@@ -19,13 +21,13 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
 -	data = FIELD_GET(SW_AGE_PERIOD_10_8_M, secs);
 +	/* The aging timer comprises a 3-bit multiplier and an 8-bit second
 +	 * value.  Either of them cannot be zero.  The maximum timer is then
-+	 * 7 * 255 = 1785.
++	 * 7 * 255 = 1785 seconds.
 +	 */
 +	if (!secs)
 +		secs = 1;
 +
 +	/* Return error if too large. */
-+	else if (secs > 7 * 0xff)
++	else if (secs > 7 * MAX_TIMER_VAL)
 +		return -EINVAL;
  
  	ret = ksz_read8(dev, REG_SW_LUE_CTRL_0, &value);
@@ -36,21 +38,23 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
 -	value |= FIELD_PREP(SW_AGE_CNT_M, data);
 +	/* Check whether there is need to update the multiplier. */
 +	mult = FIELD_GET(SW_AGE_CNT_M, value);
++	max_val = MAX_TIMER_VAL;
 +	if (mult > 0) {
 +		/* Try to use the same multiplier already in the register as
 +		 * the hardware default uses multiplier 4 and 75 seconds for
-+		 * 300 seconds. */
-+		data = DIV_ROUND_UP(secs, mult);
-+		if (data <= 0xff && data * mult == secs)
-+			return ksz_write8(dev, REG_SW_LUE_CTRL_3, data);
++		 * 300 seconds.
++		 */
++		max_val = DIV_ROUND_UP(secs, mult);
++		if (max_val > MAX_TIMER_VAL || max_val * mult != secs)
++			max_val = MAX_TIMER_VAL;
 +	}
 +
-+	data = DIV_ROUND_UP(secs, 0xff);
++	data = DIV_ROUND_UP(secs, max_val);
 +	if (mult != data) {
 +		value &= ~SW_AGE_CNT_M;
 +		value |= FIELD_PREP(SW_AGE_CNT_M, data);
 +		ret = ksz_write8(dev, REG_SW_LUE_CTRL_0, value);
-+		if (ret)
++		if (ret < 0)
 +			return ret;
 +	}
  
