@@ -17,4 +17,4 @@ if [ ! -e "/sys/class/net/$PORT0" ]; then
     exit 1
 fi
 
-ptp4l -p /dev/ptp0 -i $PORT0 -f default.cfg $VERBOSE
+ptp4l -i $PORT0 -f default.cfg $VERBOSE

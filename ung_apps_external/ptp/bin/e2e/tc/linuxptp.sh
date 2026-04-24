@@ -54,4 +54,4 @@ while [ $p -lt $PORTS ]; do
     let p=$p+1
 done
 
-ptp4l -p /dev/ptp0 -i eth$ETH.$VLAN -n $PORTS -f default.cfg $VERBOSE $START
+ptp4l -i eth$ETH.$VLAN -n $PORTS -f default.cfg $VERBOSE $START
