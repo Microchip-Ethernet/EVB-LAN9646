@@ -1,0 +1,16 @@
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_spi.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_spi.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_spi.c	2026-04-28 16:14:49.326366265 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_spi.c	2026-04-28 16:22:02.181562238 -0700
+@@ -184,12 +184,6 @@ static int ksz_spi_probe(struct spi_devi
+ 	if (spi->dev.platform_data)
+ 		dev->pdata = spi->dev.platform_data;
+ 
+-	/* setup spi */
+-	spi->mode = SPI_MODE_3;
+-	ret = spi_setup(spi);
+-	if (ret)
+-		return ret;
+-
+ 	dev->irq = spi->irq;
+ 
+ 	ret = ksz_switch_register(dev);
