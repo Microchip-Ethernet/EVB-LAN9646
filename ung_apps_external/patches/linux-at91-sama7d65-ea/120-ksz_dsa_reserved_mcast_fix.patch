@@ -1,35 +1,115 @@
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.c	2025-08-28 15:20:49.046287210 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2025-08-28 15:45:52.555115145 -0700
-@@ -1276,6 +1276,8 @@ void ksz9477_config_cpu_port(struct dsa_
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477.c	2026-04-28 16:07:52.738561014 -0700
+@@ -1276,9 +1276,15 @@ void ksz9477_config_cpu_port(struct dsa_
  	}
  }
  
-+static u8 reserved_mcast_map[8] = { 0, 1, 3, 16, 32, 33, 2, 17 };
++#define RESV_MCAST_CNT	8
++
++static u8 reserved_mcast_map[RESV_MCAST_CNT] = { 0, 1, 3, 16, 32, 33, 2, 17 };
 +
  int ksz9477_enable_stp_addr(struct ksz_device *dev)
  {
++	u8 i, ports, update;
  	const u32 *masks;
-@@ -1287,6 +1289,94 @@ int ksz9477_enable_stp_addr(struct ksz_d
++	bool override;
+ 	u32 data;
+ 	int ret;
+ 
+@@ -1287,23 +1293,87 @@ int ksz9477_enable_stp_addr(struct ksz_d
  	/* Enable Reserved multicast table */
  	ksz_cfg(dev, REG_SW_LUE_CTRL_0, SW_RESV_MCAST_ENABLE, true);
  
+-	/* Set the Override bit for forwarding BPDU packet to CPU */
+-	ret = ksz_write32(dev, REG_SW_ALU_VAL_B,
+-			  ALU_V_OVERRIDE | BIT(dev->cpu_port));
+-	if (ret < 0)
+-		return ret;
+-
+-	data = ALU_STAT_START | ALU_RESV_MCAST_ADDR | masks[ALU_STAT_WRITE];
+-
+-	ret = ksz_write32(dev, REG_SW_ALU_STAT_CTRL__4, data);
+-	if (ret < 0)
+-		return ret;
+-
+-	/* wait to be finished */
+-	ret = ksz9477_wait_alu_sta_ready(dev);
+-	if (ret < 0) {
+-		dev_err(dev->dev, "Failed to update Reserved Multicast table\n");
+-		return ret;
 +	/* The reserved multicast address table has 8 entries.  Each entry has
 +	 * a default value of which port to forward.  It is assumed the host
 +	 * port is the last port in most of the switches, but that is not the
-+	 * case for KSZ9477 or maybe KSZ9897.  It is necessary to update the
-+	 * table to forward to the right host port.
++	 * case for KSZ9477 or maybe KSZ9897.  For LAN937X family the default
++	 * port is port 5, the first RGMII port.  It is okay for LAN9370, a
++	 * 5-port switch, but may not be correct for the other 8-port
++	 * versions.  It is necessary to update the whole table to forward to
++	 * the right ports.
++	 * Furthermore PTP messages can use a reserved multicast address and
++	 * the host will not receive them if this table is not correct.
 +	 */
-+	if (dev->cpu_port != dev->info->port_cnt - 1) {
-+		u8 last_port = (1 << (dev->info->port_cnt - 1));
-+		bool update = false;
-+		u8 ports;
-+		int i;
++	for (i = 0; i < RESV_MCAST_CNT; i++) {
++		data = reserved_mcast_map[i] <<
++			dev->info->shifts[ALU_STAT_INDEX];
++		data |= ALU_STAT_START |
++			masks[ALU_STAT_DIRECT] |
++			masks[ALU_RESV_MCAST_ADDR] |
++			masks[ALU_STAT_READ];
++		ret = ksz_write32(dev, REG_SW_ALU_STAT_CTRL__4, data);
++		if (ret < 0)
++			return ret;
 +
-+		for (i = 0; i < 8; i++) {
-+			data = reserved_mcast_map[i] << 16;
-+			data |= ALU_STAT_START | ALU_RESV_MCAST_ADDR |
-+				masks[ALU_STAT_READ];
++		/* wait to be finished */
++		ret = ksz9477_wait_alu_sta_ready(dev);
++		if (ret < 0)
++			return ret;
++
++		ret = ksz_read32(dev, REG_SW_ALU_VAL_B, &data);
++		if (ret < 0)
++			return ret;
++
++		override = false;
++		ports = data & dev->port_mask;
++		switch (i) {
++		case 0:
++		case 6:
++			/* Change the host port. */
++			update = BIT(dev->cpu_port);
++			override = true;
++			break;
++		case 2:
++			/* Change the host port. */
++			update = BIT(dev->cpu_port);
++			break;
++		case 4:
++		case 5:
++		case 7:
++			/* Skip the host port. */
++			update = dev->port_mask & ~BIT(dev->cpu_port);
++			break;
++		default:
++			update = ports;
++			break;
++		}
++		if (update != ports || override) {
++			data &= ~dev->port_mask;
++			data |= update;
++			/* Set Override bit to receive frame even when port is
++			 * closed.
++			 */
++			if (override)
++				data |= ALU_V_OVERRIDE;
++			ret = ksz_write32(dev, REG_SW_ALU_VAL_B, data);
++			if (ret < 0)
++				return ret;
++
++			data = reserved_mcast_map[i] <<
++			       dev->info->shifts[ALU_STAT_INDEX];
++			data |= ALU_STAT_START |
++				masks[ALU_STAT_DIRECT] |
++				masks[ALU_RESV_MCAST_ADDR] |
++				masks[ALU_STAT_WRITE];
 +			ret = ksz_write32(dev, REG_SW_ALU_STAT_CTRL__4, data);
 +			if (ret < 0)
 +				return ret;
@@ -38,70 +118,51 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477.
 +			ret = ksz9477_wait_alu_sta_ready(dev);
 +			if (ret < 0)
 +				return ret;
-+
-+			ret = ksz_read32(dev, REG_SW_ALU_VAL_B, &data);
-+			if (ret < 0)
-+				return ret;
-+
-+			ports = data & dev->port_mask;
-+
-+			/* This entry drops everything. */
-+			if (!ports)
-+				continue;
-+
-+			/* Not forwarding to all ports. */
-+			if (ports != dev->port_mask) {
-+				/* Replace the last port with the host port. */
-+				if (ports == last_port) {
-+					ports = BIT(dev->cpu_port);
-+					update = true;
-+
-+				/* This entry does not forward to host port.
-+				 * But if the host needs to process protocols
-+				 * like MVRP and MMRP the host port needs to
-+				 * be included.
-+				 */
-+				} else if (!(ports & last_port)) {
-+					ports &= ~BIT(dev->cpu_port);
-+					ports |= last_port;
-+					update = true;
-+				}
-+				if (update) {
-+					data &= ~dev->port_mask;
-+					data |= ports;
-+				}
-+			}
-+
-+			/* Set Override bit for STP in the first entry. */
-+			if (i == 0) {
-+				update = true;
-+				data |= ALU_V_OVERRIDE;
-+			}
-+			if (update) {
-+				ret = ksz_write32(dev, REG_SW_ALU_VAL_B, data);
-+				if (ret < 0)
-+					return ret;
-+
-+				data = reserved_mcast_map[i] << 16;
-+				data |= ALU_STAT_START | ALU_RESV_MCAST_ADDR |
-+					masks[ALU_STAT_WRITE];
-+				ret = ksz_write32(dev, REG_SW_ALU_STAT_CTRL__4,
-+						  data);
-+				if (ret < 0)
-+					return ret;
-+
-+				/* wait to be finished */
-+				ret = ksz9477_wait_alu_sta_ready(dev);
-+				if (ret < 0)
-+					return ret;
-+			}
 +		}
-+
-+		/* Do not need to execute following code if updated. */
-+		if (update)
-+			return 0;
-+	}
-+
- 	/* Set the Override bit for forwarding BPDU packet to CPU */
- 	ret = ksz_write32(dev, REG_SW_ALU_VAL_B,
- 			  ALU_V_OVERRIDE | BIT(dev->cpu_port));
+ 	}
+ 
+ 	return 0;
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477_reg.h linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477_reg.h
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz9477_reg.h	2024-05-24 05:04:06.000000000 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz9477_reg.h	2026-04-28 16:07:21.289040066 -0700
+@@ -423,7 +423,6 @@
+ 
+ #define ALU_RESV_MCAST_INDEX_M		(BIT(6) - 1)
+ #define ALU_STAT_START			BIT(7)
+-#define ALU_RESV_MCAST_ADDR		BIT(1)
+ 
+ #define REG_SW_ALU_VAL_A		0x0420
+ 
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2026-04-28 15:59:01.719234926 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2026-04-28 16:06:17.885413614 -0700
+@@ -501,6 +501,8 @@ static const u16 ksz9477_regs[] = {
+ static const u32 ksz9477_masks[] = {
+ 	[ALU_STAT_WRITE]		= 0,
+ 	[ALU_STAT_READ]			= 1,
++	[ALU_STAT_DIRECT]		= 0,
++	[ALU_RESV_MCAST_ADDR]		= BIT(1),
+ 	[P_MII_TX_FLOW_CTRL]		= BIT(5),
+ 	[P_MII_RX_FLOW_CTRL]		= BIT(3),
+ };
+@@ -528,6 +530,8 @@ static const u8 ksz9477_xmii_ctrl1[] = {
+ static const u32 lan937x_masks[] = {
+ 	[ALU_STAT_WRITE]		= 1,
+ 	[ALU_STAT_READ]			= 2,
++	[ALU_STAT_DIRECT]		= BIT(3),
++	[ALU_RESV_MCAST_ADDR]		= BIT(2),
+ 	[P_MII_TX_FLOW_CTRL]		= BIT(5),
+ 	[P_MII_RX_FLOW_CTRL]		= BIT(3),
+ };
+diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h
+--- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.h	2026-04-28 15:58:57.106459880 -0700
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.h	2026-04-28 16:06:45.774189034 -0700
+@@ -270,6 +270,8 @@ enum ksz_masks {
+ 	DYNAMIC_MAC_TABLE_TIMESTAMP,
+ 	ALU_STAT_WRITE,
+ 	ALU_STAT_READ,
++	ALU_STAT_DIRECT,
++	ALU_RESV_MCAST_ADDR,
+ 	P_MII_TX_FLOW_CTRL,
+ 	P_MII_RX_FLOW_CTRL,
+ };
