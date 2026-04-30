@@ -55,8 +55,8 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz8795.
  
 diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c
 --- linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_common.c	2025-08-28 15:35:35.315357315 -0700
-+++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2025-08-28 15:58:56.355684851 -0700
-@@ -1100,6 +1100,7 @@ static const struct regmap_range ksz8873
++++ linux-linux4microchip-2024.04-new/drivers/net/dsa/microchip/ksz_common.c	2026-04-28 16:12:59.937013353 -0700
+@@ -1104,6 +1104,7 @@ static const struct regmap_range ksz8873
  	regmap_reg_range(0x3f, 0x3f),
  
  	/* advanced control registers */

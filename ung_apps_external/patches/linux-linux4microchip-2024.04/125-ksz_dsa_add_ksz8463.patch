@@ -515,7 +515,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  static const u16 ksz8795_regs[] = {
  	[REG_IND_CTRL_0]		= 0x6E,
  	[REG_IND_DATA_8]		= 0x70,
-@@ -1127,6 +1214,27 @@ static const struct regmap_access_table
+@@ -1131,6 +1218,27 @@ static const struct regmap_access_table
  };
  
  const struct ksz_chip_data ksz_switch_chips[] = {
@@ -543,7 +543,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	[KSZ8563] = {
  		.chip_id = KSZ8563_CHIP_ID,
  		.dev_name = "KSZ8563",
-@@ -2151,6 +2259,10 @@ static void ksz_irq_bus_sync_unlock(stru
+@@ -2155,6 +2263,10 @@ static void ksz_irq_bus_sync_unlock(stru
  			/* Only enable interrupt when all ports are setup. */
  			if (masked != dsa_user_ports(ds))
  				goto done;
@@ -554,7 +554,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  		}
  	}
  	ret = ksz_write8(dev, kirq->reg_mask, masked);
-@@ -2225,8 +2337,12 @@ static irqreturn_t ksz_irq_thread_fn(int
+@@ -2229,8 +2341,12 @@ static irqreturn_t ksz_irq_thread_fn(int
  		if (ret)
  			goto out;
  
@@ -568,7 +568,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	}
  
  	for (n = 0; n < kirq->nirqs; ++n) {
-@@ -2301,6 +2417,7 @@ static int ksz_pirq_setup(struct ksz_dev
+@@ -2305,6 +2421,7 @@ static int ksz_pirq_setup(struct ksz_dev
  static int ksz_setup(struct dsa_switch *ds)
  {
  	struct ksz_device *dev = ds->priv;
@@ -576,7 +576,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	bool have_port_irq = false;
  	struct dsa_port *dp;
  	struct ksz_port *p;
-@@ -2327,10 +2444,14 @@ static int ksz_setup(struct dsa_switch *
+@@ -2331,10 +2448,14 @@ static int ksz_setup(struct dsa_switch *
  	}
  
  	/* set broadcast storm protection 10% rate */
@@ -594,7 +594,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  
  	dev->dev_ops->config_cpu_port(ds);
  
-@@ -2826,6 +2947,7 @@ static enum dsa_tag_protocol ksz_get_tag
+@@ -2830,6 +2951,7 @@ static enum dsa_tag_protocol ksz_get_tag
  		proto = DSA_TAG_PROTO_KSZ8795;
  
  	if (dev->chip_id == KSZ8830_CHIP_ID ||
@@ -602,7 +602,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	    dev->chip_id == KSZ8563_CHIP_ID ||
  	    dev->chip_id == KSZ9893_CHIP_ID ||
  	    dev->chip_id == KSZ9563_CHIP_ID)
-@@ -2938,6 +3060,7 @@ static int ksz_max_mtu(struct dsa_switch
+@@ -2942,6 +3064,7 @@ static int ksz_max_mtu(struct dsa_switch
  	case KSZ8794_CHIP_ID:
  	case KSZ8765_CHIP_ID:
  		return KSZ8795_HUGE_PACKET_SIZE - VLAN_ETH_HLEN - ETH_FCS_LEN;
@@ -610,7 +610,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	case KSZ8830_CHIP_ID:
  	case KSZ8864_CHIP_ID:
  	case KSZ8895_CHIP_ID:
-@@ -3321,6 +3444,9 @@ static int ksz_switch_detect(struct ksz_
+@@ -3325,6 +3448,9 @@ static int ksz_switch_detect(struct ksz_
  	id2 = FIELD_GET(SW_CHIP_ID_M, id16);
  
  	switch (id1) {
@@ -620,7 +620,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	case KSZ87_FAMILY_ID:
  		if (id2 == KSZ87_CHIP_ID_95) {
  			u8 val;
-@@ -3927,6 +4053,9 @@ int ksz_switch_register(struct ksz_devic
+@@ -3931,6 +4057,9 @@ int ksz_switch_register(struct ksz_devic
  						&dev->ports[port_num].interface);
  
  				ksz_parse_rgmii_delay(dev, port_num, port);
@@ -649,7 +649,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  	KSZ8563_CHIP_ID = 0x8563,
  	KSZ8795_CHIP_ID = 0x8795,
  	KSZ8794_CHIP_ID = 0x8794,
-@@ -414,6 +416,11 @@ static inline struct regmap *ksz_regmap_
+@@ -416,6 +418,11 @@ static inline struct regmap *ksz_regmap_
  	return dev->regmap[KSZ_REGMAP_32];
  }
  
@@ -661,7 +661,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  static inline int ksz_read8(struct ksz_device *dev, u32 reg, u8 *val)
  {
  	unsigned int value;
-@@ -639,12 +646,13 @@ static inline bool ksz_is_8895_family(st
+@@ -641,12 +648,13 @@ static inline bool ksz_is_8895_family(st
  static inline bool is_ksz8(struct ksz_device *dev)
  {
  	return ksz_is_ksz87xx(dev) || ksz_is_ksz88x3(dev) ||
@@ -677,7 +677,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  }
  
  static inline bool ksz_is_9897_family(struct ksz_device *dev)
-@@ -690,6 +698,7 @@ static inline bool ksz_is_sgmii_port(str
+@@ -692,6 +700,7 @@ static inline bool ksz_is_sgmii_port(str
  #define REG_CHIP_ID0			0x00
  
  #define SW_FAMILY_ID_M			GENMASK(15, 8)
@@ -685,7 +685,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  #define KSZ87_FAMILY_ID			0x87
  #define KSZ88_FAMILY_ID			0x88
  #define KSZ8895_FAMILY_ID		0x95
-@@ -749,6 +758,8 @@ static inline bool ksz_is_sgmii_port(str
+@@ -751,6 +760,8 @@ static inline bool ksz_is_sgmii_port(str
  #define PORT_SRC_PHY_INT		1
  #define PORT_SRC_PTP_INT		2
  
@@ -694,7 +694,7 @@ diff -Napur linux-linux4microchip-2024.04-old/drivers/net/dsa/microchip/ksz_comm
  #define KSZ8795_HUGE_PACKET_SIZE	2000
  #define KSZ8863_HUGE_PACKET_SIZE	1916
  #define KSZ8863_NORMAL_PACKET_SIZE	1536
-@@ -819,4 +830,29 @@ static inline bool ksz_is_sgmii_port(str
+@@ -821,4 +832,29 @@ static inline bool ksz_is_sgmii_port(str
  		[KSZ_REGMAP_32] = KSZ_REGMAP_ENTRY(32, swp, (regbits), (regpad), (regalign)), \
  	}
  
