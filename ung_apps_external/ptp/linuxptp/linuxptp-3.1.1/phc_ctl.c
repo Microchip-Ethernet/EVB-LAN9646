@@ -233,6 +233,8 @@ static int do_adj(clockid_t clkid, int cmdc, char *cmdv[])
 		pr_err("adj: missing required time argument");
 		return -2;
 	}
+	if (cmdv[0][0] == '_')
+		cmdv[0][0] = '-';
 
 	/* parse the double time offset argument */
 	r = get_ranged_double(cmdv[0], &time_arg, -DBL_MAX, DBL_MAX);
@@ -275,6 +277,8 @@ static int do_freq(clockid_t clkid, int cmdc, char *cmdv[])
 		/* no argument was used */
 		return 0;
 	}
+	if (cmdv[0][0] == '_')
+		cmdv[0][0] = '-';
 
 	/* parse the double ppb argument */
 	r = get_ranged_double(cmdv[0], &ppb, -NSEC2SEC, NSEC2SEC);
