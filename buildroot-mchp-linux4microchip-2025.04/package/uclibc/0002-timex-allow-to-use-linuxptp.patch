@@ -1,0 +1,42 @@
+--- a/include/sys/timex.h	2025-01-14 04:35:24.000000000 -0800
++++ b/include/sys/timex.h	2026-05-11 15:00:48.794823907 -0700
+@@ -34,24 +34,24 @@ struct ntptimeval
+ struct timex
+ {
+   unsigned int modes;	/* mode selector */
+-  long int offset;	/* time offset (usec) */
+-  long int freq;	/* frequency offset (scaled ppm) */
+-  long int maxerror;	/* maximum error (usec) */
+-  long int esterror;	/* estimated error (usec) */
++  __time_t offset;	/* time offset (usec) */
++  __time_t freq;	/* frequency offset (scaled ppm) */
++  __time_t maxerror;	/* maximum error (usec) */
++  __time_t esterror;	/* estimated error (usec) */
+   int status;		/* clock command/status */
+-  long int constant;	/* pll time constant */
+-  long int precision;	/* clock precision (usec) (read only) */
+-  long int tolerance;	/* clock frequency tolerance (ppm) (read only) */
++  __time_t constant;	/* pll time constant */
++  __time_t precision;	/* clock precision (usec) (read only) */
++  __time_t tolerance;	/* clock frequency tolerance (ppm) (read only) */
+   struct timeval time;	/* (read only) */
+-  long int tick;	/* (modified) usecs between clock ticks */
+-  long int ppsfreq;	/* pps frequency (scaled ppm) (ro) */
+-  long int jitter;	/* pps jitter (us) (ro) */
++  __time_t tick;	/* (modified) usecs between clock ticks */
++  __time_t ppsfreq;	/* pps frequency (scaled ppm) (ro) */
++  __time_t jitter;	/* pps jitter (us) (ro) */
+   int shift;		/* interval duration (s) (shift) (ro) */
+-  long int stabil;	/* pps stability (scaled ppm) (ro) */
+-  long int jitcnt;	/* jitter limit exceeded (ro) */
+-  long int calcnt;	/* calibration intervals (ro) */
+-  long int errcnt;	/* calibration errors (ro) */
+-  long int stbcnt;	/* stability limit exceeded (ro) */
++  __time_t stabil;	/* pps stability (scaled ppm) (ro) */
++  __time_t jitcnt;	/* jitter limit exceeded (ro) */
++  __time_t calcnt;	/* calibration intervals (ro) */
++  __time_t errcnt;	/* calibration errors (ro) */
++  __time_t stbcnt;	/* stability limit exceeded (ro) */
+ 
+   int tai;		/* TAI offset (ro) */
+ 
