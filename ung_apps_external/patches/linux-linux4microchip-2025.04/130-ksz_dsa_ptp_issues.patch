@@ -1,0 +1,163 @@
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_ptp.c
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.c	2025-05-26 04:26:53.000000000 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_ptp.c	2026-06-01 18:10:10.037604572 -0700
+@@ -308,11 +308,25 @@ int ksz_get_ts_info(struct dsa_switch *d
+ 
+ 	if (is_lan937x(dev))
+ 		ts->tx_types |= BIT(HWTSTAMP_TX_ON);
++#if 1
++	/* Allow 2-step for KSZ9477. */
++	ts->tx_types |= BIT(HWTSTAMP_TX_ON);
++	/* Allow to use E2E 1-step Sync. */
++	ts->tx_types |= BIT(HWTSTAMP_TX_ONESTEP_SYNC);
++#endif
+ 
+ 	ts->rx_filters = BIT(HWTSTAMP_FILTER_NONE) |
+ 			 BIT(HWTSTAMP_FILTER_PTP_V2_L4_EVENT) |
+ 			 BIT(HWTSTAMP_FILTER_PTP_V2_L2_EVENT) |
+ 			 BIT(HWTSTAMP_FILTER_PTP_V2_EVENT);
++#if 1
++	ts->rx_filters |= BIT(HWTSTAMP_FILTER_PTP_V2_L4_SYNC) |
++			  BIT(HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ) |
++			  BIT(HWTSTAMP_FILTER_PTP_V2_L2_SYNC) |
++			  BIT(HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ) |
++			  BIT(HWTSTAMP_FILTER_PTP_V2_SYNC) |
++			  BIT(HWTSTAMP_FILTER_PTP_V2_DELAY_REQ);
++#endif
+ 
+ 	ts->phc_index = ptp_clock_index(ptp_data->clock);
+ 
+@@ -336,6 +350,10 @@ static int ksz_set_hwtstamp_config(struc
+ 				   struct ksz_port *prt,
+ 				   struct hwtstamp_config *config)
+ {
++	struct ksz_irq *ptpirq = &prt->ptpirq;
++	u16 masked = 0;
++	u16 cfg = 0;
++	u16 val = 0;
+ 	int ret;
+ 
+ 	if (config->flags)
+@@ -353,30 +371,63 @@ static int ksz_set_hwtstamp_config(struc
+ 		prt->ptpmsg_irq[KSZ_XDREQ_MSG].ts_en = true;
+ 		prt->ptpmsg_irq[KSZ_PDRES_MSG].ts_en = false;
+ 		prt->hwts_tx_en = true;
+-
+-		ret = ksz_rmw16(dev, REG_PTP_MSG_CONF1, PTP_1STEP, PTP_1STEP);
+-		if (ret)
+-			return ret;
+-
++		masked |= BIT(KSZ_XDREQ_MSG + KSZ_PTP_INT_START);
++		cfg |= PTP_802_1AS | PTP_TC_P2P | PTP_1STEP;
++		val |= PTP_TC_P2P | PTP_1STEP;
+ 		break;
+ 	case HWTSTAMP_TX_ON:
++#if 0
++		/* Allow 2-step for KSZ9477. */
+ 		if (!is_lan937x(dev))
+ 			return -ERANGE;
++#endif
+ 
+ 		prt->ptpmsg_irq[KSZ_SYNC_MSG].ts_en  = true;
+ 		prt->ptpmsg_irq[KSZ_XDREQ_MSG].ts_en = true;
+ 		prt->ptpmsg_irq[KSZ_PDRES_MSG].ts_en = true;
+ 		prt->hwts_tx_en = true;
+-
+-		ret = ksz_rmw16(dev, REG_PTP_MSG_CONF1, PTP_1STEP, 0);
+-		if (ret)
+-			return ret;
+-
++		masked |= BIT(KSZ_PDRES_MSG + KSZ_PTP_INT_START) |
++			  BIT(KSZ_XDREQ_MSG + KSZ_PTP_INT_START) |
++			  BIT(KSZ_SYNC_MSG + KSZ_PTP_INT_START);
++		cfg |= PTP_802_1AS | PTP_TC_P2P | PTP_1STEP;
++		val |= PTP_802_1AS | PTP_TC_P2P;
++		break;
++	case HWTSTAMP_TX_ONESTEP_SYNC:
++		prt->ptpmsg_irq[KSZ_SYNC_MSG].ts_en  = false;
++		prt->ptpmsg_irq[KSZ_XDREQ_MSG].ts_en = true;
++		prt->ptpmsg_irq[KSZ_PDRES_MSG].ts_en = false;
++		prt->hwts_tx_en = true;
++		masked |= BIT(KSZ_XDREQ_MSG + KSZ_PTP_INT_START);
++		cfg |= PTP_802_1AS | PTP_TC_P2P | PTP_1STEP;
++		val |= PTP_1STEP;
+ 		break;
+ 	default:
+ 		return -ERANGE;
+ 	}
+ 
++	/* Only transmit timestamp interrupts when needed. */
++	ret = ksz_write16(dev, ptpirq->reg_mask, masked);
++	if (ret)
++		return ret;
++
++	switch (config->rx_filter) {
++	case HWTSTAMP_FILTER_PTP_V2_L4_SYNC:
++	case HWTSTAMP_FILTER_PTP_V2_L2_SYNC:
++	case HWTSTAMP_FILTER_PTP_V2_SYNC:
++		/* Disable master mode to receive Sync. */
++		cfg |= PTP_MASTER;
++		break;
++	case HWTSTAMP_FILTER_NONE:
++		break;
++	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
++	case HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ:
++	case HWTSTAMP_FILTER_PTP_V2_DELAY_REQ:
++	default:
++		/* Enable master mode to receive Delay_Req. */
++		cfg |= PTP_MASTER;
++		val |= PTP_MASTER;
++		break;
++	}
+ 	switch (config->rx_filter) {
+ 	case HWTSTAMP_FILTER_NONE:
+ 		prt->hwts_rx_en = false;
+@@ -390,16 +441,27 @@ static int ksz_set_hwtstamp_config(struc
+ 	case HWTSTAMP_FILTER_PTP_V2_L2_SYNC:
+ 		config->rx_filter = HWTSTAMP_FILTER_PTP_V2_L2_EVENT;
+ 		prt->hwts_rx_en = true;
++		cfg |= PTP_ETH_ENABLE;
++		val |= PTP_ETH_ENABLE;
+ 		break;
+ 	case HWTSTAMP_FILTER_PTP_V2_EVENT:
+ 	case HWTSTAMP_FILTER_PTP_V2_SYNC:
+ 		config->rx_filter = HWTSTAMP_FILTER_PTP_V2_EVENT;
+ 		prt->hwts_rx_en = true;
++		cfg |= PTP_ETH_ENABLE;
++		val |= PTP_ETH_ENABLE;
++		break;
++	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
++	case HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ:
++	case HWTSTAMP_FILTER_PTP_V2_DELAY_REQ:
+ 		break;
+ 	default:
+ 		config->rx_filter = HWTSTAMP_FILTER_NONE;
+ 		return -ERANGE;
+ 	}
++	ret = ksz_rmw16(dev, REG_PTP_MSG_CONF1, cfg, val);
++	if (ret)
++		return ret;
+ 
+ 	return ksz_ptp_enable_mode(dev);
+ }
+@@ -523,9 +585,11 @@ void ksz_port_txtstamp(struct dsa_switch
+ 
+ 	switch (ptp_msg_type) {
+ 	case PTP_MSGTYPE_SYNC:
+-		if (prt->tstamp_config.tx_type == HWTSTAMP_TX_ONESTEP_P2P)
++		if (prt->tstamp_config.tx_type == HWTSTAMP_TX_ONESTEP_P2P ||
++		    prt->tstamp_config.tx_type == HWTSTAMP_TX_ONESTEP_SYNC)
+ 			return;
+ 		break;
++	case PTP_MSGTYPE_DELAY_REQ:
+ 	case PTP_MSGTYPE_PDELAY_REQ:
+ 		break;
+ 	case PTP_MSGTYPE_PDELAY_RESP:
+@@ -540,6 +604,7 @@ void ksz_port_txtstamp(struct dsa_switch
+ 		return;
+ 	}
+ 
++	/* This is used to indicate to defer transmitting the socket buffer. */
+ 	clone = skb_clone_sk(skb);
+ 	if (!clone)
+ 		return;
