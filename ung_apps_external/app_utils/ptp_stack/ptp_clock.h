@@ -76,7 +76,7 @@ struct ptp_clock {
     struct ptp_parent_ds pds;
 
     int servo_state;
-#if 1
+#ifndef LINUX_PTP
     double ratio;
 #endif
     struct ptu offset;

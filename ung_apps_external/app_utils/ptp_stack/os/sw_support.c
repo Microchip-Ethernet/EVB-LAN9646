@@ -92,6 +92,10 @@ struct ksz_timer_info *pcTimerGetName(TimerHandle_t xTimer)
 
 void ksz_exit_timer(struct ksz_timer_info *info)
 {
+	if (!info->callback)
+		return;
+	if (info->dbg)
+printf("exit_timer: %d %s\n", info->index, info->name);
 	close(info->xTimer);
 	info->xTimer = -1;
 	info->callback = NULL;
@@ -102,6 +106,7 @@ void ksz_init_timer(struct ksz_timer_info *info, char *name, TickType_t xTicks,
 	void *param, bool repeat)
 {
 	struct pollfd *dest = pollfd;
+	bool active = info->callback != NULL;
 
 	snprintf(info->name, 40, "%s", name);
 	info->period = xTicks;
@@ -109,18 +114,15 @@ void ksz_init_timer(struct ksz_timer_info *info, char *name, TickType_t xTicks,
 	info->callback = callback;
 	info->func = func;
 	info->param = param;
+	if (active)
+		return;
 	info->xTimer = timerfd_create(CLOCK_MONOTONIC, 0);
 
 	info->index = pollcnt++;
 	Timers[info->index] = info;
 	dest[info->index].fd = info->xTimer;
 	dest[info->index].events = POLLIN|POLLPRI;
-#if 1
 	info->dbg = timer_dbg;
-#if 0
-printf("init_timer: %d %s\n", info->index, info->name);
-#endif
-#endif
 }
 
 void convert_ticks_to_ns(TickType_t xTicks, int *seconds, int *nanoseconds)
@@ -141,9 +143,6 @@ void ksz_change_timer(struct ksz_timer_info *info, TickType_t next,
 	};
 	int seconds, nanoseconds;
 
-#if 0
-printf("c: %lu %lu\n", next, xTicks);
-#endif
 	convert_ticks_to_ns(next, &seconds, &nanoseconds);
 	tmo.it_value.tv_sec = seconds;
 	tmo.it_value.tv_nsec = nanoseconds;
@@ -163,10 +162,8 @@ void ksz_start_timer(struct ksz_timer_info *info, TickType_t xTicks)
 	};
 	int seconds, nanoseconds;
 
-#if 1
 	if (info->dbg)
 printf("start timer: %d %s %ld\n", info->index, info->name, xTicks);
-#endif
 	convert_ticks_to_ns(xTicks, &seconds, &nanoseconds);
 	tmo.it_value.tv_sec = seconds;
 	tmo.it_value.tv_nsec = nanoseconds;
@@ -191,6 +188,8 @@ void ksz_stop_timer(struct ksz_timer_info *info)
 
 	if (!info->max)
 		return;
+	if (info->dbg)
+printf("stop timer: %d %s\n", info->index, info->name);
 	timerfd_settime(info->xTimer, 0, &tmo, NULL);
 	info->max = 0;
 
@@ -250,6 +249,20 @@ TimerTask(void *param)
 }  /* TimerTask */
 
 
+void ksz_cleanup_timers(void)
+{
+	int i = pollcnt;
+
+	while (i) {
+		--i;
+		if (Timers[i] && Timers[i]->xTimer == -1) {
+			Timers[i] = NULL;
+			if (pollcnt - 1 == i)
+				pollcnt--;
+		}
+	}
+}
+
 void exit_timer_sys(void)
 {
 	void *status;
@@ -257,6 +270,7 @@ void exit_timer_sys(void)
 	param[0].fTaskStop = TRUE;
 	Pthread_join(tid[0], &status);
 
+	ksz_cleanup_timers();
 	free(Timers);
 	free(pollfd);
 }

@@ -25,6 +25,7 @@ STACK = ptp_clock.c ptp_clock.h ptp_port.c ptp_port.h \
 	ptp_bmca.c ptp_bmca.h ptp_msg.c ptp_msg.h ptp_ptu.c ptp_ptu.h \
 	lan937x_ptp_api.c lan937x_ptp_api.h lan937x_req.h \
 	avtpdu_1722.c avtpdu_1722.h ptp_dbg.h \
+	ksz_sw_api.c ksz_sw_api.h \
 	ptp_stack.c ptp_config.c ptp_config.h ptp_manage.c ptp_sock.c
 
 INCDIR  = -I$(SOCKDIR) -I$(OS)

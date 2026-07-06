@@ -62,7 +62,7 @@ void print_log(void)
 
 void exception_log(uint sec, uint nsec, char *fmt, ...)
 {
-	char log[240], time_log[40];
+	char log[LOG_MSG_SIZE], time_log[40];
 	va_list args;
 	int left, n;
 	char **msg;
@@ -76,7 +76,7 @@ void exception_log(uint sec, uint nsec, char *fmt, ...)
 		left = LOG_MSG_SIZE;
 	}
 
-	if (!sec && !nsec) {
+	if (!sec && !nsec && ptp_hw) {
 		n = get_clock(dev[1].fd, &sec, &nsec, 0);
 		if (n)
 			nsec = sec = 100;
@@ -215,11 +215,6 @@ int main(int argc, char *argv[])
 		u32 port_mask;
 
 		rc = ptp_port_info(&ptpdev, devname, &phys_port, &port_mask);
-#if 0
-		if (!rc) {
-			printf("%x %x\n", phys_port, port_mask);
-		}
-#endif
 	} while (0);
 	init_stack(hwaddr);
 	init_aed();

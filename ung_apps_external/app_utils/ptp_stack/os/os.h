@@ -43,7 +43,7 @@
 #endif
 #endif
 
-#if 1
+#ifdef LINUX_PTP
 #include "wnp.h"
 #include <stdbool.h>
 

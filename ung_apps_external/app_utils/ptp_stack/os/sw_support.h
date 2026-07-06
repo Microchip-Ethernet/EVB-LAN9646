@@ -20,7 +20,7 @@ struct ksz_timer_info {
     void (*callback)(TimerHandle_t xTimer);
     void (*func)(void *param);
     void *param;
-#if 0
+#ifndef LINUX_PTP
     int set;
 #endif
     bool dbg;
@@ -45,6 +45,7 @@ void ksz_change_timer(struct ksz_timer_info *info, TickType_t next,
 void ksz_start_timer(struct ksz_timer_info *info, TickType_t xTicks);
 void ksz_stop_timer(struct ksz_timer_info *info);
 
+void ksz_cleanup_timers(void);
 void exit_timer_sys(void);
 void init_timer_sys(void);
 
@@ -54,10 +55,11 @@ struct ksz_schedule_work {
     void *dev;
     TickType_t xTicks;
     bool attach;
-#if 0
+#ifdef LINUX_PTP
+    pthread_mutex_t lock;
+#else
     struct mutex lock;
 #endif
-    pthread_mutex_t lock;
     struct ksz_schedule_work *next;
 #ifdef DEBUG_SCHEDULE_WORK
     char name[20];
@@ -72,17 +74,19 @@ void schedule_pause(void);
 void schedule_resume(void);
 
 struct ksz_schedule_info {
-#if 0
+#ifdef LINUX_PTP
+    struct thread_info thread;
+#else
     TaskHandle_t xScheduleTask;
 #endif
-    struct thread_info thread;
     struct ksz_timer_info timer;
     bool low_prio;
     bool pause;
-#if 0
+#ifdef LINUX_PTP
+    pthread_mutex_t lock;
+#else
     struct mutex lock;
 #endif
-    pthread_mutex_t lock;
     struct ksz_schedule_work anchor;
     struct ksz_schedule_work *last;
 };
@@ -90,18 +94,14 @@ struct ksz_schedule_info {
 void exit_schedule_sys(void);
 void init_schedule_sys(void);
 
-#if 0
+#ifndef LINUX_PTP
 struct sw_timer_priv {
-#if 0
     TaskHandle_t xTimerTask;
-#endif
     struct ksz_schedule_info delayed;
     struct ksz_schedule_info low_prio;
     struct ksz_schedule_info schedule;
-#if 0
     struct ksz_timer_info mib_timer_info;
     struct ksz_timer_info monitor_timer_info;
-#endif
 };
 #endif
 

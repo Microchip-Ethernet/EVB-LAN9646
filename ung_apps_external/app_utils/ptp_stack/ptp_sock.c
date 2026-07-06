@@ -141,6 +141,8 @@ struct {
 } dev[2];
 int ptp_hw;
 
+struct sw_dev_info swdev;
+int sw_hw;
 #endif
 
 u8 host_addr[16];
@@ -364,24 +366,54 @@ static int get_ptp_cmd(FILE *fp)
 		len = strlen(line);
 		if (!len)
 			continue;
-                v1 = v2 = v3 = v4 = 0;
+		v1 = v2 = v3 = v4 = 0;
+		h1 = h2 = h3 = h4 = 0;
 		count = sscanf(line, "%s %d %d %d %d",
 			p1, &v1, &v2, &v3, &v4);
-		hcount = sscanf(line, "%s %d %d %d %d",
+		hcount = sscanf(line, "%s %x %x %x %x",
 			p1, &h1, &h2, &h3, &h4);
 		if (!count && !hcount)
 			continue;
+		if (!v1 && h1)
+			v1 = h1;
+		if (!v2 && h2)
+			v2 = h2;
+		if (!v3 && h3)
+			v3 = h3;
+		if (!v4 && h4)
+			v4 = h4;
 
 		if (!strcmp(p1, "c")) {
 			if (v1 == 1)
 				ptp_stack_start_clock();
 			else
 				ptp_stack_stop_clock();
-		} else if (!strcmp(p1, "autotest")) {
+		} else if (!strcmp(p1, "dbg")) {
 			if (count >= 2)
-				automotive_test_mode = !!v1;
+				dbg_on = !!v1;
 			else
+				printf("%d"NL, dbg_on);
+		} else if (!strcmp(p1, "log")) {
+			if (count >= 2)
+				log_on = !!v1;
+			else
+				printf("%d"NL, log_on);
+		} else if (!strcmp(p1, "autotest")) {
+			if (count >= 2) {
+				gptp_profile_get_profile(1, &val8_1);
+				if (val8_1 == 2)
+					automotive_test_mode = !!v1;
+			} else {
 				printf("%d"NL, automotive_test_mode);
+			}
+		} else if (!strcmp(p1, "power")) {
+			if (count >= 2) {
+				if (!v1) {
+					ptp_stack_stop_clock();
+				} else {
+					ptp_stack_start_clock();
+				}
+			}
 		} else if (!strcmp(p1, "avb")) {
 			test_aed(v1, v2); 
 		} else if (!strcmp(p1, "faults")) {
@@ -405,12 +437,12 @@ static int get_ptp_cmd(FILE *fp)
 		} else if (!strcmp(p1, "wait")) {
 			gptp_get_initial_wait(&val8_1, &val8_2, &val8_3);
 			if (count >= 2) {
-#if 0
-				if (count < 4)
-					val8_3 = NULL;
-				if (count < 3)
-					val8_2 = NULL;
-#endif
+				val8_1 = v1;
+				if (count >= 3)
+					val8_2 = v2;
+				if (count >= 4)
+					val8_3 = v3;
+				gptp_set_initial_wait(val8_1, val8_2, val8_3);
 			} else {
 				show_ptp_param_u8(val8_1, false);
 				show_ptp_param_u8(val8_2, false);
@@ -456,9 +488,6 @@ static int get_ptp_cmd(FILE *fp)
 				continue;
 			}
 		}
-#if 0
-		v1--;
-#endif
 		if (!strcmp(p1, "profile")) {
 			gptp_profile_get_profile(v1, &val8_1);
 			if (count >= 3)
@@ -474,11 +503,10 @@ static int get_ptp_cmd(FILE *fp)
 		} else if (!strcmp(p1, "sdoid")) {
 			gptp_profile_get_sdoid(v1, &val8_1, &val8_2);
 			if (count >= 3) {
-#if 0
-				if (count < 4)
-					val8_2 = NULL;
-				cfg_ptp_param_u8(val8_1, v2, val8_2, v3, NULL, 0);
-#endif
+				val8_1 = v2;
+				if (count >= 4)
+					val8_2 = v3;
+				gptp_profile_set_sdoid(v1, val8_1, val8_2);
 			} else {
 				show_ptp_param_u8(val8_1, false);
 				show_ptp_param_u8(val8_2, true);
@@ -517,13 +545,13 @@ static int get_ptp_cmd(FILE *fp)
 			gptp_profile_get_clock_prop(v1, &val8_1, &val8_2,
 				&val16_1);
 			if (count >= 3) {
-#if 0
-				if (count < 4)
-					val8_2 = NULL;
-				cfg_ptp_param_u8(val8_1, v2, val8_2, v3, NULL, 0);
+				val8_1 = v2;
+				if (count >= 4)
+					val8_2 = v3;
 				if (count >= 5)
-					cfg_ptp_param_u16(val16_1, v4);
-#endif
+					val16_1 = v4;
+				gptp_profile_set_clock_prop(v1, val8_1, val8_2,
+					val16_1);
 			} else {
 				show_ptp_param_u8(val8_1, false);
 				show_ptp_param_u8(val8_2, false);
@@ -532,11 +560,10 @@ static int get_ptp_cmd(FILE *fp)
 		} else if (!strcmp(p1, "prio")) {
 			gptp_profile_get_clock_prio(v1, &val8_1, &val8_2);
 			if (count >= 3) {
-#if 0
-				if (count < 4)
-					val8_2 = NULL;
-				cfg_ptp_param_u8(val8_1, v2, val8_2, v3, NULL, 0);
-#endif
+				val8_1 = v2;
+				if (count >= 4)
+					val8_2 = v3;
+				gptp_profile_set_clock_prio(v1, val8_1, val8_2);
 			} else {
 				show_ptp_param_u8(val8_1, false);
 				show_ptp_param_u8(val8_2, true);
@@ -544,31 +571,39 @@ static int get_ptp_cmd(FILE *fp)
 		} else if (!strcmp(p1, "domain")) {
 			gptp_profile_get_domain(v1, &val8_1, &val16_1,
 				&val16_2);
-			if (count >= 3)
-				;
-			else
+			if (count >= 3) {
+				val8_1 = v2;
+				gptp_profile_set_domain(v1, val8_1, val16_1,
+					val16_2);
+			} else {
 				show_ptp_param_u8(val8_1, true);
+			}
 		} else if (!strcmp(p1, "ports")) {
 			gptp_profile_get_domain(v1, &val8_1, &val16_1,
 				&val16_2);
-			if (count >= 3)
-				;
-			else
+			if (hcount >= 3) {
+				val16_1 = v2;
+				gptp_profile_set_domain(v1, val8_1, val16_1,
+					val16_2);
+			} else {
 				show_ptp_param_u16(val16_1, true);
+			}
 		} else if (!strcmp(p1, "pdelay")) {
 			gptp_port_profile_get_delay(v1, &val_1);
-			if (count >= 3)
-				;
-			else
+			if (count >= 3) {
+				val_1 = v2;
+				gptp_port_profile_set_delay(v1, val_1);
+			} else {
 				show_ptp_param_s8(val_1, true);
+			}
 		} else if (!strcmp(p1, "announce")) {
 			gptp_port_profile_get_announce(v1, &val_1, &val8_1);
 			if (count >= 3) {
-#if 0
-				cfg_ptp_param_s8(val_1, v2);
+				val_1 = v2;
 				if (count >= 4)
-					cfg_ptp_param_u8(val8_1, v3, NULL, 0, NULL, 0);
-#endif
+					val8_1 = v3;
+				gptp_port_profile_set_announce(v1, val_1,
+					val8_1);
 			} else {
 				show_ptp_param_s8(val_1, false);
 				show_ptp_param_u8(val8_1, true);
@@ -576,11 +611,10 @@ static int get_ptp_cmd(FILE *fp)
 		} else if (!strcmp(p1, "sync")) {
 			gptp_port_profile_get_sync(v1, &val_1, &val8_1);
 			if (count >= 3) {
-#if 0
-				cfg_ptp_param_s8(val_1, v2);
+				val_1 = v2;
 				if (count >= 4)
-					cfg_ptp_param_u8(val8_1, v3, NULL, 0, NULL, 0);
-#endif
+					val8_1 = v3;
+				gptp_port_profile_set_sync(v1, val_1, val8_1);
 			} else {
 				show_ptp_param_s8(val_1, false);
 				show_ptp_param_u8(val8_1, true);
@@ -588,31 +622,32 @@ static int get_ptp_cmd(FILE *fp)
 		} else if (!strcmp(p1, "oper")) {
 			gptp_port_profile_get_oper(v1, &val_1, &val_2);
 			if (count >= 3) {
-#if 0
-				cfg_ptp_param_s8(val_1, v2);
+				val_1 = v2;
 				if (count >= 4)
-					cfg_ptp_param_s8(val_2, v3);
-#endif
+					val_2 = v3;
+				gptp_port_profile_set_oper(v1, val_1, val_2);
 			} else {
 				show_ptp_param_s8(val_1, false);
 				show_ptp_param_s8(val_2, true);
 			}
 		} else if (!strcmp(p1, "thresh")) {
 			gptp_port_profile_get_delay_thresh(v1, &val16_1);
-			if (count >= 3)
-				;
-			else
+			if (count >= 3) {
+				val16_1 = v2;
+				gptp_port_profile_set_delay_thresh(v1, val16_1);
+			} else {
 				show_ptp_param_u16(val16_1, true);
+			}
 		} else if (!strcmp(p1, "latency")) {
 			gptp_port_get_latency(v1, &val16_1, &val16_2, &val);
 			if (count >= 3) {
-#if 0
-				cfg_ptp_param_u16(val16_1, v2);
+				val16_1 = v2;
 				if (count >= 4)
-					cfg_ptp_param_u16(val16_2, v3);
+					val16_2 = v3;
 				if (count >= 5)
-					cfg_ptp_param_s16(val, v4);
-#endif
+					val = v4;
+				gptp_port_set_latency(v1, val16_1, val16_2,
+					val);
 			} else {
 				show_ptp_param_u16(val16_1, false);
 				show_ptp_param_u16(val16_2, false);
@@ -620,22 +655,68 @@ static int get_ptp_cmd(FILE *fp)
 			}
 		} else if (!strcmp(p1, "peer_delay")) {
 			gptp_port_get_peer_delay(v1, &val16_1);
-			if (count >= 3)
-				;
-			else
+			if (count >= 3) {
+				val16_1 = v2;
+				gptp_port_set_peer_delay(v1, val16_1);
+			} else {
 				show_ptp_param_u16(val16_1, true);
+			}
 		} else if (!strcmp(p1, "master")) {
 			gptp_port_get_master(v1, &val8_1);
-			if (count >= 3)
-				;
-			else
+			if (count >= 3) {
+				val8_1 = !!v2;
+				gptp_port_set_master(v1, val8_1);
+			} else {
 				show_ptp_param_u8(val8_1, true);
+			}
+		} else if (!strcmp(p1, "slave")) {
+			bool one_slave = 0;
+			u16 ports = 0;
+
+			if (count >= 2) {
+				if (v1)
+					one_slave = 1;
+				ports |= 1;
+			}
+			if (count >= 3) {
+				if (v2 && !one_slave)
+					one_slave = 1;
+				else
+					v2 = 0;
+				ports |= 2;
+			}
+			if (count >= 4) {
+				if (v3 && !one_slave)
+					one_slave = 1;
+				else
+					v3 = 0;
+				ports |= 4;
+			}
+			if (ports) {
+				gptp_profile_get_domain(1, &val8_1, &val16_1,
+					&val16_2);
+				val16_1 = ports;
+				gptp_profile_set_domain(1, val8_1, val16_1,
+					val16_2);
+				gptp_port_set_master(1, !v1);
+				gptp_port_set_master(2, !v2);
+				gptp_port_set_master(3, !v3);
+			}
 		} else if (!strcmp(p1, "use_delay")) {
 			gptp_port_get_use_delay(v1, &val8_1);
-			if (count >= 3)
-				;
-			else
+			if (count >= 3) {
+				val8_1 = !!v2;
+				gptp_port_set_use_delay(v1, val8_1);
+			} else {
 				show_ptp_param_u8(val8_1, true);
+			}
+		} else if (!strcmp(p1, "phy")) {
+			if (count >= 3) {
+				void *fd = &swdev;
+				int rc;
+
+				rc = set_port_power(fd, v1, v2);
+			}
 		} else if (p1[0] == 'h') {
 			printf("\tprofile <index> [0|1|2]"NL);
 			printf("\ttransport <index> [0|1]"NL);
@@ -658,6 +739,10 @@ static int get_ptp_cmd(FILE *fp)
 			printf("\tpeer_delay <port> [0-65535]"NL);
 			printf("\tmaster <port> [0|1]"NL);
 			printf("\tuse_delay <port> [0|1]"NL);
+			printf("\tphy <port> [0|1]"NL);
+			printf("\tautotest [0|1]"NL);
+			printf("\tdbg [0|1]"NL);
+			printf("\tc [0|1]"NL);
 		} else if (p1[0] == 'q') {
 			cont = 0;
 			break;
@@ -1498,16 +1583,10 @@ static int init_sock(char *eth_dev, int family, u8 *hwaddr)
 		memcpy(host_addr, &info.addr.sin_addr, 4);
 		inet_ntop(AF_INET, &info.addr.sin_addr,
 			host_ip4, sizeof(host_ip4));
-#if 0
-		printf("%s\n", host_ip4);
-#endif
 		ipv6_interface = info.if_idx;
 		if (info.plen) {
 			inet_ntop(AF_INET6, &info.addr6.sin6_addr,
 				host_ip6, sizeof(host_ip6));
-#if 0
-			printf("%s\n", host_ip6);
-#endif
 			memcpy(host_addr6, &info.addr6.sin6_addr, 16);
 			ipv6_interface = info.if_idx;
 		}
@@ -1524,9 +1603,6 @@ static int init_sock(char *eth_dev, int family, u8 *hwaddr)
 		if (info.plen) {
 			inet_ntop(AF_INET6, &info.addr6.sin6_addr,
 				host_ip6, sizeof(host_ip6));
-#if 0
-			printf("%s\n", host_ip6);
-#endif
 			memcpy(host_addr6, &info.addr6.sin6_addr, 16);
 			ipv6_interface = info.if_idx;
 		}

@@ -266,13 +266,6 @@ static void clock_sync_timeout(struct ptp_clock *c)
                 c->last_rx_fup->msg->data.follow_up.preciseOriginTimestamp.sec.lo,
                 c->last_rx_fup->msg->data.follow_up.preciseOriginTimestamp.nsec,
                 fup, sizeof(fup));
-#if 0
-            n += snprintf(&log[n], sizeof(log) - n,
-                NL" Last Follow_Up received by %u:%9u with timestamp %u:%9u",
-                c->last_sync_rx.sec, c->last_sync_rx.nsec,
-                c->last_rx_fup->msg->data.follow_up.preciseOriginTimestamp.sec.lo,
-                c->last_rx_fup->msg->data.follow_up.preciseOriginTimestamp.nsec);
-#endif
             n += snprintf(&log[n], sizeof(log) - n,
                 NL" Last Follow_Up received by %s "
                 NL"  with timestamp %s", rcv, fup);
@@ -1209,6 +1202,11 @@ void clock_stop(struct ptp_clock *c)
     }
     if (c->signaling)
         clock_stop_signaling_timer(c);
+    ksz_exit_timer(&c->sync_timer_info);
+    ksz_exit_timer(&c->sync_timeout_info);
+    ksz_exit_timer(&c->fup_timeout_info);
+    ksz_exit_timer(&c->interval_timer_info);
+    ksz_exit_timer(&c->signaling_timer_info);
 
     /* Clear last received Sync when using gPTP. */
     memset(&c->last_sync_rx, 0, sizeof(c->last_sync_rx));
@@ -1270,8 +1268,12 @@ static void init_ptp_clock(struct ptp_clock *c, u8 *macaddr)
     c->id.addr[6] = macaddr[4];
     c->id.addr[7] = macaddr[5];
     inc_mac_id(&c->id.addr[5], c->index);
-/* Workaround for 1AS.com.6.5a test case. */
+
 #if 0
+    /* The AVnu test defines 3 MAC addresses for 3 ports, so it assumes the
+     * first address is used for clock id.
+     * Need to pass 1as_com_6_5_a test case.
+     */
     inc_mac_id(&c->id.addr[5], 1);
 #endif
 
@@ -1358,9 +1360,7 @@ static void clock_start(struct ptp_clock *c)
         msecs_to_jiffies(1000), clock_signaling_func,
         NULL, c, pdTRUE);
 #ifdef LINUX_PTP
-#if 1
     cfg_timer_dbg(FALSE);
-#endif
 #endif
 
     for (i = 0; i <= c->cnt; i++) {

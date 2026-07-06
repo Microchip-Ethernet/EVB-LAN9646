@@ -1264,10 +1264,6 @@ static void proc_sync_interval(struct ptp_port *p, struct ptp_message *m)
     if (abs(diff) <= ms / 4) {
         p->report_mismatched = 0;
     } else {
-#if 0
-/* gPTP_6.1.4d */
-interval = -4;
-#endif
 if (dbg_intv < 8) {
 dbg_msg("%lu %lu %04x %d\n", c->prev_sync_jiffies, c->last_sync_jiffies,
 msg->hdr.sequenceId, actual);

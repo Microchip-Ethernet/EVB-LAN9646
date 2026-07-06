@@ -11,7 +11,7 @@ static u8 avtpdu_src[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 static u8 avtpdu_id[8];
 static u16 avtpdu_seqid = 0;
 
-static u8 automotive_test_mode = 1;
+static u8 automotive_test_mode = 0;
 
 static SOCKET create_avtpdu(struct ip_info *info)
 {

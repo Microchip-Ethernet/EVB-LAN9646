@@ -387,7 +387,9 @@ static void port_calc_nrate(struct ptp_port *p, struct ptp_pdelay_info *info,
     ptu_sub(tx, &n->tx2, &other_interval);
     ptu_sub(&own_interval, &other_interval, &diff);
     diff_nsec = ptu_get_nsec(&diff);
+#ifndef LINUX_PTP
     n->last_diff = diff_nsec;
+#endif
     memcpy(&n->rx2, rx, sizeof(struct ptu));
     memcpy(&n->tx2, tx, sizeof(struct ptu));
 
@@ -401,7 +403,9 @@ static void port_calc_nrate(struct ptp_port *p, struct ptp_pdelay_info *info,
     ptu_sub(tx, &n->tx1, &other_interval);
     ptu_sub(rx, &n->rx1, &own_interval);
     n->ratio = ptu_div_ratio(&other_interval, &own_interval);
+#ifndef LINUX_PTP
     n->last_ratio = n->ratio;
+#endif
     memcpy(&n->rx1, rx, sizeof(struct ptu));
     memcpy(&n->tx1, tx, sizeof(struct ptu));
     n->ratio_valid = 1;

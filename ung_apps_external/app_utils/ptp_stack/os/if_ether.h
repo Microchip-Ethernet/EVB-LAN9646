@@ -23,7 +23,7 @@
 #define ETH_P_PRP               0x88FB
 #define ETH_P_HSR               0x892F
 
-#if 0
+#ifndef LINUX_PTP
 struct ethhdr {
     u8 dest[ETH_ALEN];
     u8 src[ETH_ALEN];
@@ -50,7 +50,7 @@ struct vlan_hdr {
     u16 proto;
 };
 
-#if 0
+#ifndef LINUX_PTP
 #define IP_CE                   0x8000
 #define IP_DF                   0x4000
 #define IP_MF                   0x2000
@@ -76,7 +76,7 @@ struct iphdr {
 };
 #endif
 
-#if 0
+#ifndef LINUX_PTP
 struct in6_addr {
     union {
         u8 addr8[16];
@@ -104,7 +104,7 @@ struct udphdr {
     u16 check;
 };
 
-#if 0
+#ifndef LINUX_PTP
 #define AF_INET          2
 #define AF_INET6         10
 #define AF_PACKET        17

@@ -314,7 +314,7 @@ void init_ptp_port_profile(struct ptp_port *p, u8 delay_mechanism,
         NULL, p, pdFALSE);
 
 #ifdef LINUX_PTP
-#if 1
+#if 0
     cfg_timer_dbg(TRUE);
 #endif
 #endif
@@ -328,9 +328,7 @@ void init_ptp_port_profile(struct ptp_port *p, u8 delay_mechanism,
         msecs_to_jiffies(5 * 60 * 1000), port_fault_timeout_func,
         NULL, p, pdFALSE);
 #ifdef LINUX_PTP
-#if 1
     cfg_timer_dbg(FALSE);
-#endif
 #endif
 
     if (p->index > 0) {
@@ -363,6 +361,9 @@ void exit_ptp_port_profile(struct ptp_port *p)
     ksz_stop_timer(&p->ann_timeout_timer_info);
     ksz_stop_timer(&p->qual_timeout_timer_info);
     ksz_stop_timer(&p->fault_timeout_timer_info);
+    ksz_exit_timer(&p->ann_timeout_timer_info);
+    ksz_exit_timer(&p->qual_timeout_timer_info);
+    ksz_exit_timer(&p->fault_timeout_timer_info);
 }
 
 void exit_ptp_port_hw(struct ptp_port *p)

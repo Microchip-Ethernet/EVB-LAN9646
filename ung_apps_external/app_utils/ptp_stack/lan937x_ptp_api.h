@@ -23,7 +23,7 @@
 #ifndef LAN937X_PTP_API_H
 #define LAN937X_PTP_API_H
 
-#if 0
+#ifndef LINUX_PTP
 /* Define this for ksz_request. */
 #define MAX_REQUEST_SIZE        200
 
@@ -44,7 +44,7 @@ struct ptp_ts {
     struct ptp_utime r;
     struct ptp_utime t;
     u32 timestamp;
-#if 0
+#ifndef LINUX_PTP
     u32 timestamp_;
 #endif
 };

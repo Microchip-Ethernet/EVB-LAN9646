@@ -92,6 +92,7 @@ typedef SOCKET sockptr;
 #define USE_TIMESTAMP_OPER
 
 #include "lan937x_ptp_api.c"
+#include "ksz_sw_api.c"
 #else
 #include "lan937x_ptp_api.h"
 
@@ -676,6 +677,7 @@ void ptp_stack_stop_clock(void)
             reset_ptp_clock(c);
         }
     }
+    ksz_cleanup_timers();
 }
 
 #ifdef LINUX_PTP
@@ -954,6 +956,8 @@ printf("send err: %d\n", rc);
         ptp_api_exit(&ptpdev);
         n = 2;
     }
+    if (sw_hw)
+        sw_exit(&swdev);
 
     for (i = 0; i < n; i++) {
         Pthread_join(task_tid[i], &status);
@@ -976,9 +980,9 @@ static void init_task(void)
         return;
     }
     ptp_hw = 1;
-#if 0
-printf("ptp: %d %d %d\n", ptp_version, ptp_ports, ptp_host_port);
-#endif
+    rc = sw_init(&swdev);
+    if (!rc)
+        sw_hw = 1;
 }
 
 static void start_task(void)

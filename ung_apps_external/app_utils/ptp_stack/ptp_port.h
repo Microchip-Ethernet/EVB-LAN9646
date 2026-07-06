@@ -44,7 +44,7 @@ struct nrate_info {
     struct ptu rx1;
     struct ptu rx2;
     u8 ratio_valid;
-#if 1
+#ifndef LINUX_PTP
     double last_ratio;
     int last_diff;
 #endif

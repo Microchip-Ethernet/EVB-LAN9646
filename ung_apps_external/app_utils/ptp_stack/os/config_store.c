@@ -132,6 +132,14 @@ int gptp_get_initial_wait(u8 *initial, u8 *wait_sync, u8 *wait_pdelay)
 	return 0;
 }
 
+int gptp_set_initial_wait(u8 initial, u8 wait_sync, u8 wait_pdelay)
+{
+	ptp_global.initialSyncTimeout = initial;
+	ptp_global.waitSyncInterval = wait_sync;
+	ptp_global.waitPdelayReqInterval = wait_pdelay;
+	return 0;
+}
+
 int gptp_get_utc(u8 *utc)
 {
 	*utc = ptp_global.utcOffset;
@@ -157,6 +165,17 @@ int gptp_profile_get_sdoid(u8 index, u8 *major, u8 *minor)
 		return rc;
 	*major = ptp_profiles[index].majorSDOID;
 	*minor = ptp_profiles[index].minorSDOID;
+	return 0;
+}
+
+int gptp_profile_set_sdoid(u8 index, u8 major, u8 minor)
+{
+	int rc = chk_index(&index, MAX_PTP_PROFILES);
+
+	if (rc)
+		return rc;
+	ptp_profiles[index].majorSDOID = major;
+	ptp_profiles[index].minorSDOID = minor;
 	return 0;
 }
 
@@ -213,6 +232,17 @@ int gptp_profile_get_clock_prio(u8 index, u8 *prio1, u8 *prio2)
 	return 0;
 }
 
+int gptp_profile_set_clock_prio(u8 index, u8 prio1, u8 prio2)
+{
+	int rc = chk_index(&index, MAX_PTP_PROFILES);
+
+	if (rc)
+		return rc;
+	ptp_profiles[index].priority1 = prio1;
+	ptp_profiles[index].priority2 = prio2;
+	return 0;
+}
+
 int gptp_profile_get_clock_prop(u8 index, u8 *clk_class, u8 *accuracy,
 	u16 *variance)
 {
@@ -226,6 +256,19 @@ int gptp_profile_get_clock_prop(u8 index, u8 *clk_class, u8 *accuracy,
 	return 0;
 }
 
+int gptp_profile_set_clock_prop(u8 index, u8 clk_class, u8 accuracy,
+	u16 variance)
+{
+	int rc = chk_index(&index, MAX_PTP_PROFILES);
+
+	if (rc)
+		return rc;
+	ptp_profiles[index].clkClass = clk_class;
+	ptp_profiles[index].clkAccuracy = accuracy;
+	ptp_profiles[index].offsetScaledLogVariance = variance;
+	return 0;
+}
+
 int gptp_profile_get_domain(u8 index, u8 *domain, u16 *ports, u16 *vlan)
 {
 	int rc = chk_index(&index, MAX_PTP_PROFILES);
@@ -235,6 +278,18 @@ int gptp_profile_get_domain(u8 index, u8 *domain, u16 *ports, u16 *vlan)
 	*domain = ptp_profiles[index].domain;
 	*ports = ptp_profiles[index].ports;
 	*vlan = ptp_profiles[index].vlan;
+	return 0;
+}
+
+int gptp_profile_set_domain(u8 index, u8 domain, u16 ports, u16 vlan)
+{
+	int rc = chk_index(&index, MAX_PTP_PROFILES);
+
+	if (rc)
+		return rc;
+	ptp_profiles[index].domain = domain;
+	ptp_profiles[index].ports = ports;
+	ptp_profiles[index].vlan = vlan;
 	return 0;
 }
 
@@ -251,6 +306,18 @@ int gptp_port_profile_get_oper(u8 index, signed char *sync,
 	return 0;
 }
 
+int gptp_port_profile_set_oper(u8 index, signed char sync,
+	signed char pdelay)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_port_profiles[index].operLogSyncInterval = sync;
+	ptp_port_profiles[index].operLogMinPdelayReqInterval = pdelay;
+	return 0;
+}
+
 
 int gptp_port_profile_get_delay(u8 index, signed char *delay)
 {
@@ -262,6 +329,16 @@ int gptp_port_profile_get_delay(u8 index, signed char *delay)
 	return 0;
 }
 
+int gptp_port_profile_set_delay(u8 index, signed char delay)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_port_profiles[index].logMinDelayReqInterval = delay;
+	return 0;
+}
+
 int gptp_port_profile_get_pdelay(u8 index, signed char *pdelay)
 {
 	int rc = chk_index(&index, MAX_PTP_PORTS);
@@ -269,6 +346,16 @@ int gptp_port_profile_get_pdelay(u8 index, signed char *pdelay)
 	if (rc)
 		return rc;
 	*pdelay = ptp_port_profiles[index].logMinPdelayReqInterval;
+	return 0;
+}
+
+int gptp_port_profile_set_pdelay(u8 index, signed char pdelay)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_port_profiles[index].logMinPdelayReqInterval = pdelay;
 	return 0;
 }
 
@@ -283,6 +370,17 @@ int gptp_port_profile_get_announce(u8 index, signed char *announce, u8 *timeout)
 	return 0;
 }
 
+int gptp_port_profile_set_announce(u8 index, signed char announce, u8 timeout)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_port_profiles[index].logAnnounceInterval = announce;
+	ptp_port_profiles[index].announceReceiptTimeout = timeout;
+	return 0;
+}
+
 int gptp_port_profile_get_sync(u8 index, signed char *sync, u8 *timeout)
 {
 	int rc = chk_index(&index, MAX_PTP_PORTS);
@@ -294,6 +392,17 @@ int gptp_port_profile_get_sync(u8 index, signed char *sync, u8 *timeout)
 	return 0;
 }
 
+int gptp_port_profile_set_sync(u8 index, signed char sync, u8 timeout)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_port_profiles[index].logSyncInterval = sync;
+	ptp_port_profiles[index].syncReceiptTimeout = timeout;
+	return 0;
+}
+
 int gptp_port_profile_get_delay_thresh(u8 index, u16 *pdelay)
 {
 	int rc = chk_index(&index, MAX_PTP_PORTS);
@@ -301,6 +410,16 @@ int gptp_port_profile_get_delay_thresh(u8 index, u16 *pdelay)
 	if (rc)
 		return rc;
 	*pdelay = ptp_port_profiles[index].neighborPropDelayThresh;
+	return 0;
+}
+
+int gptp_port_profile_set_delay_thresh(u8 index, u16 pdelay)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_port_profiles[index].neighborPropDelayThresh = pdelay;
 	return 0;
 }
 
@@ -317,6 +436,18 @@ int gptp_port_get_latency(u8 index, u16 *rx, u16 *tx, short *asym)
 	return 0;
 }
 
+int gptp_port_set_latency(u8 index, u16 rx, u16 tx, short asym)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_settings[index].receiveLatency = rx;
+	ptp_settings[index].transmitLatency = tx;
+	ptp_settings[index].delayAsymmetry = asym;
+	return 0;
+}
+
 
 int gptp_port_get_master(u8 index, u8 *master)
 {
@@ -325,6 +456,16 @@ int gptp_port_get_master(u8 index, u8 *master)
 	if (rc)
 		return rc;
 	*master = ptp_settings[index].masterOnly;
+	return 0;
+}
+
+int gptp_port_set_master(u8 index, u8 master)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_settings[index].masterOnly = master;
 	return 0;
 }
 
@@ -338,6 +479,16 @@ int gptp_port_get_peer_delay(u8 index, u16 *delay)
 	return 0;
 }
 
+int gptp_port_set_peer_delay(u8 index, u16 delay)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_settings[index].peerDelay = delay;
+	return 0;
+}
+
 int gptp_port_get_use_delay(u8 index, u8 *use)
 {
 	int rc = chk_index(&index, MAX_PTP_PORTS);
@@ -345,6 +496,16 @@ int gptp_port_get_use_delay(u8 index, u8 *use)
 	if (rc)
 		return rc;
 	*use = ptp_settings[index].useDelayReq;
+	return 0;
+}
+
+int gptp_port_set_use_delay(u8 index, u8 use)
+{
+	int rc = chk_index(&index, MAX_PTP_PORTS);
+
+	if (rc)
+		return rc;
+	ptp_settings[index].useDelayReq = use;
 	return 0;
 }
 
