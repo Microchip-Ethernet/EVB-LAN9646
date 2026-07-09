@@ -60,6 +60,11 @@ void e2e_dispatch(struct port *p, enum fsm_event event, int mdiff)
 		break;
 	case PS_MASTER:
 	case PS_GRAND_MASTER:
+#ifdef KSZ_1588_PTP_HW
+		/* Switch to hardware master mode to receive Delay_Req. */
+		if (clock_clear_rx_sync_port(p->clock, p))
+			transport_filt(p->trp, p->iface, p->fda.fd[0], 0);
+#endif
 		break;
 	case PS_PASSIVE:
 		port_set_announce_tmo(p);

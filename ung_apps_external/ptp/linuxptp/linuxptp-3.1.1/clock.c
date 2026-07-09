@@ -141,6 +141,7 @@ struct clock {
 	double last_fadj;
 	tmv_t origin_ts;
 	struct port *rx_sync_port;
+	bool master;
 #endif
 };
 
@@ -2045,6 +2046,11 @@ int clock_clear_rx_sync_port(struct clock *c, struct port *p)
 {
 	if (c->rx_sync_port == p) {
 		c->rx_sync_port = NULL;
+		c->master = 1;
+		return 1;
+	}
+	if (!c->rx_sync_port && !c->master) {
+		c->master = 1;
 		return 1;
 	}
 	return 0;
@@ -2057,6 +2063,7 @@ int clock_set_rx_sync_port(struct clock *c, struct port *p)
 	if (!c->rx_sync_port)
 		ret = 1;
 	c->rx_sync_port = p;
+	c->master = 0;
 	return ret;
 }
 #endif
