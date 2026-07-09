@@ -1,33 +1,67 @@
 diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.c linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_ptp.c
 --- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.c	2025-05-26 04:26:53.000000000 -0700
-+++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_ptp.c	2026-06-01 18:10:10.037604572 -0700
-@@ -308,11 +308,25 @@ int ksz_get_ts_info(struct dsa_switch *d
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_ptp.c	2026-07-08 18:25:15.273672534 -0700
+@@ -16,6 +16,10 @@
+ #include "ksz_ptp.h"
+ #include "ksz_ptp_reg.h"
+ 
++#if 1
++#define ALLOW_2_STEP_FOR_KSZ9477
++#endif
++
+ #define ptp_caps_to_data(d) container_of((d), struct ksz_ptp_data, caps)
+ #define ptp_data_to_ksz_dev(d) container_of((d), struct ksz_device, ptp_data)
+ #define work_to_xmit_work(w) \
+@@ -283,8 +287,20 @@ static int ksz_ptp_enable_mode(struct ks
+ 
+ 	tagger_data->hwtstamp_set_state(dev->ds, tag_en);
+ 
++#if 1
+ 	return ksz_rmw16(dev, REG_PTP_MSG_CONF1, PTP_ENABLE,
+ 			 tag_en ? PTP_ENABLE : 0);
++#else
++	do {
++		u16 mode;
++
++		ksz_rmw16(dev, REG_PTP_MSG_CONF1, PTP_ENABLE,
++			 tag_en ? PTP_ENABLE : 0);
++		ksz_read16(dev, REG_PTP_MSG_CONF1, &mode);
++printk("ptp_mode: %x\n", mode);
++	} while (0);
++	return 0;
++#endif
+ }
+ 
+ /* The function is return back the capability of timestamping feature when
+@@ -308,12 +324,27 @@ int ksz_get_ts_info(struct dsa_switch *d
  
  	if (is_lan937x(dev))
  		ts->tx_types |= BIT(HWTSTAMP_TX_ON);
-+#if 1
-+	/* Allow 2-step for KSZ9477. */
-+	ts->tx_types |= BIT(HWTSTAMP_TX_ON);
++#ifdef ALLOW_2_STEP_FOR_KSZ9477
++	else
++		ts->tx_types |= BIT(HWTSTAMP_TX_ON);
++#endif
++
 +	/* Allow to use E2E 1-step Sync. */
 +	ts->tx_types |= BIT(HWTSTAMP_TX_ONESTEP_SYNC);
-+#endif
  
  	ts->rx_filters = BIT(HWTSTAMP_FILTER_NONE) |
  			 BIT(HWTSTAMP_FILTER_PTP_V2_L4_EVENT) |
  			 BIT(HWTSTAMP_FILTER_PTP_V2_L2_EVENT) |
  			 BIT(HWTSTAMP_FILTER_PTP_V2_EVENT);
-+#if 1
+ 
++	/* Use hack to specify master/slave mode. */
 +	ts->rx_filters |= BIT(HWTSTAMP_FILTER_PTP_V2_L4_SYNC) |
 +			  BIT(HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ) |
 +			  BIT(HWTSTAMP_FILTER_PTP_V2_L2_SYNC) |
 +			  BIT(HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ) |
 +			  BIT(HWTSTAMP_FILTER_PTP_V2_SYNC) |
 +			  BIT(HWTSTAMP_FILTER_PTP_V2_DELAY_REQ);
-+#endif
- 
++
  	ts->phc_index = ptp_clock_index(ptp_data->clock);
  
-@@ -336,6 +350,10 @@ static int ksz_set_hwtstamp_config(struc
+ 	return 0;
+@@ -336,6 +367,10 @@ static int ksz_set_hwtstamp_config(struc
  				   struct ksz_port *prt,
  				   struct hwtstamp_config *config)
  {
@@ -38,7 +72,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.
  	int ret;
  
  	if (config->flags)
-@@ -353,30 +371,63 @@ static int ksz_set_hwtstamp_config(struc
+@@ -353,30 +388,62 @@ static int ksz_set_hwtstamp_config(struc
  		prt->ptpmsg_irq[KSZ_XDREQ_MSG].ts_en = true;
  		prt->ptpmsg_irq[KSZ_PDRES_MSG].ts_en = false;
  		prt->hwts_tx_en = true;
@@ -52,8 +86,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.
 +		val |= PTP_TC_P2P | PTP_1STEP;
  		break;
  	case HWTSTAMP_TX_ON:
-+#if 0
-+		/* Allow 2-step for KSZ9477. */
++#ifndef ALLOW_2_STEP_FOR_KSZ9477
  		if (!is_lan937x(dev))
  			return -ERANGE;
 +#endif
@@ -92,27 +125,27 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.
 +		return ret;
 +
 +	switch (config->rx_filter) {
-+	case HWTSTAMP_FILTER_PTP_V2_L4_SYNC:
-+	case HWTSTAMP_FILTER_PTP_V2_L2_SYNC:
-+	case HWTSTAMP_FILTER_PTP_V2_SYNC:
-+		/* Disable master mode to receive Sync. */
-+		cfg |= PTP_MASTER;
-+		break;
 +	case HWTSTAMP_FILTER_NONE:
 +		break;
 +	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
 +	case HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ:
 +	case HWTSTAMP_FILTER_PTP_V2_DELAY_REQ:
-+	default:
 +		/* Enable master mode to receive Delay_Req. */
 +		cfg |= PTP_MASTER;
 +		val |= PTP_MASTER;
++		break;
++	case HWTSTAMP_FILTER_PTP_V2_L4_SYNC:
++	case HWTSTAMP_FILTER_PTP_V2_L2_SYNC:
++	case HWTSTAMP_FILTER_PTP_V2_SYNC:
++	default:
++		/* Disable master mode to receive Sync. */
++		cfg |= PTP_MASTER;
 +		break;
 +	}
  	switch (config->rx_filter) {
  	case HWTSTAMP_FILTER_NONE:
  		prt->hwts_rx_en = false;
-@@ -390,16 +441,27 @@ static int ksz_set_hwtstamp_config(struc
+@@ -390,16 +457,28 @@ static int ksz_set_hwtstamp_config(struc
  	case HWTSTAMP_FILTER_PTP_V2_L2_SYNC:
  		config->rx_filter = HWTSTAMP_FILTER_PTP_V2_L2_EVENT;
  		prt->hwts_rx_en = true;
@@ -134,13 +167,14 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.
  		config->rx_filter = HWTSTAMP_FILTER_NONE;
  		return -ERANGE;
  	}
-+	ret = ksz_rmw16(dev, REG_PTP_MSG_CONF1, cfg, val);
++	if (cfg)
++		ret = ksz_rmw16(dev, REG_PTP_MSG_CONF1, cfg, val);
 +	if (ret)
 +		return ret;
  
  	return ksz_ptp_enable_mode(dev);
  }
-@@ -523,9 +585,11 @@ void ksz_port_txtstamp(struct dsa_switch
+@@ -523,9 +602,11 @@ void ksz_port_txtstamp(struct dsa_switch
  
  	switch (ptp_msg_type) {
  	case PTP_MSGTYPE_SYNC:
@@ -153,7 +187,7 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.
  	case PTP_MSGTYPE_PDELAY_REQ:
  		break;
  	case PTP_MSGTYPE_PDELAY_RESP:
-@@ -540,6 +604,7 @@ void ksz_port_txtstamp(struct dsa_switch
+@@ -540,6 +621,7 @@ void ksz_port_txtstamp(struct dsa_switch
  		return;
  	}
  
@@ -161,3 +195,96 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.
  	clone = skb_clone_sk(skb);
  	if (!clone)
  		return;
+@@ -619,6 +701,29 @@ static int _ksz_ptp_gettime(struct ksz_d
+ 	return 0;
+ }
+ 
++static int _ksz_ptp_settime(struct ksz_device *dev, const struct timespec64 *ts)
++{
++	int ret;
++
++	/* Write to shadow registers and Load PTP clock */
++	ret = ksz_write16(dev, REG_PTP_RTC_SUB_NANOSEC__2, PTP_RTC_0NS);
++	if (ret)
++		goto unlock;
++
++	ret = ksz_write32(dev, REG_PTP_RTC_NANOSEC, ts->tv_nsec);
++	if (ret)
++		goto unlock;
++
++	ret = ksz_write32(dev, REG_PTP_RTC_SEC, ts->tv_sec);
++	if (ret)
++		goto unlock;
++
++	ret = ksz_rmw16(dev, REG_PTP_CLK_CTRL, PTP_LOAD_TIME, PTP_LOAD_TIME);
++
++unlock:
++	return ret;
++}
++
+ static int ksz_ptp_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
+ {
+ 	struct ksz_ptp_data *ptp_data = ptp_caps_to_data(ptp);
+@@ -685,21 +790,7 @@ static int ksz_ptp_settime(struct ptp_cl
+ 	int ret;
+ 
+ 	mutex_lock(&ptp_data->lock);
+-
+-	/* Write to shadow registers and Load PTP clock */
+-	ret = ksz_write16(dev, REG_PTP_RTC_SUB_NANOSEC__2, PTP_RTC_0NS);
+-	if (ret)
+-		goto unlock;
+-
+-	ret = ksz_write32(dev, REG_PTP_RTC_NANOSEC, ts->tv_nsec);
+-	if (ret)
+-		goto unlock;
+-
+-	ret = ksz_write32(dev, REG_PTP_RTC_SEC, ts->tv_sec);
+-	if (ret)
+-		goto unlock;
+-
+-	ret = ksz_rmw16(dev, REG_PTP_CLK_CTRL, PTP_LOAD_TIME, PTP_LOAD_TIME);
++	ret = _ksz_ptp_settime(dev, ts);
+ 	if (ret)
+ 		goto unlock;
+ 
+@@ -888,14 +979,23 @@ out:
+ static int ksz_ptp_start_clock(struct ksz_device *dev)
+ {
+ 	struct ksz_ptp_data *ptp_data = &dev->ptp_data;
++	struct timespec64 ts;
+ 	int ret;
+ 
+ 	ret = ksz_rmw16(dev, REG_PTP_CLK_CTRL, PTP_CLK_ENABLE, PTP_CLK_ENABLE);
+ 	if (ret)
+ 		return ret;
+ 
+-	ptp_data->clock_time.tv_sec = 0;
+-	ptp_data->clock_time.tv_nsec = 0;
++	ts = ktime_to_timespec64(ktime_get_real());
++	/* Adjust for leap seconds. */
++	ts.tv_sec += 37;
++	ret = _ksz_ptp_settime(dev, &ts);
++	if (ret)
++		return ret;
++
++	spin_lock_bh(&ptp_data->clock_lock);
++	ptp_data->clock_time = ts;
++	spin_unlock_bh(&ptp_data->clock_lock);
+ 
+ 	return 0;
+ }
+@@ -939,11 +1039,8 @@ int ksz_ptp_clock_register(struct dsa_sw
+ 
+ 	ptp_data->caps.pin_config = ptp_data->pin_config;
+ 
+-	/* Currently only P2P mode is supported. When 802_1AS bit is set, it
+-	 * forwards all PTP packets to host port and none to other ports.
+-	 */
+-	ret = ksz_rmw16(dev, REG_PTP_MSG_CONF1, PTP_TC_P2P | PTP_802_1AS,
+-			PTP_TC_P2P | PTP_802_1AS);
++	ret = ksz_rmw16(dev, REG_PTP_MSG_CONF2, PTP_DELAY_CHECK,
++			PTP_DELAY_CHECK);
+ 	if (ret)
+ 		return ret;
+ 
