@@ -2678,6 +2678,11 @@ static void port_e2e_transition(struct port *p, enum port_state next)
 		if (!p->inhibit_announce) {
 			set_tmo_log(p->fda.fd[FD_MANNO_TIMER], 1, -10); /*~1ms*/
 		}
+#ifdef KSZ_1588_PTP_HW
+		/* Switch to hardware master mode to receive Delay_Req. */
+		if (clock_clear_rx_sync_port(p->clock, p))
+			transport_filt(p->trp, p->iface, p->fda.fd[0], 0);
+#endif
 		port_set_sync_tx_tmo(p);
 		break;
 	case PS_PASSIVE:
@@ -2728,6 +2733,11 @@ static void port_p2p_transition(struct port *p, enum port_state next)
 		if (!p->inhibit_announce) {
 			set_tmo_log(p->fda.fd[FD_MANNO_TIMER], 1, -10); /*~1ms*/
 		}
+#ifdef KSZ_1588_PTP_HW
+		/* Switch to hardware master mode to block Sync. */
+		if (clock_clear_rx_sync_port(p->clock, p))
+			transport_filt(p->trp, p->iface, p->fda.fd[0], 0);
+#endif
 		port_set_sync_tx_tmo(p);
 		break;
 	case PS_PASSIVE:
@@ -3587,15 +3597,6 @@ int port_state_update(struct port *p, enum fsm_event event, int mdiff)
 		p->unicast_state_dirty = true;
 	}
 	if (next != p->state) {
-#ifdef KSZ_1588_PTP_HW
-		/* Switch back to hardware master clock mode. */
-		if ((p->state == PS_SLAVE || p->state == PS_UNCALIBRATED) &&
-		    next != PS_SLAVE && next != PS_UNCALIBRATED) {
-			if (clock_clear_rx_sync_port(p->clock, p))
-				transport_filt(p->trp, p->iface, p->fda.fd[0],
-					       0);
-		}
-#endif
 		port_show_transition(p, next, event);
 		p->state = next;
 		port_notify_event(p, NOTIFY_PORT_STATE);
