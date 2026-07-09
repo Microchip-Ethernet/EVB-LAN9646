@@ -47891,8 +47891,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_m
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_ptp_9897.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c	2026-01-30 16:36:32.857022460 -0800
-@@ -0,0 +1,8702 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_ptp_9897.c	2026-07-07 19:12:52.461438770 -0700
+@@ -0,0 +1,8701 @@
 +/**
 + * Microchip PTP common code
 + *
@@ -51618,7 +51618,6 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_p
 +			u16 mode = ptp->mode;
 +
 +			mode &= ~(PTP_1STEP | PTP_TC_P2P | PTP_MASTER);
-+			mode |= PTP_MASTER;
 +			if (ptp->tx_en & 2) {
 +				mode |= PTP_1STEP;
 +				if (ptp->tx_en & 4)
@@ -57802,8 +57801,8 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_p
 +#endif
 diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_ptp.c linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_ptp.c
 --- linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_ptp.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_ptp.c	2025-09-25 17:40:35.004033928 -0700
-@@ -0,0 +1,5732 @@
++++ linux-linux4microchip-2024.04/drivers/net/ethernet/micrel/ksz_ptp.c	2026-07-08 16:05:03.110069180 -0700
+@@ -0,0 +1,5731 @@
 +/**
 + * Microchip PTP common code
 + *
@@ -60419,7 +60418,6 @@ diff -Napur linux-linux4microchip-2024.04-orig/drivers/net/ethernet/micrel/ksz_p
 +			u16 mode = ptp->mode;
 +
 +			mode &= ~(PTP_1STEP | PTP_TC_P2P | PTP_MASTER);
-+			mode |= PTP_MASTER;
 +			if (ptp->tx_en & 2) {
 +				mode |= PTP_1STEP;
 +				if (ptp->tx_en & 4)
