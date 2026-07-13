@@ -288,3 +288,24 @@ diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp.
  	if (ret)
  		return ret;
  
+diff -Napur linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp_reg.h linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_ptp_reg.h
+--- linux-linux4microchip-2025.04-old/drivers/net/dsa/microchip/ksz_ptp_reg.h	2025-05-26 04:26:53.000000000 -0700
++++ linux-linux4microchip-2025.04-new/drivers/net/dsa/microchip/ksz_ptp_reg.h	2026-07-13 16:00:30.944867480 -0700
+@@ -57,6 +57,17 @@
+ #define PTP_MASTER			BIT(1)
+ #define PTP_1STEP			BIT(0)
+ 
++#define REG_PTP_MSG_CONF2		0x0516
++
++#define PTP_UNICAST_ENABLE		BIT(12)
++#define PTP_ALTERNATE_MASTER		BIT(11)
++#define PTP_SYNC_CHECK			BIT(9)
++#define PTP_DELAY_CHECK			BIT(8)
++#define PTP_PDELAY_CHECK		BIT(7)
++#define PTP_DROP_SYNC_DELAY_REQ		BIT(5)
++#define PTP_DOMAIN_CHECK		BIT(4)
++#define PTP_UDP_CHECKSUM		BIT(2)
++
+ #define REG_PTP_UNIT_INDEX__4		0x0520
+ 
+ #define PTP_GPIO_INDEX			GENMASK(19, 16)
